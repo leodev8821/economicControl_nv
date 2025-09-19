@@ -5,11 +5,7 @@ import dotenv from 'dotenv';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import mysql from './config/mysql.js';
-// import swaggerUI from 'swagger-ui-express';
-// import swaggerDocs from './swagger/swaggerOptions.js';
-// import mongo from './database/mongo.js';
-// import { initializeDB } from './utils/configMongoDB.js';
-// import { router } from './routes/routes.js';
+import { router } from './routes/routes.js';
 
 // Crear la aplicación de Express
 const app = express();
@@ -20,11 +16,8 @@ app.use(urlencoded({ extended: false }));
 app.use(cors());
 app.use(cookieParser());
 
-// Configurar Swagger (descomenta si tienes swagger)
-// app.use('/inventory-app/v1/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
-
-// Configurar rutas (descomenta si tienes router)
-// app.use('/inventory-app/v1', router);
+// Configurar rutas
+app.use('/ec/api/v1', router);
 
 // Obtener la ruta absoluta del directorio del proyecto
 const __dirname = dirname(fileURLToPath(import.meta.url));

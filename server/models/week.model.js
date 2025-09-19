@@ -16,12 +16,10 @@ export const Week = connection.define('Week', {
         type: DataTypes.DATEONLY,
         allowNull: false,
         unique: true,
-        unique: true,
     },
     week_end: {
         type: DataTypes.DATEONLY,
         allowNull: false,
-        unique: true,
         unique: true,
     }
 }, {

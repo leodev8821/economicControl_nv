@@ -9,7 +9,7 @@ const envPath = join(__dirname, '../../.env');
 dotenv.config({ path: envPath });
 
 export default {
-    newCash: async (req, res) => {
+    createCash: async (req, res) => {
         try {
             const { name, actual_amount, pettyCash_limit } = req.body;
             
@@ -125,7 +125,7 @@ export default {
         }
     },
 
-    editCash: async (req, res) => {
+    updateCash: async (req, res) => {
         try {
             const { id } = req.params;
             const { name, actual_amount, pettyCash_limit } = req.body;
@@ -174,7 +174,7 @@ export default {
         }
     },
 
-    removeCash: async (req, res) => {
+    deleteCash: async (req, res) => {
         try {
             const { id, name } = req.params;
 

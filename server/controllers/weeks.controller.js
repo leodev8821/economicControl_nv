@@ -1,5 +1,6 @@
 import { getIncomesByWeek, getOutcomesByWeek } from '../models/week.model.js';
 import generateWeeksForYear from '../utils/week.util.js';
+import { Week } from '../models/week.model.js';
 import dotenv from 'dotenv';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -10,6 +11,40 @@ const envPath = join(__dirname, '../../.env');
 dotenv.config({ path: envPath });
 
 export default {
+    getWeeksByYear: async (req, res) => {
+        try {
+            const { year } = req.params;
+            const yearInt = parseInt(year, 10);
+            if (isNaN(yearInt) || yearInt < 1970 || yearInt > 2100) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Año inválido. Por favor, proporciona un año entre 1970 y 2100.'
+                });
+            }
+            // Importar el modelo Week dinámicamente para evitar problemas de dependencias
+            const weeks = await Week.findAll({
+                where: {
+                    year: yearInt
+                },
+                raw: true
+            });
+            if (!weeks || weeks.length === 0) {
+                return res.status(404).json({ ok: false, message: 'No se encontraron semanas para ese año.' });
+            }
+            res.status(200).json({
+                ok: true,
+                message: `Semanas del año ${yearInt} obtenidas correctamente.`,
+                data: weeks,
+            });
+        } catch (error) {
+            console.error('Error en getWeeksByYear:', error.message);
+            res.status(500).json({
+                ok: false,
+                message: 'Error al obtener las semanas del año.',
+                error: error.message
+            });
+        }
+    },
     getWeekData: async (req, res) => {
         const { weekId } = req.params;
 
@@ -59,8 +94,15 @@ export default {
 
     generateWeeks: async (req, res) => {
         try {
-            const { year } = req.params;
+            if (!req.body || req.body.year === undefined) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Debes enviar el año en el body como { "year": 2025 }'
+                });
+            }
+            const { year } = req.body;
             const yearInt = parseInt(year, 10);
+
             if (isNaN(yearInt) || yearInt < 1970 || yearInt > 2100) {
                 return res.status(400).json({
                     ok: false,
@@ -72,7 +114,7 @@ export default {
 
             res.status(201).json({
                 ok: true,
-                message: `Semanas para el año ${year} generadas correctamente.`,
+                message: `Semanas para el año ${yearInt} generadas correctamente.`,
             });
         } catch (error) {
             console.error('Error en generateWeeks:', error.message);
