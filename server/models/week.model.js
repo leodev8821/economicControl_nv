@@ -17,6 +17,12 @@ export const Week = connection.define('Week', {
         allowNull: false,
         unique: true,
         unique: true,
+    },
+    week_end: {
+        type: DataTypes.DATEONLY,
+        allowNull: false,
+        unique: true,
+        unique: true,
     }
 }, {
     tableName: 'weeks',
@@ -147,21 +153,24 @@ export async function getOneWeek(data) {
  */
 export async function updateOneWeek(weekInfo, newData) {
     try {
+        // Buscar la semana por los campos indicados en weekInfo usando los valores de newData
+        const whereClause = {};
+        weekInfo.forEach(field => {
+            if (newData[field] !== undefined) {
+                whereClause[field] = newData[field];
+            }
+        });
         const week = await Week.findOne({
-            where: {
-                [Op.or]: weekInfo.map((field) => ({ [field]: newData[field] }))
-            },
+            where: whereClause,
             raw: true
         });
         if (!week) {
             return null;
         }
-        await Week.update(newData, {
-            where: {
-                [Op.or]: weekInfo.map((field) => ({ [field]: newData[field] }))
-            }
-        });
-        return week;
+        await Week.update(newData, { where: whereClause });
+        // Retornar los datos actualizados
+        const updatedWeek = await Week.findOne({ where: whereClause, raw: true });
+        return updatedWeek;
     } catch (error) {
         console.error('Error al actualizar semana:', error.message);
         throw new Error(`Error al actualizar semana: ${error.message}`);
@@ -178,10 +187,15 @@ export async function updateOneWeek(weekInfo, newData) {
  */
 export async function deleteWeek(weekInfo) {
     try {
+        // Buscar la semana por los campos indicados en weekInfo usando los valores de weekInfo
+        const whereClause = {};
+        weekInfo.forEach(field => {
+            if (weekInfo[field] !== undefined) {
+                whereClause[field] = weekInfo[field];
+            }
+        });
         const week = await Week.findOne({
-            where: {
-                [Op.or]: weekInfo.map((field) => ({ [field]: weekInfo[field] }))
-            },
+            where: whereClause,
             raw: false
         });
         if (!week) {
@@ -190,7 +204,7 @@ export async function deleteWeek(weekInfo) {
         await week.destroy(); // hard delete
         return week;
     } catch (error) {
-        console.error(`Error al eliminar la semana ${weekInfo}`, error.message);
+        console.error(`Error al eliminar la semana ${JSON.stringify(weekInfo)}`, error.message);
         throw new Error(`Error al eliminar la Semana: ${error.message}`);
     }
 };

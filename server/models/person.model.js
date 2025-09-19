@@ -1,6 +1,5 @@
 import { DataTypes, Op } from "sequelize";
 import { getSequelizeConfig } from "../config/mysql.js";
-import { Income } from "./income.model.js";
 
 const connection = getSequelizeConfig();
 

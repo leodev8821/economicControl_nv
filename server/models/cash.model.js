@@ -124,7 +124,14 @@ export async function updateOneCash(cashInfo, newData) {
                 [Op.or]: cashInfo.map((field) => ({ [field]: newData[field] }))
             }
         });
-        return cash;
+        // Retornar los datos actualizados
+        const updatedCash = await Cash.findOne({
+            where: {
+                [Op.or]: cashInfo.map((field) => ({ [field]: newData[field] }))
+            },
+            raw: true
+        });
+        return updatedCash;
     } catch (error) {
         console.error('Error al actualizar caja:', error.message);
         throw new Error(`Error al actualizar caja: ${error.message}`);

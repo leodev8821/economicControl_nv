@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import { getSequelizeConfig } from "../config/mysql.js";
-import { Week } from "./week.model.js";
 
 const connection = getSequelizeConfig();
 

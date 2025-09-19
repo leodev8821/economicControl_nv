@@ -1,7 +1,6 @@
 import { DataTypes, Op } from "sequelize";
 import { getSequelizeConfig } from "../config/mysql.js";
 import { Person } from "./person.model.js";
-import { Week } from "./week.model.js";
 
 const connection = getSequelizeConfig();
 
@@ -44,25 +43,23 @@ export const Income = connection.define('Income', {
     timestamps: false,
 });
 
-Income.belongsTo(Person, { foreignKey: 'person_id' });
-Person.hasMany(Income, { foreignKey: 'person_id', onDelete: 'CASCADE' });
-
-Income.belongsTo(Week, { foreignKey: 'week_id' });
-Week.hasMany(Income, { foreignKey: 'week_id', onDelete: 'CASCADE' });
-
 /**
- * Obtiene todos los ingresos de tipo 'Diezmo' para una persona.
+ * Obtiene todos los ingresos de tipo 'Diezmo' para una persona usando su DNI.
  * @async
- * @function getDiezmoIncomesByPerson
- * @param {number} personId - ID de la persona.
+ * @function getTitheIncomesByPerson
+ * @param {string|number} dni - DNI de la persona.
  * @returns {Promise<object[]>} - Lista de ingresos de tipo 'Diezmo'.
  * @throws {Error} - Lanza un error si hay un problema al consultar la base de datos.
  */
-export async function getDiezmoIncomesByPerson(personId) {
+export async function getTitheIncomesByPerson(dni) {
     try {
+        const person = await Person.findOne({ where: { dni }, raw: true });
+        if (!person) {
+            throw new Error(`No se encontró persona con DNI: ${dni}`);
+        }
         return await Income.findAll({
             where: {
-                person_id: personId,
+                person_id: person.id,
                 source: 'Diezmo'
             },
             raw: true
