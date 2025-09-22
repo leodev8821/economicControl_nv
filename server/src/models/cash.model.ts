@@ -4,25 +4,27 @@ import { getSequelizeConfig } from "../config/mysql";
 const connection = getSequelizeConfig();
 
 // Interfaces para el modelo Cash
-interface CashAttributes {
+export interface CashAttributes {
     id: number;
     name: string;
     actual_amount: number;
-    pettyCash_limit?: number;
+    pettyCash_limit?: number | null | undefined; // Puede ser null en la base de datos
 }
 
-interface CashCreationAttributes extends Optional<CashAttributes, 'id' | 'pettyCash_limit'> {}
+export interface CashCreationAttributes extends Optional<CashAttributes, 'id' | 'pettyCash_limit'> {
+    pettyCash_limit?: number | null | undefined;
+}
 
 // Definición del modelo con tipado
 class CashModel extends Model<CashAttributes, CashCreationAttributes> implements CashAttributes {
     public id!: number;
     public name!: string;
     public actual_amount!: number;
-    public pettyCash_limit?: number;
+    public pettyCash_limit?: number | null;
 }
 
 // Inicialización del modelo
-CashModel.init({
+(CashModel as unknown as typeof Model).init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -65,6 +67,7 @@ export const Cash = CashModel as unknown as typeof CashModel & {
 
 // Tipos para las funciones
 type CashSearchValue = string | number;
+type CashSearchObject = Partial<Record<CashField, CashSearchValue>>;
 type CashField = keyof Pick<CashAttributes, 'id' | 'name'>;
 type CreateCashData = Omit<CashCreationAttributes, 'id'>;
 type UpdateCashData = Partial<CashCreationAttributes>;
@@ -118,76 +121,63 @@ export async function getAllCash(): Promise<CashAttributes[]> {
 }
 
 /**
- * Obtiene una caja por ID o nombre
+ * Obtiene una caja por ID o nombre.
  * @async
  * @function getOneCash
- * @param {CashSearchValue} data - ID o nombre.
+ * @param {CashSearchValue | CashSearchObject} data - ID, nombre o un objeto con campos a buscar.
  * @returns {Promise<CashAttributes|null>} - La caja encontrada o null si no existe.
- * @throws {Error} - Lanza un error si hay un problema al consultar la base de datos.
  */
-export async function getOneCash(data: CashSearchValue): Promise<CashAttributes | null> {
+export async function getOneCash(data: CashSearchValue | CashSearchObject): Promise<CashAttributes | null> {
     try {
         const fields: CashField[] = ["id", "name"];
-        const searchValue = typeof data === 'string' ? data.trim() : data;
-        
+        const whereClause = typeof data === 'object'
+            ? Object.entries(data).map(([key, value]) => ({ [key]: value }))
+            : fields.map((field) => ({ [field]: data }));
+
         const cash = await Cash.findOne({
-            where: {
-                [Op.or]: fields.map((field) => ({ [field]: searchValue }))
-            },
+            where: { [Op.or]: whereClause },
             raw: true
         });
-        
-        if (!cash) {
-            return null;
-        }
-        
+
         return cash;
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-        console.error(`Error al buscar caja con Id o nombre "${data}":`, errorMessage);
-        throw new Error(`Error al buscar caja con Id o nombre "${data}": ${errorMessage}`);
+        console.error(`Error al buscar caja con Id o nombre "${JSON.stringify(data)}":`, errorMessage);
+        throw new Error(`Error al buscar caja con Id o nombre "${JSON.stringify(data)}": ${errorMessage}`);
     }
 }
 
 /**
- * Actualiza una caja por ID o nombre
+ * Actualiza una caja por ID.
  * @async
  * @function updateOneCash
- * @param {CashField[]} cashInfo - Array de campos para buscar la caja (id, name).
+ * @param {number} id - ID de la caja a actualizar.
  * @param {UpdateCashData} newData - Datos para actualizar la caja.
  * @returns {Promise<CashAttributes|null>} - La caja actualizada o null si no existe.
- * @throws {Error} - Lanza un error si hay un problema al actualizar la caja.
  */
 export async function updateOneCash(
-    cashInfo: CashField[], 
-    newData: UpdateCashData & Record<CashField, CashSearchValue>
+    id: number,
+    newData: UpdateCashData
 ): Promise<CashAttributes | null> {
     try {
         const cash = await Cash.findOne({
-            where: {
-                [Op.or]: cashInfo.map((field) => ({ [field]: newData[field] }))
-            },
+            where: { id },
             raw: true
         });
-        
+
         if (!cash) {
             return null;
         }
-        
+
         await Cash.update(newData, {
-            where: {
-                [Op.or]: cashInfo.map((field) => ({ [field]: newData[field] }))
-            }
+            where: { id }
         });
-        
-        // Retornar los datos actualizados
+
         const updatedCash = await Cash.findOne({
-            where: {
-                [Op.or]: cashInfo.map((field) => ({ [field]: newData[field] }))
-            },
+            where: { id },
             raw: true
         });
-        
+
         return updatedCash;
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido';

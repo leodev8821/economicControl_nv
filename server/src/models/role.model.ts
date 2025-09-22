@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from "sequelize";
+import { DataTypes, Op, Model as SequelizeModel, Optional } from "sequelize";
 import { getSequelizeConfig } from "../config/mysql";
 
 const connection = getSequelizeConfig();
@@ -25,7 +25,7 @@ export interface RoleCreationAttributes extends Optional<RoleAttributes, "id"> {
  * Clase Role que extiende de Sequelize.Model
  */
 class RoleModel
-  extends Model<RoleAttributes, RoleCreationAttributes>
+  extends SequelizeModel<RoleAttributes, RoleCreationAttributes>
   implements RoleAttributes
 {
   public id!: number;
@@ -47,7 +47,7 @@ export const Role = RoleModel as unknown as typeof RoleModel & {
     destroy: (options: any) => Promise<number>;
 };
 
-(RoleModel as unknown as typeof Model).init(
+(RoleModel as unknown as typeof SequelizeModel).init(
   {
     id: {
       type: DataTypes.INTEGER,

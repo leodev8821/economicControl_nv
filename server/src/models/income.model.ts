@@ -35,7 +35,7 @@ class IncomeModel extends Model<IncomeAttributes, IncomeCreationAttributes> impl
 }
 
 // Inicialización del modelo
-IncomeModel.init({
+(IncomeModel as unknown as typeof Model).init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,

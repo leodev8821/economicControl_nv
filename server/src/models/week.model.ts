@@ -1,4 +1,4 @@
-import { DataTypes, Model as SequelizeModel, Optional, Op } from "sequelize";
+import { DataTypes, Op, Model as SequelizeModel, Optional } from "sequelize";
 import { getSequelizeConfig } from "../config/mysql";
 import { Income, IncomeAttributes } from './income.model';
 import { Outcome, OutcomeAttributes } from './outcome.model';

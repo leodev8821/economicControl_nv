@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from "sequelize";
+import { DataTypes, Op, Model as SequelizeModel, Optional } from "sequelize";
 import { getSequelizeConfig } from "../config/mysql";
 
 const connection = getSequelizeConfig();
@@ -18,7 +18,7 @@ export interface ReportCreationAttributes
 
 /** Clase tipada de Sequelize */
 class ReportModel
-  extends Model<ReportAttributes, ReportCreationAttributes>
+  extends SequelizeModel<ReportAttributes, ReportCreationAttributes>
   implements ReportAttributes
 {
   public id!: number;
@@ -44,7 +44,7 @@ export const Report = ReportModel as unknown as typeof ReportModel & {
 };
 
 /** Inicialización del modelo */
-(ReportModel as unknown as typeof Model).init(
+(ReportModel as unknown as typeof SequelizeModel).init(
   {
     id: {
       type: DataTypes.INTEGER,

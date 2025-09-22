@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional, Op } from "sequelize";
+import { DataTypes, Op, Model as SequelizeModel, Optional } from "sequelize";
 import { getSequelizeConfig } from "../config/mysql";
 
 const connection = getSequelizeConfig();
@@ -17,7 +17,7 @@ export interface PersonCreationAttributes
   extends Optional<PersonAttributes, "id" | "isVisible"> {}
 
 /** Clase tipada de Sequelize */
-class PersonModel extends Model<PersonAttributes, PersonCreationAttributes> implements PersonAttributes {
+class PersonModel extends SequelizeModel<PersonAttributes, PersonCreationAttributes> implements PersonAttributes {
   public id!: number;
   public first_name!: string;
   public last_name!: string;
@@ -26,7 +26,7 @@ class PersonModel extends Model<PersonAttributes, PersonCreationAttributes> impl
 }
 
 /** Inicialización del modelo */
-(PersonModel as unknown as typeof Model).init(
+(PersonModel as unknown as typeof SequelizeModel).init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -203,9 +203,9 @@ export async function deletePerson(
     | string
     | number
     | Partial<Pick<PersonAttributes, "id" | "dni">>
-): Promise<Person | null> {
+): Promise<PersonModel | null> {
   try {
-    let personInstance: Person | null = null;
+    let personInstance: PersonModel | null = null;
 
     if (typeof identifier === "string" || typeof identifier === "number") {
       const searchValue = typeof identifier === "string" ? identifier.trim() : identifier;
@@ -217,7 +217,7 @@ export async function deletePerson(
           ].filter(Boolean),
         },
         raw: false,
-      }) as Person | null;
+      }) as PersonModel | null;
     } else {
       // objeto con campos { id?, dni? }
       const clauses = Object.entries(identifier)
@@ -226,7 +226,7 @@ export async function deletePerson(
       personInstance = await Person.findOne({
         where: { [Op.or]: clauses },
         raw: false,
-      }) as Person | null;
+      }) as PersonModel | null;
     }
 
     if (!personInstance) return null;

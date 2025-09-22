@@ -1,5 +1,5 @@
 // models/user.ts
-import { DataTypes, Model, Optional, Op } from "sequelize";
+import { DataTypes, Op, Model as SequelizeModel, Optional } from "sequelize";
 import bcrypt from "bcryptjs";
 import { getSequelizeConfig } from "../config/mysql";
 import { RoleType } from "./role.model";
@@ -23,7 +23,7 @@ export interface UserCreationAttributes
   extends Optional<UserAttributes, "id" | "isVisible"> {}
 
 class UserModel
-  extends Model<UserAttributes, UserCreationAttributes>
+  extends SequelizeModel<UserAttributes, UserCreationAttributes>
   implements UserAttributes
 {
   public id!: number;
@@ -51,7 +51,7 @@ export const User = UserModel as unknown as typeof UserModel & {
     destroy: (options: any) => Promise<number>;
 };
 
-(UserModel as unknown as typeof Model).init(
+(UserModel as unknown as typeof SequelizeModel).init(
   {
     id: {
       type: DataTypes.INTEGER,
