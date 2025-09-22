@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    /* Opciones de diseño de archivos */
+    "rootDir": "./",
+    "outDir": "./dist",
+    
+    /* Opciones del entorno */
+    "module": "ESNext",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "moduleResolution": "node", // 👈 Funciona tanto para tsc como tsx
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    
+    /* Salidas */
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    
+    /* Opciones de comprobación de tipos */
+    "strict": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    /* Opciones adicionales */
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "src/**/*"
+  ]
+}
