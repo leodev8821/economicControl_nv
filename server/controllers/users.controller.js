@@ -128,7 +128,11 @@ export default {
             res.status(201).json({
                 ok: true,
                 message: 'Usuario creado correctamente.',
-                data: newUser,
+                data: {
+                    username:newUser.username,
+                    name:first_name,
+                    lastaname:newUser.last_name
+                },
             });
 
         } catch (error) {
