@@ -26,13 +26,13 @@ class UserModel
   extends SequelizeModel<UserAttributes, UserCreationAttributes>
   implements UserAttributes
 {
-  public id!: number;
-  public role!: UserRole;
-  public username!: string;
-  public password!: string;
-  public first_name!: string;
-  public last_name!: string;
-  public isVisible!: boolean;
+  declare id: number;
+  declare role: UserRole;
+  declare username: string;
+  declare password: string;
+  declare first_name: string;
+  declare last_name: string;
+  declare isVisible: boolean;
 }
 
 // Extender el tipo de instancia del modelo

@@ -26,13 +26,13 @@ class OutcomeModel
   extends Model<OutcomeAttributes, OutcomeCreationAttributes>
   implements OutcomeAttributes
 {
-  public id!: number;
-  public cash_id!: number;
-  public week_id!: number;
-  public date!: string;
-  public amount!: string;
-  public description!: string;
-  public category!: CategoryType;
+  declare id: number;
+  declare cash_id: number;
+  declare week_id: number;
+  declare date: string;
+  declare amount: string;
+  declare description: string;
+  declare category: CategoryType;
 }
 
 // Extender el tipo de instancia del modelo

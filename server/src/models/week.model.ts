@@ -17,9 +17,9 @@ export interface WeekCreationAttributes extends Optional<WeekAttributes, 'id'> {
 
 /** Clase tipada Sequelize */
 class WeekModel extends SequelizeModel<WeekAttributes, WeekCreationAttributes> implements WeekAttributes {
-  public id!: number;
-  public week_start!: Date;
-  public week_end!: Date;
+  declare id: number;
+  declare week_start: Date;
+  declare week_end: Date;
 }
 
 // Extender el tipo de instancia del modelo

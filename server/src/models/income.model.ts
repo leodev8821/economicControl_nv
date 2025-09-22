@@ -26,12 +26,12 @@ interface IncomeCreationAttributes extends Optional<IncomeAttributes, 'id'> {}
 
 // Definición del modelo con tipado
 class IncomeModel extends Model<IncomeAttributes, IncomeCreationAttributes> implements IncomeAttributes {
-    public id!: number;
-    public person_id?: number;
-    public week_id!: number;
-    public date!: string;
-    public amount!: number;
-    public source!: IncomeSource;
+    declare id: number;
+    declare person_id?: number;
+    declare week_id: number;
+    declare date: string;
+    declare amount: number;
+    declare source: IncomeSource;
 }
 
 // Inicialización del modelo

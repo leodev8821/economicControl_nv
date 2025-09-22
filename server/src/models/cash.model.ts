@@ -17,10 +17,10 @@ export interface CashCreationAttributes extends Optional<CashAttributes, 'id' | 
 
 // Definición del modelo con tipado
 class CashModel extends Model<CashAttributes, CashCreationAttributes> implements CashAttributes {
-    public id!: number;
-    public name!: string;
-    public actual_amount!: number;
-    public pettyCash_limit?: number | null;
+    declare id: number;
+    declare name: string;
+    declare actual_amount: number;
+    declare pettyCash_limit?: number | null;
 }
 
 // Inicialización del modelo

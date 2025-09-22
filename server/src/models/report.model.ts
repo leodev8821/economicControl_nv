@@ -21,11 +21,11 @@ class ReportModel
   extends SequelizeModel<ReportAttributes, ReportCreationAttributes>
   implements ReportAttributes
 {
-  public id!: number;
-  public week_id!: number;
-  public total_income!: string;
-  public total_outcome!: string;
-  public net_balance!: string;
+  declare id: number;
+  declare week_id: number;
+  declare total_income: string;
+  declare total_outcome: string;
+  declare net_balance: string;
 }
 
 // Extender el tipo de instancia del modelo

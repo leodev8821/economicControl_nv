@@ -28,8 +28,8 @@ class RoleModel
   extends SequelizeModel<RoleAttributes, RoleCreationAttributes>
   implements RoleAttributes
 {
-  public id!: number;
-  public role!: RoleType;
+  declare id: number;
+  declare role: RoleType;
 }
 
 // Extender el tipo de instancia del modelo

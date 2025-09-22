@@ -18,11 +18,11 @@ export interface PersonCreationAttributes
 
 /** Clase tipada de Sequelize */
 class PersonModel extends SequelizeModel<PersonAttributes, PersonCreationAttributes> implements PersonAttributes {
-  public id!: number;
-  public first_name!: string;
-  public last_name!: string;
-  public dni!: string;
-  public isVisible!: boolean;
+  declare id: number;
+  declare first_name: string;
+  declare last_name: string;
+  declare dni: string;
+  declare isVisible: boolean;
 }
 
 /** Inicialización del modelo */

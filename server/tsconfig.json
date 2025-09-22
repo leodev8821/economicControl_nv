@@ -3,6 +3,7 @@
     /* Opciones de diseño de archivos */
     "rootDir": "./",
     "outDir": "./dist",
+    "ignoreDeprecations": "6.0",
     
     /* Opciones del entorno */
     "module": "ESNext",

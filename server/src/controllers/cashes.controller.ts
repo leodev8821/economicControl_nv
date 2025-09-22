@@ -71,7 +71,11 @@ export default {
             res.status(201).json({
                 ok: true,
                 message: 'Caja creada correctamente.',
-                data: newCash,
+                data: {
+                    name: newCash.name,
+                    actual_amount: parseFloat(newCash.actual_amount.toString()),
+                    pettyCash_limit: newCash.pettyCash_limit !== null ? parseFloat(newCash.pettyCash_limit.toString()) : null
+                },
             });
 
         } catch (error: any) {

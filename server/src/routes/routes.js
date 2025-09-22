@@ -18,7 +18,7 @@ router.post('/login', usersController.loginUser);
 // Rutas para cajas
 router.get('/cashes', decodeUser, verifyLogin, cashesController.allCash);
 router.get('/cashes/:id', decodeUser, verifyLogin,  cashesController.oneCash);
-router.post('/cashes', decodeUser, verifyLogin, cashesController.createCash);
+router.post('/cashes/new-cash', decodeUser, verifyLogin, cashesController.createCash);
 router.put('/cashes/:id', decodeUser, verifyLogin, cashesController.updateCash);
 router.delete('/cashes/:id', decodeUser, verifyLogin, cashesController.deleteCash);
 
