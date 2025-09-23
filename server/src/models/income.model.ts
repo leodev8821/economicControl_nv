@@ -22,7 +22,7 @@ export interface IncomeAttributes {
     source: IncomeSource;
 }
 
-interface IncomeCreationAttributes extends Optional<IncomeAttributes, 'id'> {}
+export interface IncomeCreationAttributes extends Optional<IncomeAttributes, 'id'> {}
 
 // Definición del modelo con tipado
 class IncomeModel extends Model<IncomeAttributes, IncomeCreationAttributes> implements IncomeAttributes {
@@ -91,9 +91,9 @@ export const Income = IncomeModel as unknown as typeof IncomeModel & {
 };
 
 // Tipos auxiliares
-type DNI = string | number;
+type DNI = string;
 type CreateIncomeData = Omit<IncomeCreationAttributes, 'id'>;
-type UpdateIncomeData = Partial<IncomeCreationAttributes>;
+export type UpdateIncomeData = Partial<IncomeCreationAttributes>;
 
 /**
  * Obtiene todos los ingresos de tipo 'Diezmo' para una persona usando su DNI.
@@ -125,6 +125,41 @@ export async function getTitheIncomesByPerson(dni: DNI): Promise<IncomeAttribute
 }
 
 /**
+ * Obtiene todos los ingresos para una fecha específica.
+ * @async
+ * @function getIncomeByDate
+ * @param {string} date - La fecha en formato 'YYYY-MM-DD'.
+ * @returns {Promise<IncomeAttributes[]>} - Lista de todos los ingresos de esa fecha.
+ * @throws {Error} - Lanza un error si hay un problema al consultar la base de datos.
+ */
+export async function getIncomeByDate(date: string): Promise<IncomeAttributes[]> {
+    try {
+        // La fecha debe tener un formato válido para la base de datos
+        if (!date || date.trim() === '') {
+            throw new Error('La fecha no puede estar vacía.');
+        }
+
+        // Validación para asegurar que la fecha tenga el formato 'YYYY-MM-DD'
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(date)) {
+            throw new Error('Formato de fecha inválido. Debe ser YYYY-MM-DD.');
+        }
+
+        // Buscar todos los ingresos que coincidan con la fecha proporcionada
+        return await Income.findAll({
+            where: {
+                date: date
+            },
+            raw: true
+        });
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+        console.error('Error al obtener ingresos por fecha:', errorMessage);
+        throw new Error(`Error al obtener ingresos por fecha: ${errorMessage}`);
+    }
+}
+
+/**
  * Crea un nuevo ingreso.
  * @async
  * @function createNewIncome
@@ -134,6 +169,15 @@ export async function getTitheIncomesByPerson(dni: DNI): Promise<IncomeAttribute
  */
 export async function createNewIncome(data: CreateIncomeData): Promise<IncomeAttributes> {
     try {
+        // Validar que los campos obligatorios tengan información
+        if (!data.week_id || !data.date || !data.amount || !data.source) {
+            throw new Error('Faltan datos obligatorios para crear el ingreso.');
+        }
+
+        if (data.person_id && typeof data.person_id !== 'number') {
+            throw new Error('person_id debe ser un número válido.');
+        }
+
         const newIncome = await Income.create(data);
         return newIncome.get({ plain: true });
     } catch (error: unknown) {
@@ -170,14 +214,14 @@ export async function getAllIncomes(): Promise<IncomeAttributes[]> {
  */
 export async function getOneIncome(id: number): Promise<IncomeAttributes | null> {
     try {
+         if (typeof id !== 'number' || isNaN(id) || id <= 0) {
+            throw new Error('ID de ingreso inválido. Debe ser un número positivo.');
+        }
+
         const income = await Income.findOne({
             where: { id },
             raw: true
         });
-        
-        if (!income) {
-            return null;
-        }
         
         return income;
     } catch (error: unknown) {
@@ -198,6 +242,14 @@ export async function getOneIncome(id: number): Promise<IncomeAttributes | null>
  */
 export async function updateOneIncome(id: number, newData: UpdateIncomeData): Promise<IncomeAttributes | null> {
     try {
+        if (typeof id !== 'number' || isNaN(id) || id <= 0) {
+            throw new Error('ID de ingreso inválido. Debe ser un número positivo.');
+        }
+
+        if (Object.keys(newData).length === 0) {
+            throw new Error('Se requiere al menos un campo para actualizar.');
+        }
+
         const income = await Income.findOne({
             where: { id },
             raw: true
@@ -233,6 +285,10 @@ export async function updateOneIncome(id: number, newData: UpdateIncomeData): Pr
  */
 export async function deleteIncome(id: number): Promise<IncomeAttributes | null> {
     try {
+        if (typeof id !== 'number' || isNaN(id) || id <= 0) {
+            throw new Error('ID de ingreso inválido. Debe ser un número positivo.');
+        }
+
         const income = await Income.findOne({
             where: { id },
             raw: true
@@ -249,4 +305,171 @@ export async function deleteIncome(id: number): Promise<IncomeAttributes | null>
         console.error(`Error al eliminar el ingreso ${id}`, errorMessage);
         throw new Error(`Error al eliminar el Ingreso: ${errorMessage}`);
     }
+}
+
+/**
+ * Valida los datos para actualizar un ingreso
+ * @param updateData - Datos a validar
+ * @returns Objeto con validación exitosa o error
+ */
+export function validateUpdateIncomeData(updateData: any): { isValid: boolean; error?: string; validatedData?: UpdateIncomeData } {
+    const validatedData: UpdateIncomeData = {};
+    
+    // Validar amount
+    if (updateData.amount !== undefined) {
+        if (typeof updateData.amount !== 'number' || updateData.amount < 0) {
+            return { isValid: false, error: 'El monto debe ser un número positivo.' };
+        }
+        validatedData.amount = updateData.amount;
+    }
+    
+    // Validar source
+    if (updateData.source !== undefined) {
+        if (!Object.values(IncomeSource).includes(updateData.source)) {
+            return { 
+                isValid: false, 
+                error: `Fuente de ingreso inválida. Valores permitidos: ${Object.values(IncomeSource).join(', ')}` 
+            };
+        }
+        validatedData.source = updateData.source;
+    }
+    
+    // Validar person_id
+    if (updateData.person_id !== undefined) {
+        if (updateData.person_id !== null && (typeof updateData.person_id !== 'number' || updateData.person_id <= 0)) {
+            return { isValid: false, error: 'person_id debe ser un número positivo o null.' };
+        }
+        validatedData.person_id = updateData.person_id;
+    }
+    
+    // Validar week_id
+    if (updateData.week_id !== undefined) {
+        if (typeof updateData.week_id !== 'number' || updateData.week_id <= 0) {
+            return { isValid: false, error: 'week_id debe ser un número positivo.' };
+        }
+        validatedData.week_id = updateData.week_id;
+    }
+    
+    // Validar date
+    if (updateData.date !== undefined) {
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(updateData.date)) {
+            return { isValid: false, error: 'Formato de fecha inválido. Debe ser YYYY-MM-DD.' };
+        }
+        validatedData.date = updateData.date;
+    }
+    
+    // Verificar que se proporcionó al menos un campo
+    if (Object.keys(validatedData).length === 0) {
+        return { isValid: false, error: 'No se proporcionaron datos para actualizar el ingreso.' };
+    }
+    
+    return { isValid: true, validatedData };
+}
+
+/**
+ * Valida un ID de ingreso
+ * @param id - ID a validar (string o number)
+ * @returns Objeto con validación exitosa o error
+ */
+export function validateIncomeId(id: string | number): { isValid: boolean; error?: string; validatedId?: number } {
+    if (!id) {
+        return { isValid: false, error: 'Falta el ID del ingreso.' };
+    }
+    
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    
+    if (isNaN(numericId) || numericId <= 0) {
+        return { isValid: false, error: 'ID de ingreso inválido. Debe ser un número positivo.' };
+    }
+    
+    return { isValid: true, validatedId: numericId };
+}
+
+/**
+ * Valida los datos para crear un nuevo ingreso
+ * @param data - Datos a validar
+ * @returns Objeto con validación exitosa o error
+ */
+export function validateCreateIncomeData(data: any): { isValid: boolean; error?: string; validatedData?: CreateIncomeData } {
+    // Validar campos obligatorios
+    if (!data.week_id || !data.date || !data.amount || !data.source) {
+        return { isValid: false, error: 'Faltan datos obligatorios para crear el ingreso (week_id, date, amount, source).' };
+    }
+
+    // Validar amount
+    if (typeof data.amount !== 'number' || data.amount < 0) {
+        return { isValid: false, error: 'El monto debe ser un número positivo.' };
+    }
+
+    // Validar source
+    if (!Object.values(IncomeSource).includes(data.source)) {
+        return { 
+            isValid: false, 
+            error: `Fuente de ingreso inválida. Valores permitidos: ${Object.values(IncomeSource).join(', ')}` 
+        };
+    }
+
+    // Validar week_id
+    if (typeof data.week_id !== 'number' || data.week_id <= 0) {
+        return { isValid: false, error: 'week_id debe ser un número positivo.' };
+    }
+
+    // Validar date
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(data.date)) {
+        return { isValid: false, error: 'Formato de fecha inválido. Debe ser YYYY-MM-DD.' };
+    }
+
+    // Validar person_id si está presente
+    if (data.person_id !== undefined && data.person_id !== null) {
+        if (typeof data.person_id !== 'number' || data.person_id <= 0) {
+            return { isValid: false, error: 'person_id debe ser un número positivo o null.' };
+        }
+    }
+
+    const validatedData: CreateIncomeData = {
+        amount: data.amount,
+        source: data.source,
+        week_id: data.week_id,
+        date: data.date,
+        ...(data.person_id !== undefined && { person_id: data.person_id })
+    };
+
+    return { isValid: true, validatedData };
+}
+
+/**
+ * Valida un DNI
+ * @param dni - DNI a validar
+ * @returns Objeto con validación exitosa o error
+ */
+export function validateDNI(dni: string): { isValid: boolean; error?: string; validatedDni?: string } {
+    if (!dni) {
+        return { isValid: false, error: 'Falta el DNI de la persona.' };
+    }
+
+    if (typeof dni !== 'string' || dni.trim() === '') {
+        return { isValid: false, error: 'DNI inválido.' };
+    }
+
+    return { isValid: true, validatedDni: dni.trim() };
+}
+
+/**
+ * Valida una fecha
+ * @param date - Fecha a validar
+ * @returns Objeto con validación exitosa o error
+ */
+export function validateDate(date: string): { isValid: boolean; error?: string; validatedDate?: string } {
+    if (!date) {
+        return { isValid: false, error: 'Falta el parámetro de fecha.' };
+    }
+
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(date)) {
+        return { isValid: false, error: 'Formato de fecha inválido. Debe ser YYYY-MM-DD.' };
+    }
+
+    return { isValid: true, validatedDate: date };
 }
