@@ -1,4 +1,5 @@
-import { DataTypes, Op, Model as SequelizeModel, Optional } from "sequelize";
+// models/role.ts
+import { DataTypes, Model as SequelizeModel, Optional } from "sequelize";
 import { getSequelizeConfig } from "../config/mysql";
 
 const connection = getSequelizeConfig();
@@ -6,7 +7,10 @@ const connection = getSequelizeConfig();
 /**
  * Posibles valores para el campo role.
  */
-export type RoleType = "Administrador" | "SuperUser";
+export enum RoleType {
+  ADMINISTRADOR = "Administrador",
+  SUPER_USER = "SuperUser",
+}
 
 /**
  * Atributos del modelo Role.
@@ -24,7 +28,7 @@ export interface RoleCreationAttributes extends Optional<RoleAttributes, "id"> {
 /**
  * Clase Role que extiende de Sequelize.Model
  */
-class RoleModel
+export class RoleModel
   extends SequelizeModel<RoleAttributes, RoleCreationAttributes>
   implements RoleAttributes
 {
@@ -32,22 +36,8 @@ class RoleModel
   declare role: RoleType;
 }
 
-// Extender el tipo de instancia del modelo
-interface IRoleModel extends RoleModel {
-    get: (options: { plain: true }) => RoleAttributes;
-}
-
-// Exportar el modelo con los tipos correctos
-export const Role = RoleModel as unknown as typeof RoleModel & {
-    new (): IRoleModel;
-    findOne: (options: any) => Promise<IRoleModel | null>;
-    findAll: (options: any) => Promise<IRoleModel[]>;
-    create: (data: RoleCreationAttributes) => Promise<IRoleModel>;
-    update: (data: Partial<RoleAttributes>, options: any) => Promise<[number]>;
-    destroy: (options: any) => Promise<number>;
-};
-
-(RoleModel as unknown as typeof SequelizeModel).init(
+/** Inicialización del modelo */
+RoleModel.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -55,7 +45,7 @@ export const Role = RoleModel as unknown as typeof RoleModel & {
       autoIncrement: true,
     },
     role: {
-      type: DataTypes.ENUM("Administrador", "SuperUser"),
+      type: DataTypes.ENUM(...Object.values(RoleType)),
       allowNull: false,
       unique: true,
     },
@@ -64,22 +54,6 @@ export const Role = RoleModel as unknown as typeof RoleModel & {
     sequelize: connection,
     tableName: "roles",
     timestamps: false,
+    modelName: 'Role'
   }
 );
-
-/**
- * Obtiene todos los roles.
- *
- * @async
- * @function getAllRoles
- * @returns {Promise<RoleAttributes[]>} - Lista de roles disponibles.
- * @throws {Error} - Lanza un error si hay un problema al consultar los roles.
- */
-export async function getAllRoles(): Promise<RoleAttributes[]> {
-  try {
-    return await Role.findAll({ raw: true });
-  } catch (error: any) {
-    console.error("Error al obtener roles:", error.message);
-    throw new Error(`Error al obtener roles: ${error.message}`);
-  }
-}

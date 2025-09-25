@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import mysql from './config/mysql.js';
-import { router } from '../src/routes/routes.js';
+import router from './routes/routes';
 
 // Define el tipo para __dirname, ya que no existe en el módulo ES de forma nativa
 const __filename = fileURLToPath(import.meta.url);
