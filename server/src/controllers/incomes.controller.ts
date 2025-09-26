@@ -54,7 +54,7 @@ export const allIncomes = async (req: Request, res: Response) => {
             data: incomes,
         });
     } catch (error) {
-        handleControllerError(res, error);
+        return handleControllerError(res, error);
     }
 };
 
@@ -88,7 +88,7 @@ export const oneIncome = async (req: Request, res: Response) => {
             data: income,
         });
     } catch (error) {
-        handleControllerError(res, error);
+        return handleControllerError(res, error);
     }
 };
 
@@ -120,7 +120,7 @@ export const titheByPerson = async (req: Request, res: Response) => {
             data: incomes,
         });
     } catch (error) {
-        handleControllerError(res, error);
+        return handleControllerError(res, error);
     }
 };
 
@@ -152,7 +152,7 @@ export const getIncomesByDate = async (req: Request, res: Response) => {
             data: incomes,
         });
     } catch (error) {
-        handleControllerError(res, error);
+        return handleControllerError(res, error);
     }
 };
 
@@ -170,7 +170,7 @@ export const createIncome = async (req: Request, res: Response) => {
             data: newIncome,
         });
     } catch (error) {
-        handleControllerError(res, error);
+        return handleControllerError(res, error);
     }
 };
 
@@ -203,7 +203,7 @@ export const updateIncome = async (req: Request, res: Response) => {
             data: updatedIncome,
         });
     } catch (error) {
-        handleControllerError(res, error);
+        return handleControllerError(res, error);
     }
 };
 
@@ -235,6 +235,6 @@ export const deleteIncome = async (req: Request, res: Response) => {
             message: 'Ingreso eliminado correctamente.',
         });
     } catch (error) {
-        handleControllerError(res, error);
+        return handleControllerError(res, error);
     }
 };

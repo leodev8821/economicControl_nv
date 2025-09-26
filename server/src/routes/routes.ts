@@ -37,7 +37,8 @@ router.delete('/cashes/:id', decodeUser, verifyLogin, cashesController.deleteCas
 // 💵 INGRESOS (INCOMES)
 // El controller de incomes usa exports individuales (allIncomes, oneIncome, etc.)
 // =================================================================
-router.get('/incomes', decodeUser, verifyLogin, incomesController.allIncomes);
+//router.get('/incomes', decodeUser, verifyLogin, incomesController.allIncomes);
+router.get('/incomes', incomesController.allIncomes);
 router.get('/incomes/:id', decodeUser, verifyLogin, incomesController.oneIncome);
 router.post('/incomes/new-income', decodeUser, verifyLogin, incomesController.createIncome);
 router.put('/incomes/:id', decodeUser, verifyLogin, incomesController.updateIncome);

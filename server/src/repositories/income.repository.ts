@@ -1,6 +1,6 @@
 import { IncomeModel, IncomeAttributes, IncomeCreationAttributes, IncomeSource } from '../models/income.model';
 import { PersonModel } from '../models/person.model';
-import { ForeignKeyConstraintError } from 'sequelize';
+import { BaseError, ForeignKeyConstraintError } from 'sequelize';
 
 // Tipos para las operaciones
 type CreateIncomeData = IncomeCreationAttributes;
@@ -31,33 +31,42 @@ export class IncomeRepository {
      * Crea un nuevo ingreso.
      */
     public static async createNewIncome(data: CreateIncomeData): Promise<IncomeAttributes> {
-    try {
-        const newIncome = await IncomeModel.create(data);
-        return newIncome.get({ plain: true });
-    } catch (error: unknown) {
-        // 💡 Capturar específicamente el error de clave foránea
-        if (error instanceof ForeignKeyConstraintError) {
-            // Analizar qué clave falló (person_id, week_id, etc.)
-            const key = error.fields ? error.fields[0] : 'relación';
-            
-            // Relanzar un error de negocio claro que el servicio pueda entender.
-            throw new Error(`El valor proporcionado para ${key} no existe en la tabla de referencia. Por favor, verifique el ID.`);
+        try {
+            const newIncome = await IncomeModel.create(data);
+            return newIncome.get({ plain: true });
+        } catch (error: unknown) {
+            // 💡 Capturar específicamente el error de clave foránea
+            if (error instanceof ForeignKeyConstraintError) {
+                // Analizar qué clave falló (person_id, week_id, etc.)
+                const key = error.fields ? error.fields[0] : 'relación';
+                
+                // Relanzar un error de negocio claro que el servicio pueda entender.
+                throw new Error(`El valor proporcionado para ${key} no existe en la tabla de referencia. Por favor, verifique el ID.`);
+            }
+            // Si no es un FK error, lanzar el error original.
+            throw error; 
         }
-        // Si no es un FK error, lanzar el error original.
-        throw error; 
     }
-}
 
     /**
      * Actualiza un ingreso por ID.
      */
     public static async updateOneIncome(id: number, data: UpdateIncomeData): Promise<IncomeAttributes | null> {
-        const [affectedRows] = await IncomeModel.update(data, { where: { id } });
-        if (affectedRows === 0) {
-            return null;
+        try {
+            const [affectedRows] = await IncomeModel.update(data, { where: { id } });
+            if (affectedRows === 0) {
+                return null;
+            }
+            const updatedIncome = await IncomeModel.findByPk(id);
+            return updatedIncome ? updatedIncome.get({ plain: true }) : null;
+        } catch (error: unknown) {
+            // 💡 Manejo de errores FK también en actualización
+            if (error instanceof ForeignKeyConstraintError) {
+                const key = error.fields ? error.fields[0] : 'relación';
+                throw new Error(`El valor proporcionado para ${key} no existe en la tabla de referencia. Por favor, verifique el ID.`);
+            }
+            throw error;
         }
-        const updatedIncome = await IncomeModel.findByPk(id);
-        return updatedIncome ? updatedIncome.get({ plain: true }) : null;
     }
 
     /**
