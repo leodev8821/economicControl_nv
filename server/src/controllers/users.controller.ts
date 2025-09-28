@@ -1,4 +1,3 @@
-// controllers/users.controller.ts
 import { Request, Response } from 'express';
 import { UserService } from '../services/user.service';
 import dotenv from 'dotenv';
@@ -16,7 +15,6 @@ const sudoRole = process.env.SUDO_ROLE || 'SuperUser'; // Valor por defecto segu
  * Función genérica para manejar errores en los controladores.
  */
 const handleControllerError = (res: Response, error: unknown) => {
-    // ... [Implementación idéntica a los otros controladores]
     if (error instanceof Error) {
         if (error.message.includes('inválido') || error.message.includes('Falta')) {
             return res.status(400).json({ ok: false, message: error.message });
@@ -48,23 +46,7 @@ const handleControllerError = (res: Response, error: unknown) => {
 };
 
 
-export const usersController = {
-    loginUser: async (req: Request, res: Response) => {
-        try {
-            const { login_data, password } = req.body;
-            
-            const tokenResult = await UserService.login(login_data, password);
-
-            res.status(200).json({
-                ok: true,
-                message: tokenResult.message,
-                token: tokenResult.token,
-            });
-        } catch (error) {
-            handleControllerError(res, error);
-        }
-    },
-    
+export const usersController = {    
     allUsers: async (req: Request, res: Response) => {
         try {
             const users = await UserService.getAll();

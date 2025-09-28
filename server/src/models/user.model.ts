@@ -1,4 +1,4 @@
-import { DataTypes, Op, Model as SequelizeModel, Optional } from "sequelize";
+import { DataTypes, Model as SequelizeModel, Optional } from "sequelize";
 import bcrypt from "bcryptjs";
 import { getSequelizeConfig } from "../config/mysql";
 import { RoleType } from "./role.model";

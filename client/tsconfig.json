@@ -1,7 +1,7 @@
 {
   "files": [],
   "compilerOptions": {
-    "target": "ES2020", // o más reciente
+    "target": "ES2023", // o más reciente
     "module": "ESNext",
     "jsx": "react-jsx", // Esto es crucial para proyectos modernos (React 17+)
     "moduleResolution": "node", // Asegura la correcta resolución de módulos

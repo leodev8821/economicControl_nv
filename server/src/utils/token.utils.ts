@@ -15,8 +15,7 @@ dotenv.config({ path: envPath });
 const SECRET_KEY = process.env.SECRET_KEY as string;
 
 if (!SECRET_KEY) {
-    console.error('⚠️ Error de configuración: La variable de entorno SECRET_KEY no está definida.');
-    // En un entorno de producción, lanzarías un error fatal
+    console.error('⚠️ Error de configuración: La variable de entorno no está definida.');
     throw new Error('SECRET_KEY no está definida.'); 
 }
 

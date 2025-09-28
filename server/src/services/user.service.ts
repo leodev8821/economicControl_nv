@@ -1,8 +1,8 @@
 // services/user.service.ts
 import { UserRepository } from '../repositories/user.repository';
 import { UserAttributes, UserCreationAttributes, UserRole } from '../models/user.model';
-import { tokenUtils } from '../utils/token.utils'; 
-// Asegúrate de que los tipos de tokenUtils estén disponibles, como discutimos.
+import { createAccessToken, createRefreshToken } from './token.service';
+
 
 // Tipos auxiliares
 export type LoginPayload = { id: number, role: UserRole, username: string, first_name: string, last_name: string };
@@ -54,8 +54,16 @@ export class UserService {
                 first_name: user.first_name, 
                 last_name: user.last_name 
             };
+
+            const accessTokenResult = await createAccessToken(payload);
+            const refreshToken = createRefreshToken(payload);
             
-            return tokenUtils.signJwt(payload);
+            // Devuelve ambos tokens Separados por '|'
+            return {
+                message: accessTokenResult.message,
+                token: accessTokenResult.token + '|' + refreshToken
+            };
+            
         } catch (error) {
             throw handleServiceError(error, 'Error durante el inicio de sesión');
         }

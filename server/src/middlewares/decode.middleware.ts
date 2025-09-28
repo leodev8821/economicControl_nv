@@ -39,20 +39,31 @@ export const decodeUser = (req: Request, res: Response, next: NextFunction) => {
         return res.status(401).json({ ok: false, message: 'No autorizado. Token vacío.' });
     }
 
-    // Decodificar y verificar el token
-    const decoded = tokenUtils.decodeToken(token); // Retorna LoginPayload | null
+    try {
+        // Asume que tokenUtils.decodeToken verifica firma y expiración, y lanza si falla.
+        const decoded = tokenUtils.decodeToken(token); 
 
-    if (!decoded) {
+        if (!decoded) {
+            return res.status(401).json({ ok: false, message: 'No autorizado. Token inválido.' });
+        }
+
+        // Validar que las propiedades esperadas existan en el payload
+        if (typeof decoded.id !== 'number' || !decoded.username || !decoded.role) {
+            return res.status(401).json({ ok: false, message: 'No autorizado. Payload del token incompleto o inválido.' });
+        }
+
+        // ✅ Asignación de propiedades personalizadas a la Request
+        req.username = decoded.username;
+        req.first_name = decoded.first_name;
+        req.last_name = decoded.last_name;
+        req.userRole = decoded.role; // Ya tipado como UserRole
+        
+        next();
+    } catch (error) {
+        // Captura errores de verificación (ej. expiración, firma inválida)
+        console.error('Error al decodificar/verificar token:', (error as Error).message);
         return res.status(401).json({ ok: false, message: 'No autorizado. Token inválido o expirado.' });
     }
-
-    // ✅ Asignación de propiedades personalizadas a la Request (tipadas en express.d.ts)
-    req.username = decoded.username;
-    req.first_name = decoded.first_name;
-    req.last_name = decoded.last_name;
-    req.userRole = decoded.role; // Ya tipado como UserRole
-    
-    next();
 };
 
 /**

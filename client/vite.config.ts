@@ -3,24 +3,27 @@ import react from '@vitejs/plugin-react'
 
 const BACKEND_PORT = 3000; 
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`;
+const API_PREFIX = '/ec/api/v1'; // Prefijo que usaremos en las llamadas de Axios
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+
+  // Exclusión de paquetes de servidor para evitar errores en el navegador
   optimizeDeps: {
     exclude: [
-      'sequelize',    // Excluir el paquete principal de Sequelize
-      'pg',           // Dependencias de PostgreSQL
-      'pg-hstore',    // El módulo que causa el error
-      'mysql2',       // Tu driver de MySQL (también es solo de servidor)
-      'express',      // Tu marco de trabajo de servidor
-      '@reduxjs/toolkit',
-      // ... otras bibliotecas de backend si aparecen
+      'sequelize',
+      'pg',       
+      'pg-hstore',
+      'mysql2',   
+      'express',  
     ]
   },
+
+  // Configuración del proxy para evitar problemas de CORS en desarrollo
   server: {
     proxy: {
-      '/ec/api/v1': {
+      [API_PREFIX]: {
         target: BACKEND_URL,
         changeOrigin: true
       }

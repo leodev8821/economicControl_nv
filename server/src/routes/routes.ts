@@ -1,4 +1,5 @@
 import { Router } from "express";
+import authRouter from "./auth.routes";
 
 // --- MIDDLEWARES ---
 // Asumo que estos son módulos .ts/.js
@@ -19,7 +20,7 @@ const router: Router = Router();
 // =================================================================
 // 🔑 LOGIN
 // =================================================================
-router.post('/login', usersController.loginUser);
+router.use('/auth', authRouter);
 
 // =================================================================
 // 💰 CAJAS (CASHES)
