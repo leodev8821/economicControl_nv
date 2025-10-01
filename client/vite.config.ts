@@ -20,6 +20,12 @@ export default defineConfig({
     ]
   },
 
+  resolve: {
+    alias: [
+      { find: '@', replacement: '/src' }
+    ]
+  },
+
   // Configuración del proxy para evitar problemas de CORS en desarrollo
   server: {
     proxy: {
@@ -27,6 +33,8 @@ export default defineConfig({
         target: BACKEND_URL,
         changeOrigin: true
       }
-    }
+    },
+    port: 5173, // Puerto del servidor de desarrollo de Vite
+    open: true // Abre el navegador automáticamente
   }
 })

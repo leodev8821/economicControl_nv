@@ -5,6 +5,7 @@ import { UserRole } from '../models/user.model';
 declare global {
   namespace Express {
     interface Request {
+      id?: number;
       username?: string;
       first_name?: string;
       last_name?: string;

@@ -58,7 +58,7 @@ export const decodeUser = (req: Request, res: Response, next: NextFunction) => {
         req.last_name = decoded.last_name;
         req.userRole = decoded.role; // Ya tipado como UserRole
         
-        next();
+        return next();
     } catch (error) {
         // Captura errores de verificación (ej. expiración, firma inválida)
         console.error('Error al decodificar/verificar token:', (error as Error).message);
@@ -75,7 +75,7 @@ export const verifyLogin = (req: Request, res: Response, next: NextFunction) => 
     if (!req.username || !req.userRole) {
         return res.status(401).json({ ok: false, message: 'No autorizado. Usuario no autenticado o token incompleto.' });
     }
-    next();
+    return next();
 };
 
 /**
@@ -87,5 +87,5 @@ export const verifySudoRole = (req: Request, res: Response, next: NextFunction) 
     if (!req.userRole || req.userRole !== ALLOWED_ROL) {
         return res.status(403).json({ ok: false, message: 'No autorizado. Permisos insuficientes.' });
     }
-    next();
+    return next();
 };

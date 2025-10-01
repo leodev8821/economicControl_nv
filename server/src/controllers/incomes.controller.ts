@@ -33,208 +33,216 @@ const handleControllerError = (res: Response, error: unknown) => {
 };
 
 /**
- * Obtiene todos los ingresos
+ * Objeto que contiene todos los controladores (handlers de rutas)
+ * para la gestión de Ingresos.
  */
-export const allIncomes = async (req: Request, res: Response) => {
-    try {
-        const incomes = await IncomeService.getAll();
-        
-        // Si no hay ingresos, el servicio ya nos devuelve un array vacío,
-        // por lo que el controlador puede manejar el 404 aquí.
-        if (incomes.length === 0) {
-            return res.status(404).json({ 
-                ok: false, 
-                message: 'No se encontraron ingresos.' 
+export const incomesController = {
+    /**
+     * Obtiene todos los ingresos
+     */
+    allIncomes : async (_req: Request, res: Response) => {
+        try {
+            const incomes = await IncomeService.getAll();
+            
+            // Si no hay ingresos, el servicio ya nos devuelve un array vacío,
+            // por lo que el controlador puede manejar el 404 aquí.
+            if (incomes.length === 0) {
+                return res.status(404).json({ 
+                    ok: false, 
+                    message: 'No se encontraron ingresos.' 
+                });
+            }
+            
+            return res.status(200).json({
+                ok: true,
+                message: 'Ingresos obtenidos correctamente.',
+                data: incomes,
             });
+        } catch (error) {
+            return handleControllerError(res, error);
         }
-        
-        res.status(200).json({
-            ok: true,
-            message: 'Ingresos obtenidos correctamente.',
-            data: incomes,
-        });
-    } catch (error) {
-        return handleControllerError(res, error);
-    }
-};
+    },
 
-/**
- * Obtiene un ingreso por ID
- */
-export const oneIncome = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
+    /**
+     * Obtiene un ingreso por ID
+     */
+    oneIncome : async (req: Request, res: Response) => {
+        try {
+            const { id } = req.params;
 
-        // Validar la existencia del parámetro
-        if (!id) {
-            throw new Error('Falta el ID del ingreso en los parámetros de la URL.');
-        }
+            // Validar la existencia del parámetro
+            if (!id) {
+                throw new Error('Falta el ID del ingreso en los parámetros de la URL.');
+            }
 
-        const numericId = parseInt(id, 10);
-        
-        // El servicio se encarga de validar si el ID es un número positivo
-        const income = await IncomeService.getOneById(numericId);
-        
-        if (!income) {
-            return res.status(404).json({ 
-                ok: false, 
-                message: `Ingreso con ID ${id} no encontrado.`
+            const numericId = parseInt(id, 10);
+            
+            // El servicio se encarga de validar si el ID es un número positivo
+            const income = await IncomeService.getOneById(numericId);
+            
+            if (!income) {
+                return res.status(404).json({ 
+                    ok: false, 
+                    message: `Ingreso con ID ${id} no encontrado.`
+                });
+            }
+            
+            return res.status(200).json({
+                ok: true,
+                message: 'Ingreso obtenido correctamente.',
+                data: income,
             });
+        } catch (error) {
+            return handleControllerError(res, error);
         }
-        
-        res.status(200).json({
-            ok: true,
-            message: 'Ingreso obtenido correctamente.',
-            data: income,
-        });
-    } catch (error) {
-        return handleControllerError(res, error);
-    }
-};
+    },
+    
+    /**
+     * Obtiene ingresos de diezmo por DNI de persona
+     */
+    titheByPerson: async (req: Request, res: Response) => {
+        try {
+            const { dni } = req.params;
 
-/**
- * Obtiene ingresos de diezmo por DNI de persona
- */
-export const titheByPerson = async (req: Request, res: Response) => {
-    try {
-        const { dni } = req.params;
+            // Validar la existencia del parámetro
+            if (!dni) {
+                throw new Error('Falta el DNI en los parámetros de la URL.');
+            }
 
-        // Validar la existencia del parámetro
-        if (!dni) {
-            throw new Error('Falta el DNI en los parámetros de la URL.');
-        }
+            // El servicio se encarga de validar el DNI
+            const incomes = await IncomeService.getTitheIncomesByDni(dni);
 
-        // El servicio se encarga de validar el DNI
-        const incomes = await IncomeService.getTitheIncomesByDni(dni);
-
-        if (incomes.length === 0) {
-            return res.status(404).json({ 
-                ok: false, 
-                message: `No se encontraron ingresos de diezmo para el DNI: ${dni}.`
+            if (incomes.length === 0) {
+                return res.status(404).json({ 
+                    ok: false, 
+                    message: `No se encontraron ingresos de diezmo para el DNI: ${dni}.`
+                });
+            }
+            
+            return res.status(200).json({
+                ok: true,
+                message: 'Ingresos de diezmo obtenidos correctamente.',
+                data: incomes,
             });
+        } catch (error) {
+            return handleControllerError(res, error);
         }
-        
-        res.status(200).json({
-            ok: true,
-            message: 'Ingresos de diezmo obtenidos correctamente.',
-            data: incomes,
-        });
-    } catch (error) {
-        return handleControllerError(res, error);
-    }
-};
+    },
 
-/**
- * Obtiene ingresos por fecha
- */
-export const getIncomesByDate = async (req: Request, res: Response) => {
-    try {
-        const { date } = req.params;
+    /**
+     * Obtiene ingresos por fecha
+     */
+    getIncomesByDate: async (req: Request, res: Response) => {
+        try {
+            const { date } = req.params;
 
-        // Validar la existencia del parámetro
-        if (!date) {
-            throw new Error('Falta la fecha en los parámetros de la URL.');
-        }
-        
-        // El servicio se encarga de validar el formato de fecha
-        const incomes = await IncomeService.getIncomesByDate(date);
-        
-        if (incomes.length === 0) {
-            return res.status(404).json({ 
-                ok: false, 
-                message: `No se encontraron ingresos para la fecha: ${date}.` 
+            // Validar la existencia del parámetro
+            if (!date) {
+                throw new Error('Falta la fecha en los parámetros de la URL.');
+            }
+            
+            // El servicio se encarga de validar el formato de fecha
+            const incomes = await IncomeService.getIncomesByDate(date);
+            
+            if (incomes.length === 0) {
+                return res.status(404).json({ 
+                    ok: false, 
+                    message: `No se encontraron ingresos para la fecha: ${date}.` 
+                });
+            }
+            
+            return res.status(200).json({
+                ok: true,
+                message: 'Ingresos obtenidos correctamente.',
+                data: incomes,
             });
+        } catch (error) {
+            return handleControllerError(res, error);
         }
-        
-        res.status(200).json({
-            ok: true,
-            message: 'Ingresos obtenidos correctamente.',
-            data: incomes,
-        });
-    } catch (error) {
-        return handleControllerError(res, error);
-    }
-};
+    },
 
-/**
- * Crea un nuevo ingreso
- */
-export const createIncome = async (req: Request, res: Response) => {
-    try {
-        // El servicio se encarga de validar los datos
-        const newIncome = await IncomeService.create(req.body);
-        
-        res.status(201).json({
-            ok: true,
-            message: 'Ingreso creado correctamente.',
-            data: newIncome,
-        });
-    } catch (error) {
-        return handleControllerError(res, error);
-    }
-};
-
-/**
- * Actualiza un ingreso existente
- */
-export const updateIncome = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
-
-        // Validar la existencia del parámetro
-        if (!id) {
-            throw new Error('Falta el ID del ingreso en los parámetros de la URL.');
-        }
-
-        const numericId = parseInt(id, 10);
-        
-        const updatedIncome = await IncomeService.update(numericId, req.body);
-        
-        if (!updatedIncome) {
-            return res.status(404).json({
-                ok: false,
-                message: `Ingreso con ID ${id} no encontrado o sin cambios.`
+    /**
+     * Crea un nuevo ingreso
+     */
+    createIncome: async (req: Request, res: Response) => {
+        try {
+            // El servicio se encarga de validar los datos
+            const newIncome = await IncomeService.create(req.body);
+            
+            return res.status(201).json({
+                ok: true,
+                message: 'Ingreso creado correctamente.',
+                data: newIncome,
             });
+        } catch (error) {
+            return handleControllerError(res, error);
         }
-        
-        res.status(200).json({
-            ok: true,
-            message: 'Ingreso actualizado correctamente.',
-            data: updatedIncome,
-        });
-    } catch (error) {
-        return handleControllerError(res, error);
-    }
-};
+    },
 
-/**
- * Elimina un ingreso por ID
- */
-export const deleteIncome = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
+    /**
+     * Actualiza un ingreso existente
+     */
+    updateIncome: async (req: Request, res: Response) => {
+        try {
+            const { id } = req.params;
 
-        // Validar la existencia del parámetro
-        if (!id) {
-            throw new Error('Falta el ID del ingreso en los parámetros de la URL.');
-        }
-        
-        const numericId = parseInt(id, 10);
-        
-        const wasDeleted = await IncomeService.delete(numericId);
-        
-        if (!wasDeleted) {
-            return res.status(404).json({
-                ok: false,
-                message: `Ingreso con ID ${id} no encontrado.`
+            // Validar la existencia del parámetro
+            if (!id) {
+                throw new Error('Falta el ID del ingreso en los parámetros de la URL.');
+            }
+
+            const numericId = parseInt(id, 10);
+            
+            const updatedIncome = await IncomeService.update(numericId, req.body);
+            
+            if (!updatedIncome) {
+                // Se asume que el servicio devuelve null/undefined si no se encuentra o no hay cambios
+                return res.status(404).json({
+                    ok: false,
+                    message: `Ingreso con ID ${id} no encontrado o sin cambios.`
+                });
+            }
+            
+            return res.status(200).json({
+                ok: true,
+                message: 'Ingreso actualizado correctamente.',
+                data: updatedIncome,
             });
+        } catch (error) {
+            return handleControllerError(res, error);
         }
-        
-        res.status(200).json({
-            ok: true,
-            message: 'Ingreso eliminado correctamente.',
-        });
-    } catch (error) {
-        return handleControllerError(res, error);
+    },
+
+    /**
+     * Elimina un ingreso por ID
+     */
+    deleteIncome: async (req: Request, res: Response) => {
+        try {
+            const { id } = req.params;
+
+            // Validar la existencia del parámetro
+            if (!id) {
+                throw new Error('Falta el ID del ingreso en los parámetros de la URL.');
+            }
+            
+            const numericId = parseInt(id, 10);
+            
+            // El servicio debería devolver true si se eliminó, false si no se encontró
+            const wasDeleted = await IncomeService.delete(numericId);
+            
+            if (!wasDeleted) {
+                return res.status(404).json({
+                    ok: false,
+                    message: `Ingreso con ID ${id} no encontrado.`
+                });
+            }
+            
+            return res.status(200).json({
+                ok: true,
+                message: 'Ingreso eliminado correctamente.',
+            });
+        } catch (error) {
+            return handleControllerError(res, error);
+        }
     }
-};
+}

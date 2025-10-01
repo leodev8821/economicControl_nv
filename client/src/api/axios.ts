@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor */
 import axios from 'axios';
 import type { AxiosError, AxiosRequestHeaders, AxiosRequestConfig } from 'axios';
 
@@ -39,7 +40,7 @@ const processQueue = (error: unknown, token: string | null = null): void => {
 apiClient.interceptors.response.use(
   (response) => response,
   async (err) => {
-     const error = err as AxiosError & { config?: AxiosRequestConfig & { _retry?: boolean } };
+    const error = err as AxiosError & { config?: AxiosRequestConfig & { _retry?: boolean } };
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
     
     // Si la respuesta es un 401 Y no estamos ya intentando renovar
@@ -65,41 +66,46 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      try {
-        // LLAMADA AL ENDPOINT DE RENOVACIÓN DE TOKEN (Refresh Token Flow)
-        // El Refresh Token se envía automáticamente vía cookie HttpOnly
-        const refreshResponse = await apiClient.post<{ accessToken: string }>('/auth/refresh-token');
-        const newAccessToken: string | undefined = refreshResponse.data?.accessToken;
+      // Intentar la renovación del token
+      return new Promise(async (resolve, reject) => {
+          try {
+              // USO EXPLÍCITO DE LA RUTA COMPLETA PARA EL REFRESH (API_PREFIX + ENDPOINT)
+              const refreshResponse = await apiClient.post<{ token: string }>(`${API_PREFIX}/auth/refresh-token`);
+              const newAccessToken: string | undefined = refreshResponse.data?.token; 
 
-        isRefreshing = false;
-        
-        // Almacenamos el nuevo Access Token en la memoria global (Context/Store)
-        // Usaremos una función inyectada para actualizar el AuthProvider
-        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
-            window.dispatchEvent(
-                new CustomEvent('authTokenRenewed', { detail: newAccessToken ?? null })
-            );
-        }
+              if (newAccessToken) {
+                  // 1. Establecer el nuevo Access Token globalmente
+                  setGlobalAccessToken(newAccessToken);
+                  
+                  // 2. Disparar evento para que AuthProvider actualice su estado
+                  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+                      window.dispatchEvent(
+                          new CustomEvent('authTokenRenewed', { detail: newAccessToken })
+                      );
+                  }
+                  
+                  // 3. Procesar la cola y reintentar la petición original (incluida en la cola)
+                  processQueue(null, newAccessToken);
+                  
+                  // 4. Configurar la petición original para que use el nuevo token y resolver
+                  originalRequest.headers = originalRequest.headers || {};
+                  (originalRequest.headers as AxiosRequestHeaders)['Authorization'] = 'Bearer ' + newAccessToken;
+                  resolve(apiClient(originalRequest));
+              } else {
+                  throw new Error('No se recibió el nuevo Access Token.');
+              }
 
-        // Procesar la cola con el nuevo token (si undefined -> null)
-        processQueue(null, newAccessToken ?? null);
-
-        // Reintentar la petición original con el nuevo Access Token
-        if (newAccessToken) {
-          originalRequest.headers = originalRequest.headers || {};
-          (originalRequest.headers as AxiosRequestHeaders)['Authorization'] = 'Bearer ' + newAccessToken;
-        }
-
-        return apiClient(originalRequest);
-
-      } catch (refreshError) {
-        processQueue(refreshError, null);
-        // Si la renovación falla (Refresh Token inválido/expirado), forzamos logout
-        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
-          window.dispatchEvent(new CustomEvent('authLogout'));
-        }
-        return Promise.reject(refreshError);
-      }
+          } catch (refreshError) {
+              // 5. Si la renovación falla (401 del refresh), forzamos logout
+              processQueue(refreshError, null);
+              if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+                  window.dispatchEvent(new CustomEvent('authLogout'));
+              }
+              reject(refreshError);
+          } finally {
+              isRefreshing = false;
+          }
+      });
     }
     return Promise.reject(error);
   }

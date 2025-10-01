@@ -51,39 +51,42 @@ export const authController = {
             //Enviar el Refresh Token en una cookie HttpOnly
             res.cookie('refreshToken', refreshToken, REFRESH_COOKIE_OPTIONS);  
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: tokenResult.message,
                 token: accessToken,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
+    /**
+     * Función para renovar el Access Token usando el Refresh Token.
+     * @param req Request 
+     * @param res Response
+     * @returns Nuevo Access Token en el body y nuevo Refresh Token en la cookie HttpOnly.
+     */
     refreshToken: async (req: Request, res: Response) => {
         try {
             const refreshToken = req.cookies?.refreshToken as string | undefined;
 
             if (!refreshToken || refreshToken.trim() === '') {
-                handleControllerError(res, new Error('Falta refresh token'));
-                return;
+                return handleControllerError(res, new Error('Falta refresh token'));
             }
 
-            const payload = verifyRefreshToken(refreshToken!);
-            const userId = Number(payload.sub)
+            const payload = verifyRefreshToken(refreshToken!) as any;
+            const userId = Number(payload.id)
 
             if (isNaN(userId) || !userId) {
-                handleControllerError(res, new Error('Payload inválido en refresh token: ID no válido'));
-                return;
+                return handleControllerError(res, new Error('Payload inválido en refresh token: ID no válido'));
             }
 
             // Verificar que el usuario aún existe y está activo
             const user = await UserService.getOneVisible(userId);
 
             if (!user) {
-                handleControllerError(res, new Error('Usuario no encontrado o inactivo'));
-                return;
+                return handleControllerError(res, new Error('Usuario no encontrado o inactivo'));
             }
 
             const payloadForTokens = {
@@ -102,25 +105,31 @@ export const authController = {
             res.cookie('refreshToken', newRefreshToken, REFRESH_COOKIE_OPTIONS);
 
             return res.status(200).json({
-            ok: true,
-            message: 'Tokens renovados correctamente',
-            accessToken: newAccessToken
-        });
+                ok: true,
+                message: 'Tokens renovados correctamente',
+                token: newAccessToken
+            });
 
         } catch (err) {
             // En caso de token inválido/expirado -> borrar cookie
             res.clearCookie('refreshToken', REFRESH_COOKIE_OPTIONS);
-            handleControllerError(res, err);
+            return res.status(401).json({
+                ok: false,
+                message: 'Refresh token inválido o expirado. Inicie sesión nuevamente.',
+            });
         }
     },
 
-    logoutUser: async (req: Request, res: Response) => {
+    logoutUser: async (_req: Request, res: Response) => {
         try {
             // Borrar la cookie del refresh token
             res.clearCookie('refreshToken', REFRESH_COOKIE_OPTIONS);
-            return res.status(200).json({ ok: true, message: 'Logout exitoso' });
+            return res.status(200).json({ 
+                ok: true, 
+                message: 'Logout exitoso' 
+            });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     }
 }

@@ -1,4 +1,3 @@
-// controllers/roles.controller.ts
 import { Request, Response } from 'express';
 import { RoleService } from '../services/role.service';
 
@@ -28,24 +27,22 @@ const handleControllerError = (res: Response, error: unknown) => {
 };
 
 export const rolesController = {
-    allRoles: async (req: Request, res: Response) => {
+    allRoles: async (_req: Request, res: Response) => {
         try {
             const roles = await RoleService.getAll();
 
             if (roles.length === 0) {
-                // El mensaje se cambia a algo más preciso que "No autorizado"
                 return res.status(404).json({ ok: false, message: 'No se encontraron roles disponibles.' });
             }
 
-            // El formato de la respuesta se mantiene simple, ya que el repositorio ya devolvió objetos planos.
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Roles obtenidos correctamente.',
                 data: roles,
             });
 
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     }
 }

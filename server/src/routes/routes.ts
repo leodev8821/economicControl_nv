@@ -2,17 +2,15 @@ import { Router } from "express";
 import authRouter from "./auth.routes";
 
 // --- MIDDLEWARES ---
-// Asumo que estos son módulos .ts/.js
-import { decodeUser, verifyLogin, verifySudoRole } from "../middlewares/decode.middleware";
+import { decodeUser, verifyLogin } from "../middlewares/decode.middleware";
 
 // --- CONTROLLERS ---
 import { cashesController } from "../controllers/cashes.controller";
-import * as incomesController from "../controllers/incomes.controller"; // Se importa como '*' porque son exports individuales
+import { incomesController } from "../controllers/incomes.controller";
 import { outcomesController } from "../controllers/outcomes.controller";
 import { personController } from "../controllers/persons.controller";
 import { reportsController } from "../controllers/reports.controller";
 import { rolesController } from "../controllers/roles.controller";
-import { usersController } from "../controllers/users.controller";
 import { weeksController } from "../controllers/weeks.controller";
 
 const router: Router = Router();
@@ -90,17 +88,6 @@ router.get('/reports/week/:week_id', decodeUser, verifyLogin, reportsController.
 // 👤 ROLES (ROLES)
 // =================================================================
 router.get('/roles', decodeUser, verifyLogin, rolesController.allRoles);
-
-
-// =================================================================
-// 👨‍💻 USUARIOS (USERS)
-// Requiere verifySudoRole
-// =================================================================
-router.get('/users', decodeUser, verifySudoRole, usersController.allUsers);
-router.get('/users/:id', decodeUser, verifySudoRole, usersController.oneUser);
-router.post('/users/new-user', decodeUser, verifySudoRole, usersController.createUser);
-router.put('/users/:id', decodeUser, verifySudoRole, usersController.updateUser);
-router.delete('/users/:id', decodeUser, verifySudoRole, usersController.deleteUser);
 
 // =================================================================
 // 📅 SEMANAS (WEEKS)

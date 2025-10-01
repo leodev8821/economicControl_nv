@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, NextFunction, json, urlencoded } from 'express';
+import express, { Express, json, urlencoded } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
@@ -15,13 +15,19 @@ const __dirname = dirname(__filename);
 const envPath = join(__dirname, '../.env');
 dotenv.config({ path: envPath });
 
+const FRONTEND_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173'; // Valor por defecto para desarrollo
+
 // Crear la aplicación de Express
 const app: Express = express();
 
 // Middlewares
 app.use(json());
 app.use(urlencoded({ extended: false }));
-app.use(cors());
+app.use(cors({
+    origin: FRONTEND_ORIGIN, // Permitir el origen del frontend (ej: http://localhost:5173)
+    credentials: true, // ¡CRUCIAL para que el navegador envíe cookies HttpOnly!
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+}));
 app.use(cookieParser());
 
 // Configurar rutas
@@ -40,7 +46,7 @@ const startServer = async () => {
         console.log('✅ Base de datos MySQL conectada');
 
         const HOST: string = process.env.SERVER_HOST || 'localhost';
-        const PORT: number = parseInt(process.env.SERVER_PORT as string, 10) || 3001;
+        const PORT: number = parseInt(process.env.SERVER_PORT as string, 10) || 3000;
 
         // Iniciar el servidor
         const server = app.listen(PORT, HOST, () => {

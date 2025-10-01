@@ -47,7 +47,7 @@ const handleControllerError = (res: Response, error: unknown) => {
 
 
 export const usersController = {    
-    allUsers: async (req: Request, res: Response) => {
+    allUsers: async (_req: Request, res: Response) => {
         try {
             const users = await UserService.getAll();
             
@@ -55,13 +55,13 @@ export const usersController = {
                 return res.status(404).json({ ok: false, message: 'No se encontraron usuarios.' });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Usuarios obtenidos correctamente.',
                 data: users,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
     
@@ -80,13 +80,13 @@ export const usersController = {
                 return res.status(404).json({ ok: false, message: 'Usuario no encontrado' });
             }
             
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Usuario obtenido correctamente.',
                 data: user,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
     
@@ -94,7 +94,7 @@ export const usersController = {
         try {
             const newUser = await UserService.create(req.body, sudoRole);
             
-            res.status(201).json({
+            return res.status(201).json({
                 ok: true,
                 message: 'Usuario creado correctamente.',
                 data: {
@@ -104,7 +104,7 @@ export const usersController = {
                 },
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
     
@@ -124,13 +124,13 @@ export const usersController = {
                 return res.status(404).json({ ok: false, message: 'Usuario no encontrado o datos no modificados' });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Usuario actualizado correctamente.',
                 data: updatedUser,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
     
@@ -150,13 +150,13 @@ export const usersController = {
                 return res.status(404).json({ ok: false, message: 'Usuario no encontrado' });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Usuario eliminado correctamente (soft delete).',
                 data: deleted,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 };

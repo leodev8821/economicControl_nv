@@ -42,7 +42,7 @@ const formatCashResponse = (cash: CashAttributes) => ({
 });
 
 export const cashesController = {
-    allCash: async (req: Request, res: Response) => {
+    allCash: async (_req: Request, res: Response) => {
         try {
             const cashes = await CashService.getAll();
 
@@ -52,13 +52,13 @@ export const cashesController = {
 
             const formattedResponse = cashes.map(cash => formatCashResponse(cash));
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Cajas obtenidas correctamente.',
                 data: formattedResponse,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -73,13 +73,13 @@ export const cashesController = {
                 return res.status(404).json({ message: 'No se encontró la caja con los parámetros proporcionados.' });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Caja obtenida correctamente.',
                 data: formatCashResponse(cash),
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -87,13 +87,13 @@ export const cashesController = {
         try {
             const newCash = await CashService.create(req.body);
 
-            res.status(201).json({
+            return res.status(201).json({
                 ok: true,
                 message: 'Caja creada correctamente.',
                 data: formatCashResponse(newCash),
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -111,13 +111,13 @@ export const cashesController = {
                 return res.status(404).json({ ok: false, message: `No se encontró la caja con ID ${id} para actualizar.` });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Caja actualizada correctamente.',
                 data: formatCashResponse(updatedCash),
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -132,12 +132,12 @@ export const cashesController = {
                 return res.status(404).json({ ok: false, message: 'No se encontró la caja para eliminar.' });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Caja eliminada correctamente.',
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     }
 };

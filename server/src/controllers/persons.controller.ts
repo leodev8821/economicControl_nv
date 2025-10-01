@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { PersonService } from '../services/person.service';
-import { PersonAttributes } from '../models/person.model';
+//import { PersonAttributes } from '../models/person.model';
 
 /**
  * Función genérica para manejar errores en los controladores.
@@ -31,7 +31,7 @@ const handleControllerError = (res: Response, error: unknown) => {
 };
 
 export const personController = {
-    allPersons: async (req: Request, res: Response) => {
+    allPersons: async (_req: Request, res: Response) => {
         try {
             const persons = await PersonService.getAll();
 
@@ -39,13 +39,13 @@ export const personController = {
                 return res.status(404).json({ ok: false, message: 'No se encontraron personas.' });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Personas obtenidas correctamente.',
                 data: persons,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -60,13 +60,13 @@ export const personController = {
                 return res.status(404).json({ ok: false, message: 'Persona no encontrada.' });
             }   
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Persona obtenida correctamente.',
                 data: person,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -74,13 +74,13 @@ export const personController = {
         try {
             const newPerson = await PersonService.create(req.body);
 
-            res.status(201).json({
+            return res.status(201).json({
                 ok: true,
                 message: 'Persona creada correctamente.',
                 data: newPerson,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -96,13 +96,13 @@ export const personController = {
                 return res.status(404).json({ ok: false, message: 'Persona no encontrada o sin cambios.' });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Persona actualizada correctamente.',
                 data: updatedPerson,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -117,12 +117,12 @@ export const personController = {
                 return res.status(404).json({ ok: false, message: 'Persona no encontrada.' });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Persona eliminada correctamente.',
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     }
 };

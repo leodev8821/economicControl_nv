@@ -41,7 +41,7 @@ const formatOutcomeResponse = (outcome: OutcomeAttributes) => ({
 });
 
 export const outcomesController = {
-    allOutcomes: async (req: Request, res: Response) => {
+    allOutcomes: async (_req: Request, res: Response) => {
         try {
             const outcomes = await OutcomeService.getAll();
 
@@ -50,13 +50,13 @@ export const outcomesController = {
             }
             const formattedOutcomes = outcomes.map(o => formatOutcomeResponse(o));
             
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Egresos obtenidos correctamente.',
                 data: formattedOutcomes,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -76,13 +76,13 @@ export const outcomesController = {
 
             const formattedOutcomes = outcomes.map(o => formatOutcomeResponse(o));
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Egresos obtenidos correctamente.',
                 data: formattedOutcomes,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -98,14 +98,15 @@ export const outcomesController = {
 
             if (!outcome) {
                 return res.status(404).json({ ok: false, message: 'Egreso no encontrado.' });
-            }       
-            res.status(200).json({
+            }
+
+            return res.status(200).json({
                 ok: true,
                 message: 'Egreso obtenido correctamente.',
                 data: formatOutcomeResponse(outcome),
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -113,13 +114,13 @@ export const outcomesController = {
         try {
             const newOutcome = await OutcomeService.create(req.body);
 
-            res.status(201).json({
+            return res.status(201).json({
                 ok: true,
                 message: 'Egreso creado correctamente.',
                 data: formatOutcomeResponse(newOutcome),
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -137,13 +138,13 @@ export const outcomesController = {
                 return res.status(404).json({ ok: false, message: 'Egreso no encontrado o sin cambios.' });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Egreso actualizado correctamente.',
                 data: formatOutcomeResponse(updatedOutcome),
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -161,12 +162,12 @@ export const outcomesController = {
                 return res.status(404).json({ ok: false, message: 'Egreso no encontrado.' });
             }
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Egreso eliminado correctamente.',
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     }
 }

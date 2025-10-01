@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
 import { ReportService } from '../services/report.service';
-import { ReportAttributes } from '../models/report.model';
-// Nota: La dependencia de Week.findOne debe moverse a un WeekService
-// y luego ser importado aquí para mantener la arquitectura limpia.
+//import { ReportAttributes } from '../models/report.model';
 
 /**
  * Función genérica para manejar errores en los controladores.
@@ -33,19 +31,19 @@ const handleControllerError = (res: Response, error: unknown) => {
 };
 
 export const reportsController = {
-    allReports: async (req: Request, res: Response) => {
+    allReports: async (_req: Request, res: Response) => {
         try {
             const reports = await ReportService.getAll();
             if (reports.length === 0) {
                 return res.status(404).json({ ok: false, message: 'No se encontraron informes.' });
             }
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 message: 'Informes obtenidos correctamente.',
                 data: reports,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
     
@@ -64,26 +62,27 @@ export const reportsController = {
             if (!report) {
                 return res.status(404).json({ ok: false, message: 'No se encontró informe para esta semana.' });
             }
-            res.status(200).json({
+
+            return res.status(200).json({
                 ok: true,
                 message: 'Informe obtenido correctamente.',
                 data: report,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
     createReport: async (req: Request, res: Response) => {
         try {
             const newReport = await ReportService.create(req.body);
-            res.status(201).json({
+            return res.status(201).json({
                 ok: true,
                 message: 'Informe creado correctamente.',
                 data: newReport,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -99,13 +98,14 @@ export const reportsController = {
             if (!report) {
                 return res.status(404).json({ ok: false, message: 'Informe no encontrado.' });
             }
-            res.status(200).json({
+
+            return res.status(200).json({
                 ok: true,
                 message: 'Informe obtenido correctamente.',
                 data: report,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -121,13 +121,14 @@ export const reportsController = {
             if (!updatedReport) {
                 return res.status(404).json({ ok: false, message: 'Informe no encontrado o sin cambios.' });
             }
-            res.status(200).json({
+
+            return res.status(200).json({
                 ok: true,
                 message: 'Informe actualizado correctamente.',
                 data: updatedReport,
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     },
 
@@ -143,12 +144,13 @@ export const reportsController = {
             if (!wasDeleted) {
                 return res.status(404).json({ ok: false, message: 'Informe no encontrado.' });
             }
-            res.status(200).json({
+
+            return res.status(200).json({
                 ok: true,
                 message: 'Informe eliminado correctamente.',
             });
         } catch (error) {
-            handleControllerError(res, error);
+            return handleControllerError(res, error);
         }
     }
 };
