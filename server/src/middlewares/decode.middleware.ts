@@ -18,18 +18,24 @@ const ALLOWED_ROL = process.env.SUDO_ROLE as string;
 export const decodeUser = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers['authorization'];
     
+     // 1. Falta el encabezado de autorización
     if(!authHeader || authHeader.trim() === '') {
+        console.error('decodeUser: No se proporcionó el encabezado de autorización.');
         return res.status(401).json({ ok: false, message: 'No autorizado. Falta el token de autorización.' });
     }
     
     const parts = authHeader.split(' ');
 
+    // 2. Token vacío (ej: 'Bearer ')
     if (!parts[0] || parts[0].length === 0) {
-        return res.status(401).json({ ok: false, message: 'No autorizado. Token malformado.' });
+        console.error('decodeUser: El esquema de autorización está vacío.');
+        return res.status(401).json({ ok: false, message: 'No autorizado. Token vacío.' });
     }
 
-    // Verificar que el formato sea "Bearer token"
+    // 3. Formato incorrecto: Debe ser "Bearer <token>"
     if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
+
+        console.error('decodeUser: Formato de token incorrecto.');
         return res.status(401).json({ ok: false, message: 'No autorizado. Formato de token incorrecto.' });
     }
     

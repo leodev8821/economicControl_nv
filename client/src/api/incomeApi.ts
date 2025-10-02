@@ -2,6 +2,12 @@
 import apiClient from './axios';
 import type { Income } from '../types/income'; 
 
+interface GetAllIncomesResponse {
+  ok: boolean;
+  message?: string;
+  data: Income[];
+}
+
 /**
  * Función que realiza la petición GET al backend para obtener todos los ingresos.
  * Ruta: GET /ec/api/v1/incomes
@@ -10,10 +16,19 @@ import type { Income } from '../types/income';
 export const getAllIncomes = async (): Promise<Income[]> => {
   try {
     // Usamos la ruta relativa, el proxy de Vite y el prefijo de Axios hacen el resto.
-    const response = await apiClient.get<Income[]>('/incomes');
+    const response = await apiClient.get<GetAllIncomesResponse>('/incomes');
+
+    // Obtenemos el array de ingresos
+    const incomesArray = response.data.data;
     
-    // El backend de Node+MySQL debería devolver un array en response.data
-    return response.data;
+    // Limpieza y tipado de los datos recibidos
+    const cleanIncomes = incomesArray.map(income => ({
+        ...income,
+        amount: parseFloat(income.amount.toString()),
+    }));
+    // -------------------------------------------------------------------------
+
+    return cleanIncomes; // Devolvemos el array limpio y tipado correctamente
   } catch (error) {
     // Dejamos que React Query maneje el error en el componente, solo re-lanzamos.
     throw error;

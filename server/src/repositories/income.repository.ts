@@ -16,7 +16,6 @@ export class IncomeRepository {
      */
     public static async getAllIncomes(): Promise<IncomeAttributes[]> {
         const incomes = await IncomeModel.findAll();
-        console.log('Incomes retrieved from DB:', incomes.length);
         return incomes.map(income => income.get({ plain: true }));
     }
 

@@ -98,7 +98,7 @@ export const authController = {
             };
 
             // Generar nuevos tokens
-            const newAccessToken = await createAccessToken(payloadForTokens);
+            const { token: newAccessToken } = await createAccessToken(payloadForTokens);
             const newRefreshToken = createRefreshToken(payloadForTokens);
 
             // Enviar la nueva cookie (reemplaza la anterior)
