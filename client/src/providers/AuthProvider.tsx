@@ -50,6 +50,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    * - Maneja errores y cierra sesión si la renovación falla
    */
   const initializeAuth = useCallback(async () => {
+    setIsLoading(true);
+    
     // 1. Restaurar usuario desde localStorage
     const savedUser = localStorage.getItem('authUser');
 
@@ -60,28 +62,36 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
     
     // Hay datos de usuario, intentamos reestablecer la sesión
-    try {
-      const parsedUser = JSON.parse(savedUser);
-      setUser(parsedUser); // Mostrar el usuario inmediatamente
-      
-      // 2. Intentar obtener un nuevo Access Token usando el Refresh Token (Cookie HttpOnly)
-      // Nota: Esta llamada depende de que el endpoint /auth/refresh-token funcione en el backend.
-      const refreshResponse = await apiClient.post<{ token: string }>('/auth/refresh-token');
-      const newAccessToken = refreshResponse.data.token;
-
-      // 3. Sincronizar el nuevo token
-      setAccessToken(newAccessToken);
-      setGlobalAccessToken(newAccessToken);
-
-      console.log(`Sesión restaurada para: ${parsedUser.username}`);
-
-    } catch (error) {
-      console.error('Fallo la renovación del token al cargar la app. Se cerrará la sesión.', error);
-      // Si la renovación falla (401 del backend), el Refresh Token está muerto, forzamos logout.
-      logout(); 
-    } finally {
-      setIsLoading(false);
+    if (savedUser) {
+        setUser(JSON.parse(savedUser));
     }
+    
+    // 2. Si hay usuario guardado, intentamos renovar el token.
+    if (savedUser) {
+      try {
+          // * LLAMADA PROACTIVA AL REFRESH ENDPOINT. 
+          // Esto usa la cookie HttpOnly que nos da sesión
+          const refreshResponse = await apiClient.post<{ token: string }>(`/auth/refresh-token`);
+          const newAccessToken: string | undefined = refreshResponse.data?.token 
+
+          if (newAccessToken) {
+              // Sincroniza el nuevo token en el estado de React y en Axios
+              setAccessToken(newAccessToken);
+              setGlobalAccessToken(newAccessToken);
+          } else {
+              // Fallo: Refresh 200, pero sin token. Debería ser un error 
+              // * Si el servidor falla al darnos el token, forzamos logout
+              logout(); 
+          }
+
+      } catch (error) {
+          // * Si el refresh falla (ej: 401 por cookie expirada), forzamos logout.
+          console.error('❌ Error al renovar el token en la carga, forzando logout.', error);
+          logout(); 
+      }
+    }
+    // 3. Finalizar la carga
+    setIsLoading(false);
   }, [logout]);
 
   /**
@@ -107,7 +117,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       // 4. Obtener el perfil del usuario (ya se usa el nuevo token gracias a setGlobalAccessToken)
       const userResponse = await apiClient.get<User>('/auth/profile');
-      console.warn(`Usuario autenticado: ${userResponse.data.username}`);
       const newUser = userResponse.data;
 
       // 5. Almacenar el usuario (los datos, no el token)
@@ -148,8 +157,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   
   // Determina si el usuario está autenticado
   const isAuthenticated = !!token;
-
-  console.log(`AuthProvider: isAuthenticated=${isAuthenticated}, user=${user?.username}, isLoading=${isLoading}`);
 
   return (
     <AuthContext.Provider value={{ user, token, isAuthenticated, login, logout, isLoading }}>

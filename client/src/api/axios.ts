@@ -54,7 +54,7 @@ apiClient.interceptors.response.use(
             // Solo añadir header si tenemos token válido
             if (token) {
               originalRequest.headers = originalRequest.headers || {};
-              (originalRequest.headers as AxiosRequestHeaders)['Authorization'] = 'Bearer ' + token;
+              (originalRequest.headers as AxiosRequestHeaders)['Authorization'] = token;
             }
             return apiClient(originalRequest);
           })
@@ -69,7 +69,7 @@ apiClient.interceptors.response.use(
       // Intentar la renovación del token
       return new Promise(async (resolve, reject) => {
           try {
-              // USO EXPLÍCITO DE LA RUTA COMPLETA PARA EL REFRESH (API_PREFIX + ENDPOINT)
+              // USO EXPLÍCITO DE LA RUTA COMPLETA PARA EL REFRESH (ENDPOINT)
               const refreshResponse = await apiClient.post<{ token: string }>(`/auth/refresh-token`);
               const newAccessToken: string | undefined = refreshResponse.data?.token; 
 
@@ -85,12 +85,13 @@ apiClient.interceptors.response.use(
                   }
                   
                   // 3. Procesar la cola y reintentar la petición original (incluida en la cola)
-                  processQueue(null, newAccessToken);
+                  processQueue(null, newAccessToken ?? null);
                   
                   // 4. Configurar la petición original para que use el nuevo token y resolver
                   originalRequest.headers = originalRequest.headers || {};
-                  (originalRequest.headers as AxiosRequestHeaders)['Authorization'] = 'Bearer ' + newAccessToken;
-                  resolve(apiClient(originalRequest));
+                  (originalRequest.headers as AxiosRequestHeaders)['Authorization'] = newAccessToken;
+
+                  return resolve(apiClient(originalRequest));
               } else {
                   throw new Error('No se recibió el nuevo Access Token.');
               }
@@ -121,9 +122,17 @@ export const setGlobalAccessToken = (token: string | null) => {
 
 apiClient.interceptors.request.use(
   (config) => {
-    if (accessToken) {
+
+    if (accessToken === null || accessToken === undefined) {
+      return config; // No hay token, no hacemos nada
+    }
+
+    // Añadir el token solo si existe y no es una cadena vacía
+    const tokenValue : string = accessToken.trim()
+    // * Aseguramos que el token exista Y que no sea solo una cadena vacía después de trim()
+    if (tokenValue) { 
       config.headers = config.headers || {};
-      (config.headers as AxiosRequestHeaders).Authorization = `Bearer ${accessToken}`;
+      (config.headers as AxiosRequestHeaders).Authorization = `${tokenValue}`;
     }
     return config;
   },
