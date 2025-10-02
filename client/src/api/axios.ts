@@ -70,7 +70,7 @@ apiClient.interceptors.response.use(
       return new Promise(async (resolve, reject) => {
           try {
               // USO EXPLÍCITO DE LA RUTA COMPLETA PARA EL REFRESH (API_PREFIX + ENDPOINT)
-              const refreshResponse = await apiClient.post<{ token: string }>(`${API_PREFIX}/auth/refresh-token`);
+              const refreshResponse = await apiClient.post<{ token: string }>(`/auth/refresh-token`);
               const newAccessToken: string | undefined = refreshResponse.data?.token; 
 
               if (newAccessToken) {

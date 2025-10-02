@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-const BACKEND_PORT = 3000; 
+const BACKEND_PORT = 3000;
+const FRONTEND_PORT = 5173; // Puerto del servidor de desarrollo de Vite
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`;
 const API_PREFIX = '/ec/api/v1'; // Prefijo que usaremos en las llamadas de Axios
 
@@ -34,7 +35,7 @@ export default defineConfig({
         changeOrigin: true
       }
     },
-    port: 5173, // Puerto del servidor de desarrollo de Vite
+    port: FRONTEND_PORT, 
     open: true // Abre el navegador automáticamente
   }
 })
