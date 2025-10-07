@@ -26,7 +26,6 @@ router.use('/auth', authRouter);
 // =================================================================
 router.get('/cashes', decodeUser, verifyLogin, cashesController.allCash);
 router.get('/cashes/:id', decodeUser, verifyLogin, cashesController.oneCash);
-// El controller oneCash maneja la lógica de buscar por id o name a través de req.params
 router.get('/cashes/name/:name', decodeUser, verifyLogin, cashesController.oneCash); 
 router.post('/cashes/new-cash', decodeUser, verifyLogin, cashesController.createCash);
 router.put('/cashes/:id', decodeUser, verifyLogin, cashesController.updateCash);
@@ -37,7 +36,6 @@ router.delete('/cashes/:id', decodeUser, verifyLogin, cashesController.deleteCas
 // El controller de incomes usa exports individuales (allIncomes, oneIncome, etc.)
 // =================================================================
 router.get('/incomes', decodeUser, verifyLogin, incomesController.allIncomes);
-//router.get('/incomes', incomesController.allIncomes);
 router.get('/incomes/:id', decodeUser, verifyLogin, incomesController.oneIncome);
 router.post('/incomes/new-income', decodeUser, verifyLogin, incomesController.createIncome);
 router.put('/incomes/:id', decodeUser, verifyLogin, incomesController.updateIncome);
@@ -51,7 +49,7 @@ router.get('/incomes/date/:date', decodeUser, verifyLogin, incomesController.get
 // =================================================================
 router.get('/outcomes', decodeUser, verifyLogin, outcomesController.allOutcomes);
 router.get('/outcomes/:id', decodeUser, verifyLogin, outcomesController.oneOutcome);
-router.post('/outcomes', decodeUser, verifyLogin, outcomesController.createOutcome);
+router.post('/outcomes/new-outcome', decodeUser, verifyLogin, outcomesController.createOutcome);
 router.put('/outcomes/:id', decodeUser, verifyLogin, outcomesController.updateOutcome);
 router.delete('/outcomes/:id', decodeUser, verifyLogin, outcomesController.deleteOutcome);
 router.get('/outcomes/cash/:cash_id', decodeUser, verifyLogin, outcomesController.outcomesByCash);
@@ -63,7 +61,7 @@ router.get('/outcomes/cash/:cash_id', decodeUser, verifyLogin, outcomesControlle
 router.get('/persons', decodeUser, verifyLogin, personController.allPersons);
 router.get('/persons/:id', decodeUser, verifyLogin, personController.onePerson);
 router.get('/persons/dni/:dni', decodeUser, verifyLogin, personController.onePerson);
-router.post('/persons', decodeUser, verifyLogin, personController.createPerson);
+router.post('/persons/new-person', decodeUser, verifyLogin, personController.createPerson);
 // Se puede actualizar por id o dni
 router.put('/persons/:id', decodeUser, verifyLogin, personController.updatePerson);
 router.put('/persons/dni/:dni', decodeUser, verifyLogin, personController.updatePerson);

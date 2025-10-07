@@ -10,7 +10,10 @@ export const DashboardPage: React.FC = () => {
       <button onClick={logout}>Cerrar Sesión</button>
       {/* Aquí irán los links a otras secciones protegidas */}
       <div className="dashboard-links">
+        <a href="/cajas">Gestión de Cajas</a>
         <a href="/ingresos">Gestión de Ingresos</a>
+        <a href="/egresos">Gestión de Egresos</a>
+        <a href="/personas">Gestión de Personas</a>
         {/* <a href="/usuarios">Gestión de Usuarios</a> */}
       </div>
     </div>

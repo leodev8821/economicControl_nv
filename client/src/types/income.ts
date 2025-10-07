@@ -1,3 +1,6 @@
+import type { Person } from './person';
+import type { Week } from './week';
+
 export type IncomeSource = 'Diezmo' | 'Ofrenda' | 'Cafetería' | 'Otro';
 
 export interface IncomeAttributes {
@@ -9,7 +12,13 @@ export interface IncomeAttributes {
     source: IncomeSource;
 }
 
-/** * El tipo final que usaremos en el frontend.
- * Nótese que excluimos campos sensibles como 'password' o campos de ORM que no se usan.
+/**
+ * El tipo final que usaremos en el frontend.
+ * Ahora incluimos la información de la persona.
  */
-export type Income = IncomeAttributes;
+export interface Income extends IncomeAttributes {
+    // Si la persona existe, la incluimos como un objeto.
+    // El backend la envia anidada.
+    Person: Person | null; 
+    Week: Week; // Cada ingreso debe tener una semana asociada
+}

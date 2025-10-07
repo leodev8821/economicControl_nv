@@ -1,16 +1,16 @@
-import { useIncomes } from '../hooks/useIncome';
+import { useCashes } from '../hooks/useCash';
 import { useAuth } from '../hooks/useAuth'; // Necesario para demostrar el cierre de sesión
 
-export const IncomesPage: React.FC = () => {
+export const CashesPage: React.FC = () => {
   // Desestructuramos el resultado de React Query:
-  const { data: incomes, isLoading, isError, error } = useIncomes();
+  const { data: cashes, isLoading, isError, error } = useCashes();
   const { logout } = useAuth(); 
 
   // 1. Estado de Carga
   if (isLoading) {
     return (
       <div className="loading-spinner">
-        Cargando listado de ingresos...
+        Cargando listado de las cajas...
       </div>
     );
   }
@@ -21,7 +21,7 @@ export const IncomesPage: React.FC = () => {
     // Si falla aquí, la sesión es probablemente inválida.
     return (
       <div className="error-message" style={{ color: 'red', padding: '20px' }}>
-        <h2>Error al cargar ingresos</h2>
+        <h2>Error al cargar las cajas</h2>
         <p>Mensaje: {error.message}</p>
         <p>No se pudo completar la solicitud. Por favor, intente cerrar sesión y volver a entrar.</p>
         <button onClick={logout}>Cerrar Sesión</button>
@@ -31,37 +31,34 @@ export const IncomesPage: React.FC = () => {
 
   // 3. Renderizado de la Data
   return (
-    <div className="incomes-container">
-      <h1>Listado de Ingresos ({incomes?.length || 0})</h1>
+    <div className="cashes-container">
+      <h1>Listado de Cajas ({cashes?.length || 0})</h1>
       <button onClick={() => logout()}>Cerrar Sesión</button>
       
-      {incomes && incomes.length > 0 ? (
+      {cashes && cashes.length > 0 ? (
         <table>
           <thead>
             <tr>
               <th>ID</th>
-              <th>Fecha</th>
-              <th>Monto</th>
-              <th>Fuente</th>
-              <th>ID Persona</th>
+              <th>Nombre</th>
+              <th>Saldo Actual</th>
+              <th>Límite de caja</th>
             </tr>
           </thead>
           <tbody>
-            {incomes.map((income) => (
-              <tr key={income.id}>
-                <td>{income.id}</td>
-                {/* Formateamos la fecha a un formato local legible */}
-                <td>{new Date(income.date).toLocaleDateString()}</td>
+            {cashes.map((cash) => (
+              <tr key={cash.id}>
+                <td>{cash.id}</td>
+                <td>{cash.name}</td>
                 {/* Formateamos el monto a dos decimales */}
-                <td>{income.amount.toFixed(2)} €</td>
-                <td>{income.source}</td>
-                <td>{income.person_id || '-'}</td>
+                <td>{cash.actual_amount.toFixed(2)} €</td>
+                <td>{cash.pettyCash_limit?.toFixed(2) || '-'} €</td>
               </tr>
             ))}
           </tbody>
         </table>
       ) : (
-        <p>No hay ingresos registrados en este momento.</p>
+        <p>No hay cajas registradas en este momento.</p>
       )}
     </div>
   );
