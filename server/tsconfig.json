@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    /* Opciones de diseño de archivos */
+    "rootDir": "./",
+    "outDir": "./dist",
+    "ignoreDeprecations": "6.0",
+    
+    /* Opciones del entorno */
+    "module": "ESNext",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    
+    /* Salidas */
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    
+    /* Opciones de comprobación de tipos */
+    "strict": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    /* Opciones adicionales */
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "src/**/*",
+    "types/express.d.ts" // Incluir definiciones personalizadas
+  ]
+}
