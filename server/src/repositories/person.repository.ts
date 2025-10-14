@@ -1,5 +1,4 @@
 import { PersonModel, PersonAttributes, PersonCreationAttributes } from '../models/person.model';
-import { Op } from "sequelize";
 
 // Tipos auxiliares
 type CreatePersonData = PersonCreationAttributes;

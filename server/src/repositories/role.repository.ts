@@ -1,5 +1,5 @@
 // repositories/role.repository.ts
-import { RoleModel, RoleAttributes, RoleType } from '../models/role.model.js';
+import { RoleModel, RoleAttributes } from '../models/role.model.js';
 
 /**
  * Repositorio de Roles, maneja las interacciones con la base de datos.

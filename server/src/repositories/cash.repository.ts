@@ -1,5 +1,4 @@
 import { CashModel, CashAttributes, CashCreationAttributes } from '../models/cash.model';
-import { Op } from "sequelize";
 
 // Tipos auxiliares
 type CreateCashData = CashCreationAttributes;

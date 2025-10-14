@@ -28,9 +28,7 @@ export interface RoleCreationAttributes extends Optional<RoleAttributes, "id"> {
 /**
  * Clase Role que extiende de Sequelize.Model
  */
-export class RoleModel
-  extends SequelizeModel<RoleAttributes, RoleCreationAttributes>
-  implements RoleAttributes
+export class RoleModel extends SequelizeModel<RoleAttributes, RoleCreationAttributes> implements RoleAttributes
 {
   declare id: number;
   declare role: RoleType;

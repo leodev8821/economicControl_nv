@@ -7,6 +7,22 @@ import { BaseError, ForeignKeyConstraintError } from 'sequelize';
 type CreateIncomeData = IncomeCreationAttributes;
 type UpdateIncomeData = Partial<IncomeCreationAttributes>;
 
+// 💡 Constante para la configuración de inclusión (JOINs)
+const INCOME_INCLUDE_CONFIG = [
+    {
+        model: PersonModel, 
+        as: 'Person',
+        attributes: ['id', 'dni', 'first_name', 'last_name'],
+        required: false,
+    },
+    {
+        model: WeekModel, 
+        as: 'Week',
+        attributes: ['id', 'week_start', 'week_end'],
+        required: true,
+    }
+];
+
 /**
  * Repositorio de Ingresos, maneja las interacciones con la base de datos.
  */
@@ -17,20 +33,7 @@ export class IncomeRepository {
      */
     public static async getAllIncomes(): Promise<IncomeAttributes[]> {
         const incomes = await IncomeModel.findAll({
-            include: [
-                {
-                    model: PersonModel, 
-                    as: 'Person', // ⬅️ Usar el alias 'Person' definido en index.ts
-                    attributes: ['id', 'dni', 'first_name', 'last_name'],
-                    required: false, // ⬅️ Usa LEFT JOIN, para incluir ingresos que no tienen person_id (person_id: null)
-                },
-                {
-                    model: WeekModel, 
-                    as: 'Week', // ⬅️ Usar el alias 'Week' definido en index.ts
-                    attributes: ['id', 'week_start', 'week_end'],
-                    required: true, // ⬅️ Usa INNER JOIN, cada ingreso debe tener una semana asociada
-                }
-            ]
+            include: INCOME_INCLUDE_CONFIG,
         });
         return incomes.map(income => income.get({ plain: true }));
     }
@@ -39,7 +42,9 @@ export class IncomeRepository {
      * Obtiene un ingreso por ID.
      */
     public static async getOneIncome(id: number): Promise<IncomeAttributes | null> {
-        const income = await IncomeModel.findByPk(id);
+        const income = await IncomeModel.findByPk(id, {
+            include: INCOME_INCLUDE_CONFIG,
+        });
         return income ? income.get({ plain: true }) : null;
     }
 
@@ -100,20 +105,7 @@ export class IncomeRepository {
         const person = await PersonModel.findOne(
             { 
                 where: { dni },
-                include: [
-                    {
-                        model: PersonModel, 
-                        as: 'Person', // ⬅️ Usar el alias 'Person' definido en index.ts
-                        attributes: ['id', 'dni', 'first_name', 'last_name'],
-                        required: false, // ⬅️ Usa LEFT JOIN, para incluir ingresos que no tienen person_id (person_id: null)
-                    },
-                    {
-                        model: WeekModel, 
-                        as: 'Week', // ⬅️ Usar el alias 'Week' definido en index.ts
-                        attributes: ['id', 'week_start', 'week_end'],
-                        required: true, // ⬅️ Usa INNER JOIN, cada ingreso debe tener una semana asociada
-                    }
-                ]
+                include: INCOME_INCLUDE_CONFIG,
             }
     );
         if (!person) {
@@ -124,20 +116,7 @@ export class IncomeRepository {
                 person_id: person.id,
                 source: IncomeSource.DIEZMO
             },
-            include: [
-                {
-                    model: PersonModel, 
-                    as: 'Person', // ⬅️ Usar el alias 'Person' definido en index.ts
-                    attributes: ['id', 'dni', 'first_name', 'last_name'],
-                    required: false, // ⬅️ Usa LEFT JOIN, para incluir ingresos que no tienen person_id (person_id: null)
-                },
-                {
-                    model: WeekModel, 
-                    as: 'Week', // ⬅️ Usar el alias 'Week' definido en index.ts
-                    attributes: ['id', 'week_start', 'week_end'],
-                    required: true, // ⬅️ Usa INNER JOIN, cada ingreso debe tener una semana asociada
-                }
-            ]
+            include: INCOME_INCLUDE_CONFIG,
         });
         return incomes.map(income => income.get({ plain: true }));
     }
@@ -149,20 +128,7 @@ export class IncomeRepository {
         const incomes = await IncomeModel.findAll(
             { 
                 where: { date },
-                include: [
-                {
-                    model: PersonModel, 
-                    as: 'Person', // ⬅️ Usar el alias 'Person' definido en index.ts
-                    attributes: ['id', 'dni', 'first_name', 'last_name'],
-                    required: false, // ⬅️ Usa LEFT JOIN, para incluir ingresos que no tienen person_id (person_id: null)
-                },
-                {
-                    model: WeekModel, 
-                    as: 'Week', // ⬅️ Usar el alias 'Week' definido en index.ts
-                    attributes: ['id', 'week_start', 'week_end'],
-                    required: true, // ⬅️ Usa INNER JOIN, cada ingreso debe tener una semana asociada
-                }
-            ]
+                include: INCOME_INCLUDE_CONFIG,
             }
         );
         return incomes.map(income => income.get({ plain: true }));
@@ -175,20 +141,7 @@ export class IncomeRepository {
         const incomes = await IncomeModel.findAll(
             { 
                 where: { week_id: weekId },
-                include: [
-                {
-                    model: PersonModel, 
-                    as: 'Person', // ⬅️ Usar el alias 'Person' definido en index.ts
-                    attributes: ['id', 'dni', 'first_name', 'last_name'],
-                    required: false, // ⬅️ Usa LEFT JOIN, para incluir ingresos que no tienen person_id (person_id: null)
-                },
-                {
-                    model: WeekModel, 
-                    as: 'Week', // ⬅️ Usar el alias 'Week' definido en index.ts
-                    attributes: ['id', 'week_start', 'week_end'],
-                    required: true, // ⬅️ Usa INNER JOIN, cada ingreso debe tener una semana asociada
-                }
-            ]
+                include: INCOME_INCLUDE_CONFIG,
             }
     );
         return incomes.map(income => income.get({ plain: true }));

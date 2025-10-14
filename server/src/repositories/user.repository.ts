@@ -29,12 +29,17 @@ export class UserRepository {
     public static async getOneInstanceByIdentifier(identifier: string | number): Promise<UserModel | null> {
         const searchValue = typeof identifier === "string" ? identifier.trim() : identifier;
 
+        const whereClause = [];
+        if (typeof searchValue === "number") {
+            whereClause.push({ id: searchValue });
+        }
+        if (typeof searchValue === "string") {
+            whereClause.push({ username: searchValue });
+        }
+
         const userInstance = await UserModel.findOne({
             where: {
-                [Op.or]: [
-                    { id: typeof searchValue === "number" ? searchValue : undefined },
-                    { username: typeof searchValue === "string" ? searchValue : undefined },
-                ].filter(clause => Object.values(clause)[0] !== undefined)
+                [Op.or]: whereClause,
             },
             raw: false // CLAVE: Devuelve la instancia con sus métodos (como comparePassword)
         });
@@ -58,14 +63,19 @@ export class UserRepository {
      */
     public static async getVisibleOneByIdentifier(identifier: string | number): Promise<UserAttributes | null> {
         const searchValue = typeof identifier === "string" ? identifier.trim() : identifier;
+
+        const whereClause = [];
+        if (typeof searchValue === "number") {
+            whereClause.push({ id: searchValue });
+        }
+        if (typeof searchValue === "string") {
+            whereClause.push({ username: searchValue });
+        }
         
         const user = await UserModel.findOne({
             where: {
                 [Op.and]: [{ isVisible: true }],
-                [Op.or]: [
-                    { id: typeof searchValue === "number" ? searchValue : undefined },
-                    { username: typeof searchValue === "string" ? searchValue : undefined },
-                ].filter(clause => Object.values(clause)[0] !== undefined)
+                [Op.or]: whereClause,
             },
             raw: true // Podemos usar raw: true aquí ya que no necesitamos métodos de instancia
         });
@@ -108,6 +118,6 @@ export class UserRepository {
         userInstance.isVisible = false;
         await userInstance.save();
 
-        return userInstance.get({ plain: true });
+        return userInstance.get({ plain: true }) as UserAttributes;
     }
 }
