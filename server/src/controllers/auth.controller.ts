@@ -38,7 +38,7 @@ export const authController = {
     loginUser: async (req: Request, res: Response) => {
         try {
             const { login_data, password } = req.body;
-            
+
             const tokenResult = await UserService.login(login_data, password);
 
             // tokenResult.token contiene el Access Token y el Refresh Token separados por '|'

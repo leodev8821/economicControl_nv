@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { tokenUtils } from "../utils/token.utils";
+import { tokenUtils } from '../utils/token.utils';
+import { verifyRefreshToken } from '../services/token.service';
 import dotenv from 'dotenv';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -13,62 +14,78 @@ dotenv.config({ path: envPath });
 const ALLOWED_ROL = process.env.SUDO_ROLE as string; 
 
 /**
- * Middleware para decodificar el JWT y adjuntar la información del usuario a la Request.
+ * 🔑 Decodifica el Access Token de la cabecera 'Authorization: Bearer <token>'.
+ * Usa SECRET_KEY (firma de Access Token).
  */
-export const decodeUser = (req: Request, res: Response, next: NextFunction) => {
-    const authHeader = req.headers['authorization'];
-    
-     // 1. Falta el encabezado de autorización
-    if(!authHeader || authHeader.trim() === '') {
-        console.error('decodeUser: No se proporcionó el encabezado de autorización.');
-        return res.status(401).json({ ok: false, message: 'No autorizado. Falta el token de autorización.' });
+export const decodeAccessToken = (req: Request, res: Response, next: NextFunction) => {
+    // 1. Obtener de la cabecera
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        console.error('decodeAccessToken: Falta la cabecera de autorización.');
+        return res.status(401).json({ ok: false, message: 'No autorizado. Falta el Access Token.' });
     }
-    
+
+    // 2. Extraer el token
     const parts = authHeader.split(' ');
+    const token = (parts.length === 2 && parts[0] === 'Bearer') ? parts[1] : null;
 
-    // 2. Token vacío (ej: 'Bearer ')
-    if (!parts[0] || parts[0].length === 0) {
-        console.error('decodeUser: El esquema de autorización está vacío.');
-        return res.status(401).json({ ok: false, message: 'No autorizado. Token vacío.' });
-    }
-
-    // 3. Formato incorrecto: Debe ser "Bearer <token>"
-    if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
-
-        console.error('decodeUser: Formato de token incorrecto.');
-        return res.status(401).json({ ok: false, message: 'No autorizado. Formato de token incorrecto.' });
-    }
-    
-    const token = parts[1];
-
-    if (!token || token.trim() === '') {
-        return res.status(401).json({ ok: false, message: 'No autorizado. Token vacío.' });
+    if (!token) {
+        console.error('decodeAccessToken: Formato de cabecera inválido.');
+        return res.status(401).json({ ok: false, message: 'No autorizado. Formato de token inválido.' });
     }
 
     try {
-        // Asume que tokenUtils.decodeToken verifica firma y expiración, y lanza si falla.
+        // 3. Decodificar y verificar el token
         const decoded = tokenUtils.decodeToken(token); 
 
-        if (!decoded) {
-            return res.status(401).json({ ok: false, message: 'No autorizado. Token inválido.' });
+        if (!decoded || typeof decoded.id !== 'number' || !decoded.username || !decoded.role) {
+            return res.status(401).json({ ok: false, message: 'No autorizado. Access Token inválido o payload incompleto.' });
         }
 
-        // Validar que las propiedades esperadas existan en el payload
-        if (typeof decoded.id !== 'number' || !decoded.username || !decoded.role) {
-            return res.status(401).json({ ok: false, message: 'No autorizado. Payload del token incompleto o inválido.' });
-        }
-
-        // ✅ Asignación de propiedades personalizadas a la Request
+        // ✅ Asignación de propiedades personalizadas a la Request (tipadas)
         req.username = decoded.username;
         req.first_name = decoded.first_name;
         req.last_name = decoded.last_name;
-        req.userRole = decoded.role; // Ya tipado como UserRole
+        req.userRole = decoded.role;
         
         return next();
     } catch (error) {
-        // Captura errores de verificación (ej. expiración, firma inválida)
-        console.error('Error al decodificar/verificar token:', (error as Error).message);
-        return res.status(401).json({ ok: false, message: 'No autorizado. Token inválido o expirado.' });
+        console.error('Error al decodificar/verificar Access Token:', (error as Error).message);
+        return res.status(401).json({ ok: false, message: 'No autorizado. Access Token inválido o expirado.' });
+    }
+};
+
+/**
+ * 🔄 Decodifica el Refresh Token de la cookie 'refreshToken'.
+ * Usa REFRESH_SECRET.
+ */
+export const decodeRefreshToken = (req: Request, res: Response, next: NextFunction) => {
+    // 1. Obtener de la cookie
+    const token = req.cookies?.refreshToken;
+    
+    if (!token || typeof token !== 'string' || token.trim() === '') {
+        console.error('decodeRefreshToken: No se encontró el Refresh Token en la cookie.');
+        return res.status(401).json({ ok: false, message: 'No autorizado. Falta el Refresh Token.' });
+    }
+
+    try {
+        // 2. Decodificar y verificar el token
+        const decoded = verifyRefreshToken(token) as any; 
+
+        if (!decoded || typeof decoded.id !== 'number' || !decoded.username || !decoded.role) {
+            return res.status(401).json({ ok: false, message: 'No autorizado. Refresh Token inválido o payload incompleto.' });
+        }
+
+        // ✅ Asignación de propiedades para la generación del nuevo Access Token
+        req.username = decoded.username;
+        req.first_name = decoded.first_name;
+        req.last_name = decoded.last_name;
+        req.userRole = decoded.role;
+        
+        return next();
+    } catch (error) {
+        console.error('Error al decodificar/verificar Refresh Token:', (error as Error).message);
+        return res.status(401).json({ ok: false, message: 'No autorizado. Refresh Token inválido o expirado.' });
     }
 };
 

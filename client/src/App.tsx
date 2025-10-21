@@ -6,7 +6,8 @@ import { CashesPage } from './pages/CashesPage';
 import { IncomesPage } from './pages/IncomesPage';
 import { OutcomesPage } from './pages/OutcomesPage';
 import { PersonsPage } from './pages/PersonsPage';
-import { LoginPage } from './pages/LoginPage';
+//import { LoginPage } from './pages/LoginPage';
+import SignIn from './pages/SignIn';
 
 function App() {
 
@@ -18,7 +19,8 @@ function App() {
 
       {/* 2. Rutas Públicas (Usan PublicOnlyRoute para restringir si ya está logueado) */}
       <Route element={<PublicOnlyRoute />}>
-        <Route path="/login" element={<LoginPage />} />
+        {/*<Route path="/login" element={<LoginPage />} />*/}
+        <Route path="/login" element={<SignIn />} />
         {/* <Route path="/registro" element={<RegisterPage />} /> */}
       </Route>
 

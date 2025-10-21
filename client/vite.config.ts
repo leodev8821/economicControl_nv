@@ -8,7 +8,9 @@ const API_PREFIX = '/ec/api/v1'; // Prefijo que usaremos en las llamadas de Axio
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+  ],
 
   // Exclusión de paquetes de servidor para evitar errores en el navegador
   optimizeDeps: {

@@ -67,7 +67,7 @@ export class ReportRepository {
         if (affectedRows === 0) {
             return null;
         }
-        const updatedReport = await ReportModel.findByPk(id. {
+        const updatedReport = await ReportModel.findByPk(id, {
             include: REPORT_INCLUDE_CONFIG,
         });
         return updatedReport ? updatedReport.get({ plain: true }) : null;
