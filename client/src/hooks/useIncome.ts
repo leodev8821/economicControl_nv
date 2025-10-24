@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
-import type { UseQueryResult } from '@tanstack/react-query';
-import { getAllIncomes } from '../api/incomeApi';
-import type { Income } from '../types/income'; 
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { UseQueryResult, UseMutationResult } from '@tanstack/react-query';
+import { getAllIncomes, createIncome } from '../api/incomeApi';
+import type { Income } from '../types/income';
+import type { IncomeFormData } from '../schemas/income.schema';
 
 // Definimos una clave única (queryKey) para esta consulta.
 // React Query usa esta clave para almacenar en caché los datos.
@@ -25,4 +26,25 @@ export const useIncomes = (): UseQueryResult<Income[], Error> => {
     queryKey: [INCOMES_QUERY_KEY], 
     queryFn: getAllIncomes,
   });
+};
+
+/**
+ * Hook personalizado para crear un nuevo ingreso.
+ * @returns El resultado de la mutación (mutate, isLoading, isError, etc.).
+ */
+export const useCreateIncome = (): UseMutationResult<Income, Error, IncomeFormData> => {
+    const queryClient = useQueryClient();
+
+    return useMutation<Income, Error, IncomeFormData>({
+        mutationFn: createIncome, // Usa la función API de creación
+        
+        // Al tener éxito, invalida la caché de la lista de ingresos para forzar un re-fetch.
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [INCOMES_QUERY_KEY] });
+        },
+        // Opcional: Manejo de errores global.
+        onError: (error: Error) => {
+            console.error("Fallo la creación del ingreso:", error);
+        },
+    });
 };

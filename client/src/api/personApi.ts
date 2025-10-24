@@ -13,16 +13,10 @@ export const getAllPersons = async (): Promise<Person[]> => {
     // Usamos la ruta relativa, el proxy de Vite y el prefijo de Axios hacen el resto.
     const response = await apiClient.get<ApiResponse<Person>>('/persons');
 
-    // Obtenemos el array de egresos
-    const personsArray = response.data.data;
-    
-    // Limpieza y tipado de los datos recibidos
-    const cleanPersons = personsArray.map(person => ({
+    // Devolvemos el array limpio y tipado correctamente
+    return response.data.data.map(person => ({
         ...person
     }));
-    // -------------------------------------------------------------------------
-
-    return cleanPersons; // Devolvemos el array limpio y tipado correctamente
   } catch (error) {
     // Dejamos que React Query maneje el error en el componente, solo re-lanzamos.
     throw error;

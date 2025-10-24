@@ -9,3 +9,10 @@ export interface ApiResponse<T> {
   message?: string;
   data: T[];
 }
+
+// Tipo auxiliar para manejar respuestas que pueden ser single o array
+export interface ApiResponseData<T> {
+    ok: boolean;
+    message?: string;
+    data: T;
+};

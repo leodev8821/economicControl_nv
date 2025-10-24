@@ -1,7 +1,8 @@
 import type { Person } from './person';
 import type { Week } from './week';
 
-export type IncomeSource = 'Diezmo' | 'Ofrenda' | 'Cafetería' | 'Otro';
+export const INCOME_SOURCES = ['Diezmo', 'Ofrenda', 'Cafetería', 'Otro'] as const;
+export type IncomeSource = typeof INCOME_SOURCES[number];
 
 export interface IncomeAttributes {
     id: number;
