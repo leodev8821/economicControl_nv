@@ -12,24 +12,35 @@ export const IncomeCreationSchema = z.object({
     }, z.number().int().positive().nullable().default(null)),
 
     // week_id: number (Requerido)
-    week_id: z.coerce.number({ error: "El ID de la semana es obligatorio" }).int().positive("El ID de la semana debe ser un número entero positivo"),
+    week_id: z.coerce.number({ 
+      required_error: "El ID de la semana es obligatorio",
+      invalid_type_error: "El ID de la semana debe ser un número"
+    }).int().positive("El ID de la semana debe ser un número entero positivo"),
 
     // date: string (DATEONLY) (Requerido: YYYY-MM-DD)
     // DATEONLY expected as YYYY-MM-DD. We'll validate pattern instead of using z.date().
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "El formato de fecha es inválido (debe ser AAAA-MM-DD)"),
+    date: z.string({
+      required_error: "La fecha es obligatoria"
+    }).regex(/^\d{4}-\d{2}-\d{2}$/, "El formato de fecha es inválido (debe ser AAAA-MM-DD)"),
 
     // amount: number (DECIMAL(10, 2), Requerido)
     amount: z.preprocess((val) => {
         if (typeof val === 'string') return Number(val.replace(/,/g, '.'));
         return val;
-    }, z.number({ error: "El monto es obligatorio" })
+    }, z.number({ 
+      required_error: "El monto es obligatorio",
+      invalid_type_error: "El monto debe ser un número válido"
+    })
         .refine(v => Number.isFinite(v), { message: "El monto debe ser un número" })
         .refine(v => v > 0, { message: "El monto debe ser un valor positivo" })
         .refine(v => Math.round(v * 100) === v * 100, { message: "El monto solo puede tener dos decimales" })),
 
     // source: IncomeSource (ENUM, Requerido)
     // Usamos el tipo IncomeSource importado
-    source: z.enum(INCOME_SOURCES as unknown as [IncomeSource, ...IncomeSource[]], { error: "La fuente de ingreso es obligatoria" }),
+    source: z.enum(INCOME_SOURCES as unknown as [IncomeSource, ...IncomeSource[]], { 
+      required_error: "La fuente de ingreso es obligatoria",
+      invalid_type_error: "La fuente de ingreso seleccionada no es válida"
+    }),
 });
 
 // 2. Aplicar la Validación de Negocio: Diezmo requiere person_id

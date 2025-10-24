@@ -9,7 +9,6 @@ import { PersonsPage } from './pages/PersonsPage';
 import IncomeForm from './components/ui/components/forms/IncomeForm'
 //import { LoginPage } from './pages/LoginPage';
 import SignIn from './pages/SignIn';
-import DataGridPremiumDemo from './components/ui/components/tables/IncomeTable';
 
 function App() {
 
@@ -34,7 +33,6 @@ function App() {
         <Route path="/ingresos" element={<IncomesPage />} />
         <Route path="/egresos" element={<OutcomesPage />} />
         <Route path="/nuevo-ingreso" element={<IncomeForm />} />
-        <Route path="/table" element={<DataGridPremiumDemo />} />
         {/* Ejemplo de otra ruta protegida: */}
         {/* <Route path="/usuarios" element={<UsersManagementPage />} /> */}
       </Route>
