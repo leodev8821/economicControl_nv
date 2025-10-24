@@ -30,6 +30,24 @@ const handleControllerError = (res: Response, error: unknown) => {
 };
 
 export const weeksController = {
+    allWeeks: async (_req: Request, res: Response) => {
+        try {
+            const weeks = await WeekService.getAll();
+
+            if (weeks.length === 0) {
+                return res.status(404).json({ ok: false, message: 'No se encontraron semanas.' });
+            }
+
+            return res.status(200).json({
+                ok: true,
+                message: 'Semanas obtenidas correctamente.',
+                data: weeks,
+            });
+        } catch (error) {
+            return handleControllerError(res, error);
+        }
+    },
+
     getWeeksByYear: async (req: Request, res: Response) => {
         try {
             const { year } = req.params;
