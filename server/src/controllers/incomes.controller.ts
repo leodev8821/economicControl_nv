@@ -1,36 +1,6 @@
 import { Request, Response } from 'express';
+import handlerControllerError from '../utils/handleControllerError';
 import { IncomeService } from '../services/income.service';
-
-/**
- * Función genérica para manejar errores en los controladores.
- * Los errores de validación (400) o de negocio ya vienen del servicio.
- */
-const handleControllerError = (res: Response, error: unknown) => {
-    // Si el error tiene un mensaje, se asume que es un error de negocio o validación.
-    // Ej. 'ID inválido', 'Faltan datos obligatorios'.
-    if (error instanceof Error) {
-        if (error.message.includes('inválido') || error.message.includes('obligatorio') || error.message.includes('vacío') || error.message.includes('no existe')) {
-            return res.status(400).json({ ok: false, message: error.message });
-        }
-        // Si el error es de tipo 'no encontrado', enviamos un 404
-        if (error.message.includes('No se encontraron') || error.message.includes('no encontrado')) {
-             return res.status(404).json({ ok: false, message: error.message });
-        }
-        // Para cualquier otro error (del servidor o BD)
-        console.error('Error en el controlador:', error.message);
-        return res.status(500).json({
-            ok: false,
-            message: 'Error interno del servidor.',
-            error: error.message
-        });
-    }
-    // Para errores desconocidos
-    return res.status(500).json({
-        ok: false,
-        message: 'Error interno del servidor.',
-        error: 'Error desconocido'
-    });
-};
 
 /**
  * Objeto que contiene todos los controladores (handlers de rutas)
@@ -59,7 +29,7 @@ export const incomesController = {
                 data: incomes,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -93,7 +63,7 @@ export const incomesController = {
                 data: income,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
     
@@ -125,7 +95,7 @@ export const incomesController = {
                 data: incomes,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -157,7 +127,7 @@ export const incomesController = {
                 data: incomes,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -175,7 +145,7 @@ export const incomesController = {
                 data: newIncome,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -209,7 +179,7 @@ export const incomesController = {
                 data: updatedIncome,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -242,7 +212,7 @@ export const incomesController = {
                 message: 'Ingreso eliminado correctamente.',
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     }
 }

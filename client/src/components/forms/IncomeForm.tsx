@@ -1,11 +1,11 @@
 import React from 'react';
 import { useForm } from '@conform-to/react';
 import { parseWithZod } from '@conform-to/zod';
-import { useCreateIncome } from '../../../../hooks/useIncome'
-import { usePersons } from '../../../../hooks/usePerson';
-import { useWeeks } from '../../../../hooks/useWeek';
-import { INCOME_SOURCES } from '../../../../types/income';
-import { FinalIncomeCreationSchema } from '../../../../schemas/income.schema';
+import { useCreateIncome } from '../../hooks/useIncome'
+import { usePersons } from '../../hooks/usePerson';
+import { useWeeks } from '../../hooks/useWeek';
+import { INCOME_SOURCES } from '../../types/income';
+import { FinalIncomeCreationSchema } from '../../schemas/income.schema';
 
 export default function IncomeForm() {
 

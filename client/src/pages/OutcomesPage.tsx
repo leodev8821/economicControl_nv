@@ -1,72 +1,55 @@
 import { useOutcomes } from '../hooks/useOutcome';
-import { useAuth } from '../hooks/useAuth'; // Necesario para demostrar el cierre de sesión
+import OutcomeTable from '../components/tables/OutcomeTable';
+import { Box, Typography, CircularProgress } from '@mui/material';
 
 export const OutcomesPage: React.FC = () => {
-  // Desestructuramos el resultado de React Query:
-  const { data: outcomes, isLoading, isError, error } = useOutcomes();
-  const { logout } = useAuth(); 
+  const { data: outcomes = [], isLoading, isError, error } = useOutcomes();
 
   // 1. Estado de Carga
   if (isLoading) {
     return (
-      <div className="loading-spinner">
-        Cargando listado de egresos...
-      </div>
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <CircularProgress />
+        <Typography variant="h6" ml={2}>
+          Cargando listado de egresos...
+        </Typography>
+      </Box>
     );
   }
 
   // 2. Estado de Error
   if (isError) {
-    // Si hay un error, el interceptor de Axios ya intentó la renovación. 
-    // Si falla aquí, la sesión es probablemente inválida.
     return (
-      <div className="error-message" style={{ color: 'red', padding: '20px' }}>
-        <h2>Error al cargar egresos</h2>
-        <p>Mensaje: {error.message}</p>
-        <p>No se pudo completar la solicitud. Por favor, intente cerrar sesión y volver a entrar.</p>
-        <button onClick={logout}>Cerrar Sesión</button>
-      </div>
+      <Box p={3} color="error.main">
+        <Typography variant="h4" gutterBottom>
+          Error al cargar egresos
+        </Typography>
+        <Typography variant="body1" component="p" sx={{ mb: 2 }}>
+          Mensaje: {error.message}
+        </Typography>
+        <Typography variant="body1" component="p" sx={{ mb: 2 }}>
+          No se pudo completar la solicitud. Por favor, intente cerrar sesión y volver a entrar.
+        </Typography>
+      </Box>
     );
   }
 
   // 3. Renderizado de la Data
   return (
-    <div className="outcomes-container">
-      <h1>Listado de Egresos ({outcomes?.length || 0})</h1>
-      <button onClick={() => logout()}>Cerrar Sesión</button>
-      
-      {outcomes && outcomes.length > 0 ? (
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>ID Caja</th>
-              <th>ID Semana</th>
-              <th>Fecha</th>
-              <th>Monto</th>
-              <th>Descripción</th>
-              <th>Categoría</th>
-            </tr>
-          </thead>
-          <tbody>
-            {outcomes.map((outcome) => (
-              <tr key={outcome.id}>
-                <td>{outcome.id}</td>
-                <td>{outcome.cash_id}</td>
-                <td>{outcome.week_id}</td>
-                {/* Formateamos la fecha a un formato local legible */}
-                <td>{new Date(outcome.date).toLocaleDateString()}</td>
-                {/* Formateamos el monto a dos decimales */}
-                <td>{outcome.amount.toFixed(2)} €</td>
-                <td>{outcome.description || '-'}</td>
-                <td>{outcome.category || '-'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <Box p={3}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h4">
+          Listado de Egresos ({outcomes.length})
+        </Typography>
+      </Box>
+
+      {outcomes.length > 0 ? (
+        <OutcomeTable outcomes={outcomes} />
       ) : (
-        <p>No hay egresos registrados en este momento.</p>
+        <Typography variant="body1">
+          No hay egresos registrados en este momento.
+        </Typography>
       )}
-    </div>
+    </Box>
   );
 };

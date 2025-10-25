@@ -1,62 +1,36 @@
 import { Request, Response } from 'express';
+import handlerControllerError from '../utils/handleControllerError';
 import { OutcomeService } from '../services/outcome.service';
-import { OutcomeAttributes } from '../models/outcome.model';
 
 /**
- * Función genérica para manejar errores en los controladores.
+ * Objeto que contiene todos los controladores (handlers de rutas)
+ * para la gestión de Egresos.
  */
-const handleControllerError = (res: Response, error: unknown) => {
-    if (error instanceof Error) {
-        if (error.message.includes('inválido') || error.message.includes('obligatorio') || error.message.includes('Falta')) {
-            return res.status(400).json({ ok: false, message: error.message });
-        }
-        if (error.message.includes('no encontrado') || error.message.includes('No se encontraron')) {
-            return res.status(404).json({ ok: false, message: error.message });
-        }
-        console.error('Error en el controlador:', error.message);
-        return res.status(500).json({
-            ok: false,
-            message: 'Error interno del servidor.',
-            error: error.message
-        });
-    }
-    return res.status(500).json({
-        ok: false,
-        message: 'Error interno del servidor.',
-        error: 'Error desconocido'
-    });
-};
-
-/**
- * Helper para formatear la respuesta
- */
-const formatOutcomeResponse = (outcome: OutcomeAttributes) => ({
-    id: outcome.id,
-    cash_id: outcome.cash_id,
-    week_id: outcome.week_id,
-    date: outcome.date,
-    amount: parseFloat(outcome.amount.toString()),
-    description: outcome.description,
-    category: outcome.category,
-});
-
 export const outcomesController = {
+    
+    /**
+     * Función para obtener todos los egresos.
+     */
     allOutcomes: async (_req: Request, res: Response) => {
         try {
             const outcomes = await OutcomeService.getAll();
 
+            // Si no hay ingresos, el servicio ya nos devuelve un array vacío,
+            // por lo que el controlador puede manejar el 404 aquí.
             if (outcomes.length === 0) {
-                return res.status(404).json({ ok: false, message: 'No se encontraron egresos.' });
+                return res.status(404).json({ 
+                    ok: false, 
+                    message: 'No se encontraron ingresos.' 
+                });
             }
-            const formattedOutcomes = outcomes.map(o => formatOutcomeResponse(o));
             
             return res.status(200).json({
                 ok: true,
                 message: 'Egresos obtenidos correctamente.',
-                data: formattedOutcomes,
+                data: outcomes,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -71,18 +45,19 @@ export const outcomesController = {
             const outcomes = await OutcomeService.getByCashId(numericCashId);
 
             if (outcomes.length === 0) {
-                return res.status(404).json({ ok: false, message: 'No se encontraron egresos para esta caja.' });
+                return res.status(404).json({ 
+                    ok: false, 
+                    message: 'No se encontraron ingresos.' 
+                });
             }
-
-            const formattedOutcomes = outcomes.map(o => formatOutcomeResponse(o));
 
             return res.status(200).json({
                 ok: true,
-                message: 'Egresos obtenidos correctamente.',
-                data: formattedOutcomes,
+                message: 'Egresos por caja obtenidos correctamente.',
+                data: outcomes,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -103,10 +78,10 @@ export const outcomesController = {
             return res.status(200).json({
                 ok: true,
                 message: 'Egreso obtenido correctamente.',
-                data: formatOutcomeResponse(outcome),
+                data: outcome,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -117,10 +92,10 @@ export const outcomesController = {
             return res.status(201).json({
                 ok: true,
                 message: 'Egreso creado correctamente.',
-                data: formatOutcomeResponse(newOutcome),
+                data: newOutcome,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -141,10 +116,10 @@ export const outcomesController = {
             return res.status(200).json({
                 ok: true,
                 message: 'Egreso actualizado correctamente.',
-                data: formatOutcomeResponse(updatedOutcome),
+                data: updatedOutcome,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -167,7 +142,7 @@ export const outcomesController = {
                 message: 'Egreso eliminado correctamente.',
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     }
 }

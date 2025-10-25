@@ -13,17 +13,11 @@ export const getAllOutcomes = async (): Promise<Outcome[]> => {
     // Usamos la ruta relativa, el proxy de Vite y el prefijo de Axios hacen el resto.
     const response = await apiClient.get<ApiResponse<Outcome>>('/outcomes');
 
-    // Obtenemos el array de egresos
-    const outcomesArray = response.data.data;
-    
-    // Limpieza y tipado de los datos recibidos
-    const cleanOutcomes = outcomesArray.map(outcome => ({
+    // Obtenemos el array de egresos y aseguramos que cada egreso tenga el formato correcto
+    return response.data.data.map(outcome => ({
         ...outcome,
-        amount: parseFloat(outcome.amount.toString()),
+        amount: typeof outcome.amount === 'string' ? parseFloat(outcome.amount) : outcome.amount
     }));
-    // -------------------------------------------------------------------------
-
-    return cleanOutcomes; // Devolvemos el array limpio y tipado correctamente
   } catch (error) {
     // Dejamos que React Query maneje el error en el componente, solo re-lanzamos.
     throw error;

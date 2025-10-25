@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import handlerControllerError from '../utils/handleControllerError';
 import { UserService } from '../services/user.service';
 import dotenv from 'dotenv';
 import { join, dirname } from 'path';
@@ -10,40 +11,6 @@ const envPath = join(__dirname, '../../.env');
 dotenv.config({ path: envPath });
 
 const sudoRole = process.env.SUDO_ROLE || 'SuperUser'; // Valor por defecto seguro
-
-/**
- * Función genérica para manejar errores en los controladores.
- */
-const handleControllerError = (res: Response, error: unknown) => {
-    if (error instanceof Error) {
-        if (error.message.includes('inválido') || error.message.includes('Falta')) {
-            return res.status(400).json({ ok: false, message: error.message });
-        }
-        if (error.message.includes('Contraseña incorrecta') || error.message.includes('deshabilitada')) {
-            return res.status(401).json({ ok: false, message: error.message });
-        }
-        if (error.message.includes('No autorizado')) {
-            return res.status(403).json({ ok: false, message: error.message });
-        }
-        if (error.message.includes('no encontrado') || error.message.includes('No se encontraron')) {
-            return res.status(404).json({ ok: false, message: error.message });
-        }
-        if (error.message.includes('ya existe')) {
-            return res.status(409).json({ ok: false, message: error.message });
-        }
-        console.error('Error en el controlador:', error.message);
-        return res.status(500).json({
-            ok: false,
-            message: 'Error interno del servidor.',
-            error: error.message
-        });
-    }
-    return res.status(500).json({
-        ok: false,
-        message: 'Error interno del servidor.',
-        error: 'Error desconocido'
-    });
-};
 
 
 export const usersController = {    
@@ -61,7 +28,7 @@ export const usersController = {
                 data: users,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
     
@@ -86,7 +53,7 @@ export const usersController = {
                 data: user,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
     
@@ -104,7 +71,7 @@ export const usersController = {
                 },
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
     
@@ -130,7 +97,7 @@ export const usersController = {
                 data: updatedUser,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
     
@@ -156,7 +123,7 @@ export const usersController = {
                 data: deleted,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 };

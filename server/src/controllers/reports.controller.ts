@@ -1,34 +1,6 @@
 import { Request, Response } from 'express';
+import handlerControllerError from '../utils/handleControllerError';
 import { ReportService } from '../services/report.service';
-//import { ReportAttributes } from '../models/report.model';
-
-/**
- * Función genérica para manejar errores en los controladores.
- */
-const handleControllerError = (res: Response, error: unknown) => {
-    if (error instanceof Error) {
-        if (error.message.includes('inválido') || error.message.includes('obligatorio') || error.message.includes('Falta')) {
-            return res.status(400).json({ ok: false, message: error.message });
-        }
-        if (error.message.includes('Ya existe')) {
-            return res.status(409).json({ ok: false, message: error.message });
-        }
-        if (error.message.includes('no encontrado') || error.message.includes('No se encontraron')) {
-            return res.status(404).json({ ok: false, message: error.message });
-        }
-        console.error('Error en el controlador:', error.message);
-        return res.status(500).json({
-            ok: false,
-            message: 'Error interno del servidor.',
-            error: error.message
-        });
-    }
-    return res.status(500).json({
-        ok: false,
-        message: 'Error interno del servidor.',
-        error: 'Error desconocido'
-    });
-};
 
 export const reportsController = {
     allReports: async (_req: Request, res: Response) => {
@@ -43,7 +15,7 @@ export const reportsController = {
                 data: reports,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
     
@@ -69,7 +41,7 @@ export const reportsController = {
                 data: report,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -82,7 +54,7 @@ export const reportsController = {
                 data: newReport,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -105,7 +77,7 @@ export const reportsController = {
                 data: report,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -128,7 +100,7 @@ export const reportsController = {
                 data: updatedReport,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -150,7 +122,7 @@ export const reportsController = {
                 message: 'Informe eliminado correctamente.',
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     }
 };

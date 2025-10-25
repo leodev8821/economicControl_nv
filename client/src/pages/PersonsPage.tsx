@@ -1,66 +1,56 @@
 import { usePersons } from '../hooks/usePerson';
-import { useAuth } from '../hooks/useAuth'; // Necesario para demostrar el cierre de sesión
+import PersonTable from '../components/tables/PersonTable';
+import { Box, Typography, CircularProgress } from '@mui/material';
 
 export const PersonsPage: React.FC = () => {
   // Desestructuramos el resultado de React Query:
-  const { data: persons, isLoading, isError, error } = usePersons();
-  const { logout } = useAuth(); 
+  const { data: persons = [], isLoading, isError, error } = usePersons();
 
   // 1. Estado de Carga
   if (isLoading) {
     return (
-      <div className="loading-spinner">
-        Cargando listado de personas...
-      </div>
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <CircularProgress />
+        <Typography variant="h6" ml={2}>
+          Cargando listado de personas...
+        </Typography>
+      </Box>
     );
   }
 
   // 2. Estado de Error
   if (isError) {
-    // Si hay un error, el interceptor de Axios ya intentó la renovación. 
-    // Si falla aquí, la sesión es probablemente inválida.
     return (
-      <div className="error-message" style={{ color: 'red', padding: '20px' }}>
-        <h2>Error al cargar personas</h2>
-        <p>Mensaje: {error.message}</p>
-        <p>No se pudo completar la solicitud. Por favor, intente cerrar sesión y volver a entrar.</p>
-        <button onClick={logout}>Cerrar Sesión</button>
-      </div>
+      <Box p={3} color="error.main">
+        <Typography variant="h4" gutterBottom>
+          Error al cargar personas
+        </Typography>
+        <Typography variant="body1" component="p" sx={{ mb: 2 }}>
+          Mensaje: {error.message}
+        </Typography>
+        <Typography variant="body1" component="p" sx={{ mb: 2 }}>
+          No se pudo completar la solicitud. Por favor, intente cerrar sesión y volver a entrar.
+        </Typography>
+      </Box>
     );
   }
 
   // 3. Renderizado de la Data
   return (
-    <div className="persons-container">
-      <h1>Listado de Personas ({persons?.length || 0})</h1>
-      <button onClick={() => logout()}>Cerrar Sesión</button>
-      
-      {persons && persons.length > 0 ? (
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre(s)</th>
-              <th>Apellido(s)</th>
-              <th>NIF</th>
-              <th>Activo?</th>
-            </tr>
-          </thead>
-          <tbody>
-            {persons.map((person) => (
-              <tr key={person.id}>
-                <td>{person.id}</td>
-                <td>{person.first_name}</td>
-                <td>{person.last_name}</td>
-                <td>{person.dni}</td>
-                <td>{person.isVisible ? 'Si' : 'No'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p>No hay personas registradas en este momento.</p>
-      )}
-    </div>
+      <Box p={3}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Typography variant="h4">
+            Listado de Personas ({persons.length})
+          </Typography>
+        </Box>
+  
+        {persons.length > 0 ? (
+          <PersonTable persons={persons} />
+        ) : (
+          <Typography variant="body1">
+            No hay personas creadas en este momento.
+          </Typography>
+        )}
+      </Box>
   );
 };

@@ -1,38 +1,8 @@
 import { Request, Response } from 'express';
+import handlerControllerError from '../utils/handleControllerError';
 import { UserService } from '../services/user.service';
 import { REFRESH_COOKIE_OPTIONS } from '../config/cookies.config';
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from '../services/token.service';
-
-/**
- * Función genérica para manejar errores en los controladores.
- */
-const handleControllerError = (res: Response, error: unknown) => {
-    if (error instanceof Error) {
-        if (error.message.includes('inválido') || error.message.includes('Falta')) {
-            return res.status(400).json({ ok: false, message: error.message });
-        }
-        if (error.message.includes('Contraseña incorrecta') || error.message.includes('deshabilitada')|| error.message.includes('refresh token')) {
-            return res.status(401).json({ ok: false, message: error.message });
-        }
-        if (error.message.includes('No autorizado')) {
-            return res.status(403).json({ ok: false, message: error.message });
-        }
-        if (error.message.includes('no encontrado') || error.message.includes('No se encontraron')) {
-            return res.status(404).json({ ok: false, message: error.message });
-        }
-        console.error('Error en el controlador:', error.message);
-        return res.status(500).json({
-            ok: false,
-            message: 'Error interno del servidor.',
-            error: error.message
-        });
-    }
-    return res.status(500).json({
-        ok: false,
-        message: 'Error interno del servidor.',
-        error: 'Error desconocido'
-    });
-};
 
 export const authController = {
     loginUser: async (req: Request, res: Response) => {
@@ -57,7 +27,7 @@ export const authController = {
                 token: accessToken,
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     },
 
@@ -72,21 +42,21 @@ export const authController = {
             const refreshToken = req.cookies?.refreshToken as string | undefined;
 
             if (!refreshToken || refreshToken.trim() === '') {
-                return handleControllerError(res, new Error('Falta refresh token'));
+                return handlerControllerError(res, new Error('Falta refresh token'));
             }
 
             const payload = verifyRefreshToken(refreshToken!) as any;
             const userId = Number(payload.id)
 
             if (isNaN(userId) || !userId) {
-                return handleControllerError(res, new Error('Payload inválido en refresh token: ID no válido'));
+                return handlerControllerError(res, new Error('Payload inválido en refresh token: ID no válido'));
             }
 
             // Verificar que el usuario aún existe y está activo
             const user = await UserService.getOneVisible(userId);
 
             if (!user) {
-                return handleControllerError(res, new Error('Usuario no encontrado o inactivo'));
+                return handlerControllerError(res, new Error('Usuario no encontrado o inactivo'));
             }
 
             const payloadForTokens = {
@@ -129,7 +99,7 @@ export const authController = {
                 message: 'Logout exitoso' 
             });
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     }
 }

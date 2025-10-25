@@ -11,9 +11,6 @@ import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
-//import Divider from '@mui/material/Divider';
-//import Link from '@mui/material/Link';
-//import ForgotPassword from '../components/ui/ForgotPassword'
 import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
 import { SitemarkIcon } from '../components/ui/components/internals/components/CustomIcons'
@@ -78,16 +75,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
   });
   const [serverError, setServerError] = useState<string | null>(null); // Para errores del servidor
   
-  //const [open, setOpen] = React.useState(false);
-  /*const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-  */
-
   if (isAuthenticated) {
     navigate('/dashboard', { replace: true });
     return null; 
@@ -153,7 +140,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             ? err.message 
             : 'Error desconocido al iniciar sesión.';
         setServerError(errorMessage);
-        // Opcional: También puedes mostrar el error con setEmailError/setPasswordError si corresponde.
         setUsernameError(true);
         setUsernameErrorMessage(errorMessage); 
         setPasswordError(true);
@@ -232,7 +218,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
             />
-            {/*<ForgotPassword open={open} handleClose={handleClose} />*/}
 
             {serverError && (
                 <Typography color="error" variant="body2" sx={{ alignSelf: 'center' }}>
@@ -247,15 +232,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             >
               {isLoading ? 'Cargando...' : 'Sign in'}
             </Button>
-            {/*<Link
-              component="button"
-              type="button"
-              onClick={handleClickOpen}
-              variant="body2"
-              sx={{ alignSelf: 'center' }}
-            >
-              Forgot your password?
-            </Link>*/}
           </Box>
         </Card>
       </SignInContainer>

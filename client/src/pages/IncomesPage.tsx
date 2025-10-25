@@ -1,11 +1,9 @@
 import { useIncomes } from '../hooks/useIncome';
-import { useAuth } from '../hooks/useAuth';
-import IncomeTable from '../components/ui/components/tables/IncomeTable';
-import { Box, Button, Typography, CircularProgress } from '@mui/material';
+import IncomeTable from '../components/tables/IncomeTable';
+import { Box, Typography, CircularProgress } from '@mui/material';
 
 export const IncomesPage: React.FC = () => {
   const { data: incomes = [], isLoading, isError, error } = useIncomes();
-  const { logout } = useAuth();
 
   // 1. Estado de Carga
   if (isLoading) {
@@ -32,9 +30,6 @@ export const IncomesPage: React.FC = () => {
         <Typography variant="body1" component="p" sx={{ mb: 2 }}>
           No se pudo completar la solicitud. Por favor, intente cerrar sesión y volver a entrar.
         </Typography>
-        <Button variant="contained" color="primary" onClick={logout}>
-          Cerrar Sesión
-        </Button>
       </Box>
     );
   }
@@ -46,9 +41,6 @@ export const IncomesPage: React.FC = () => {
         <Typography variant="h4">
           Listado de Ingresos ({incomes.length})
         </Typography>
-        <Button variant="contained" color="primary" onClick={logout}>
-          Cerrar Sesión
-        </Button>
       </Box>
 
       {incomes.length > 0 ? (

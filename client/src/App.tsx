@@ -1,13 +1,14 @@
 import './App.css'
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, PublicOnlyRoute } from './components/shared/ProtectedRoute';
+import AppLayout from './components/layout/AppLayout';
+
 import { DashboardPage } from './pages/DashboardPage';
 import { CashesPage } from './pages/CashesPage';
 import { IncomesPage } from './pages/IncomesPage';
 import { OutcomesPage } from './pages/OutcomesPage';
 import { PersonsPage } from './pages/PersonsPage';
-import IncomeForm from './components/ui/components/forms/IncomeForm'
-//import { LoginPage } from './pages/LoginPage';
+import IncomeForm from './components/forms/IncomeForm'
 import SignIn from './pages/SignIn';
 
 function App() {
@@ -27,14 +28,16 @@ function App() {
 
       {/* 3. Rutas Protegidas (Requieren autenticación) */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/personas" element={<PersonsPage />} />
-        <Route path="/cajas" element={<CashesPage />} />
-        <Route path="/ingresos" element={<IncomesPage />} />
-        <Route path="/egresos" element={<OutcomesPage />} />
-        <Route path="/nuevo-ingreso" element={<IncomeForm />} />
-        {/* Ejemplo de otra ruta protegida: */}
-        {/* <Route path="/usuarios" element={<UsersManagementPage />} /> */}
+        <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/personas" element={<PersonsPage />} />
+          <Route path="/cajas" element={<CashesPage />} />
+          <Route path="/ingresos" element={<IncomesPage />} />
+          <Route path="/egresos" element={<OutcomesPage />} />
+          <Route path="/nuevo-ingreso" element={<IncomeForm />} />
+          {/* Ejemplo de otra ruta protegida: */}
+          {/* <Route path="/usuarios" element={<UsersManagementPage />} /> */}
+        </Route>
       </Route>
 
       {/* 4. Ruta 404 (Página no encontrada) */}

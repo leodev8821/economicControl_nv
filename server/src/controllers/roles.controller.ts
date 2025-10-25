@@ -1,30 +1,6 @@
 import { Request, Response } from 'express';
+import handlerControllerError from '../utils/handleControllerError';
 import { RoleService } from '../services/role.service';
-
-/**
- * Función genérica para manejar errores en los controladores.
- */
-const handleControllerError = (res: Response, error: unknown) => {
-    if (error instanceof Error) {
-        if (error.message.includes('inválido') || error.message.includes('obligatorio') || error.message.includes('Falta')) {
-            return res.status(400).json({ ok: false, message: error.message });
-        }
-        if (error.message.includes('no encontrado') || error.message.includes('No se encontraron')) {
-            return res.status(404).json({ ok: false, message: error.message });
-        }
-        console.error('Error en el controlador:', error.message);
-        return res.status(500).json({
-            ok: false,
-            message: 'Error interno del servidor.',
-            error: error.message
-        });
-    }
-    return res.status(500).json({
-        ok: false,
-        message: 'Error interno del servidor.',
-        error: 'Error desconocido'
-    });
-};
 
 export const rolesController = {
     allRoles: async (_req: Request, res: Response) => {
@@ -42,7 +18,7 @@ export const rolesController = {
             });
 
         } catch (error) {
-            return handleControllerError(res, error);
+            return handlerControllerError(res, error);
         }
     }
 }

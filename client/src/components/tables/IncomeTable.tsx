@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
-import type { Income } from '../../../../types/income';
+import type { Income } from '../../types/income';
 
 interface IncomeTableProps {
   incomes: Income[];

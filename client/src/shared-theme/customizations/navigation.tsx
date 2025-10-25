@@ -11,6 +11,19 @@ import UnfoldMoreRoundedIcon from '@mui/icons-material/UnfoldMoreRounded';
 import { gray, brand } from '../themePrimitives';
 
 export const navigationCustomizations: Components<Theme> = {
+  // Estilos para el botón de la lista (el sidebar)
+  MuiListItemButton: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        '&.Mui-selected': {
+          backgroundColor: theme.palette.action.selected,
+        },
+        '&.Mui-selected:hover': {
+          backgroundColor: theme.palette.action.hover,
+        },
+      }),
+    },
+  },
   MuiMenuItem: {
     styleOverrides: {
       root: ({ theme }) => ({
