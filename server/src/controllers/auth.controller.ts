@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import handlerControllerError from '../utils/handleControllerError';
-import { UserService } from '../services/user.service';
+import ControllerErrorHandler from '../utils/ControllerErrorHandler';
+import { usersController } from './users.controller';
 import { REFRESH_COOKIE_OPTIONS } from '../config/cookies.config';
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from '../services/token.service';
 
@@ -9,7 +9,7 @@ export const authController = {
         try {
             const { login_data, password } = req.body;
 
-            const tokenResult = await UserService.login(login_data, password);
+            const tokenResult = await usersController.loginUser(login_data, password);
 
             // tokenResult.token contiene el Access Token y el Refresh Token separados por '|'
             const [accessToken, refreshToken] = tokenResult.token.split('|');
@@ -27,7 +27,7 @@ export const authController = {
                 token: accessToken,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al iniciar sesión.' );
         }
     },
 
@@ -42,21 +42,21 @@ export const authController = {
             const refreshToken = req.cookies?.refreshToken as string | undefined;
 
             if (!refreshToken || refreshToken.trim() === '') {
-                return handlerControllerError(res, new Error('Falta refresh token'));
+                return ControllerErrorHandler(res, new Error('Falta refresh token'), 'No se proporcionó el refresh token.' );
             }
 
             const payload = verifyRefreshToken(refreshToken!) as any;
             const userId = Number(payload.id)
 
             if (isNaN(userId) || !userId) {
-                return handlerControllerError(res, new Error('Payload inválido en refresh token: ID no válido'));
+                return ControllerErrorHandler(res, new Error('Payload inválido en refresh token: ID no válido'), 'Payload inválido en refresh token.' );
             }
 
             // Verificar que el usuario aún existe y está activo
-            const user = await UserService.getOneVisible(userId);
+            const user = await usersController.getOneVisible(userId);
 
             if (!user) {
-                return handlerControllerError(res, new Error('Usuario no encontrado o inactivo'));
+                return ControllerErrorHandler(res, new Error('Usuario no encontrado o inactivo'), 'El usuario asociado al refresh token no existe o está inactivo.' );
             }
 
             const payloadForTokens = {
@@ -99,7 +99,7 @@ export const authController = {
                 message: 'Logout exitoso' 
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al cerrar sesión.' );
         }
     }
 }

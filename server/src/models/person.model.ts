@@ -12,6 +12,14 @@ export interface PersonAttributes {
   isVisible: boolean;
 }
 
+export type PersonSearchData = {
+  id?: number;
+  first_name?: string;
+  last_name?: string;
+  dni?: string | undefined;
+  isVisible?: boolean;
+};
+
 /** Campos opcionales al crear (id autoincremental, isVisible tiene un valor por defecto) */
 export interface PersonCreationAttributes extends Optional<PersonAttributes, "id" | "isVisible"> {}
 
@@ -57,3 +65,60 @@ PersonModel.init(
     modelName: 'Person'
   }
 );
+
+export class PersonActions {
+
+    /**
+     * Obtiene todas las personas de la base de datos.
+     * @returns promise con un array de objetos PersonAttributes.
+     */
+    public static async getAll(): Promise<PersonAttributes[]> {
+        const persons = await PersonModel.findAll();
+        return persons.map(person => person.get({ plain: true }));
+    }
+
+    /**
+     * obtiene un persona que cumpla con los criterios de búsqueda proporcionados.
+     * @param data criterios de búsqueda.
+     * @returns promise con un objeto PersonAttributes o null si no se encuentra ningun persona.
+     */
+    public static async getOne(data: PersonSearchData): Promise<PersonAttributes | null> {
+        const person = await PersonModel.findOne({ where: data});
+        return person ? person.get({ plain: true }) : null;
+    }
+
+    /**
+     * Crea un nuevo persona en la base de datos.
+     * @param data datos de la persona a crear.
+     * @returns promise con el objeto PersonAttributes creado.
+     */
+    public static async create(data: PersonCreationAttributes): Promise<PersonAttributes> {
+        const newPerson = await PersonModel.create(data);
+        return newPerson.get({ plain: true });
+    }
+
+    /**
+     * Elimina un persona de la base de datos por su ID.
+     * @param data criterios de búsqueda para la persona a eliminar.
+     * @returns promise con un booleano que indica si la eliminación fue exitosa.
+     */
+    public static async delete(data: PersonSearchData): Promise<boolean> {
+        const deletedCount = await PersonModel.destroy({ where: data });
+        return deletedCount > 0;
+    }
+
+    /**
+     * Actualiza un persona existente en la base de datos.
+     * @param id ID de la persona a actualizar.
+     * @param data datos a actualizar.
+     * @returns promise con un booleano que indica si la actualización fue exitosa.
+     */
+    public static async update(id: number, data: Partial<PersonCreationAttributes>): Promise<PersonAttributes | null> {
+        const [updatedCount] = await PersonModel.update(data, { where: { id } });
+        if(updatedCount === 0) {
+            return null;
+        }
+        const updatedPerson = await PersonModel.findByPk(id);
+        return updatedPerson ? updatedPerson.get({ plain: true }) : null;
+    }
+}

@@ -1,72 +1,65 @@
 import { Request, Response } from 'express';
-import handlerControllerError from '../utils/handleControllerError';
-import { IncomeService } from '../services/income.service';
+import ControllerErrorHandler from '../utils/ControllerErrorHandler';
+import type { IncomeSearchData } from '../models/income.model';
+import { IncomeActions, IncomeCreationAttributes, IncomeAttributes } from '../models/income.model';
+import { IncomeCreationSchema, IncomeCreationRequest, IncomeUpdateSchema, IncomeUpdateRequest } from '../schemas/income.schema';
 
-/**
- * Objeto que contiene todos los controladores (handlers de rutas)
- * para la gestión de Ingresos.
- */
+
 export const incomesController = {
-    /**
-     * Obtiene todos los ingresos
-     */
-    allIncomes : async (_req: Request, res: Response) => {
+    // Obtiene todas las ingresos
+    allIncomes: async (_req: Request, res: Response) => {
         try {
-            const incomes = await IncomeService.getAll();
-            
-            // Si no hay ingresos, el servicio ya nos devuelve un array vacío,
-            // por lo que el controlador puede manejar el 404 aquí.
+            const incomes: IncomeAttributes[] = await IncomeActions.getAll();
+
             if (incomes.length === 0) {
                 return res.status(404).json({ 
                     ok: false, 
                     message: 'No se encontraron ingresos.' 
                 });
             }
-            
+
             return res.status(200).json({
                 ok: true,
-                message: 'Ingresos obtenidos correctamente.',
+                message: 'Ingresos obtenidas correctamente.',
                 data: incomes,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al obtener las ingresos.');
         }
     },
 
-    /**
-     * Obtiene un ingreso por ID
-     */
-    oneIncome : async (req: Request, res: Response) => {
+    // Obtiene una ingreso por ID o nombre
+    oneIncome: async (req: Request, res: Response) => {
         try {
-            const { id } = req.params;
+            const { id, person_id, source } = req.params;
+            const searchCriteria: IncomeSearchData = {};
 
-            // Validar la existencia del parámetro
-            if (!id) {
-                throw new Error('Falta el ID del ingreso en los parámetros de la URL.');
+            if (id) {
+                searchCriteria.id = parseInt(id, 10);
             }
+            if (person_id) {
+                searchCriteria.person_id = parseInt(person_id, 10);
+            }
+            if (source) {
+                searchCriteria.source = source;
+            }
+            
+            const income = await IncomeActions.getOne(searchCriteria);
 
-            const numericId = parseInt(id, 10);
-            
-            // El servicio se encarga de validar si el ID es un número positivo
-            const income = await IncomeService.getOneById(numericId);
-            
             if (!income) {
-                return res.status(404).json({ 
-                    ok: false, 
-                    message: `Ingreso con ID ${id} no encontrado.`
-                });
+                return res.status(404).json({ message: 'No se encontró la ingreso con los parámetros proporcionados.' });
             }
-            
+
             return res.status(200).json({
                 ok: true,
-                message: 'Ingreso obtenido correctamente.',
+                message: 'Ingreso obtenida correctamente.',
                 data: income,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al obtener la ingreso.' );
         }
     },
-    
+
     /**
      * Obtiene ingresos de diezmo por DNI de persona
      */
@@ -80,7 +73,7 @@ export const incomesController = {
             }
 
             // El servicio se encarga de validar el DNI
-            const incomes = await IncomeService.getTitheIncomesByDni(dni);
+            const incomes = await IncomeActions.getTitheIncomesByDni(dni);
 
             if (incomes.length === 0) {
                 return res.status(404).json({ 
@@ -95,7 +88,7 @@ export const incomesController = {
                 data: incomes,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al obtener los ingresos de diezmo.' );
         }
     },
 
@@ -112,7 +105,7 @@ export const incomesController = {
             }
             
             // El servicio se encarga de validar el formato de fecha
-            const incomes = await IncomeService.getIncomesByDate(date);
+            const incomes = await IncomeActions.getIncomesByDate(date);
             
             if (incomes.length === 0) {
                 return res.status(404).json({ 
@@ -127,92 +120,98 @@ export const incomesController = {
                 data: incomes,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al obtener los ingresos por fecha.' );
         }
     },
 
-    /**
-     * Crea un nuevo ingreso
-     */
+    // Crea una nueva ingreso
     createIncome: async (req: Request, res: Response) => {
         try {
-            // El servicio se encarga de validar los datos
-            const newIncome = await IncomeService.create(req.body);
+
+            const validationResult = IncomeCreationSchema.safeParse(req.body);
+
+            if (!validationResult.success) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Datos de nueva ingreso inválidos.',
+                    errors: validationResult.error.issues,
+                });
+            }
+
+            const incomeData: IncomeCreationRequest = validationResult.data;
             
+            const newIncome = await IncomeActions.create(incomeData as IncomeCreationAttributes);
+
             return res.status(201).json({
                 ok: true,
-                message: 'Ingreso creado correctamente.',
+                message: 'Ingreso creada correctamente.',
                 data: newIncome,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al crear la ingreso.' );
         }
     },
 
-    /**
-     * Actualiza un ingreso existente
-     */
     updateIncome: async (req: Request, res: Response) => {
         try {
-            const { id } = req.params;
+            const incomeId = parseInt(req.params.id || '0', 10);
 
-            // Validar la existencia del parámetro
-            if (!id) {
-                throw new Error('Falta el ID del ingreso en los parámetros de la URL.');
+            if (!incomeId) {
+                return res.status(400).json({ ok: false, message: 'ID de ingreso inválido' });
             }
+            
+            const validationResult = IncomeUpdateSchema.safeParse(req.body);
 
-            const numericId = parseInt(id, 10);
-            
-            const updatedIncome = await IncomeService.update(numericId, req.body);
-            
-            if (!updatedIncome) {
-                // Se asume que el servicio devuelve null/undefined si no se encuentra o no hay cambios
-                return res.status(404).json({
+            if (!validationResult.success) {
+                return res.status(400).json({
                     ok: false,
-                    message: `Ingreso con ID ${id} no encontrado o sin cambios.`
+                    message: 'Datos de actualización de ingreso inválidos.',
+                    errors: validationResult.error.issues,
                 });
             }
-            
+
+            const updateData : IncomeUpdateRequest = validationResult.data;
+
+            if (Object.keys(updateData).length === 0) {
+                return res.status(400).json({ ok: false, message: 'No se proporcionaron datos para actualizar.' });
+            }
+
+            const updatedIncome = await IncomeActions.update(incomeId, updateData as Partial<IncomeCreationAttributes>);
+
+            if (!updatedIncome) {
+                return res.status(404).json({ ok: false, message: 'Ingreso no encontrada para actualizar.' });
+            }
+
             return res.status(200).json({
                 ok: true,
-                message: 'Ingreso actualizado correctamente.',
+                message: 'Ingreso actualizada correctamente.',
                 data: updatedIncome,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al actualizar la ingreso.' );
         }
     },
 
-    /**
-     * Elimina un ingreso por ID
-     */
     deleteIncome: async (req: Request, res: Response) => {
         try {
-            const { id } = req.params;
+            const incomeId = parseInt(req.params.id || '0', 10);
 
-            // Validar la existencia del parámetro
-            if (!id) {
-                throw new Error('Falta el ID del ingreso en los parámetros de la URL.');
+            if (!incomeId) {
+                return res.status(400).json({ ok: false, message: 'ID de ingreso inválido' });
             }
-            
-            const numericId = parseInt(id, 10);
-            
-            // El servicio debería devolver true si se eliminó, false si no se encontró
-            const wasDeleted = await IncomeService.delete(numericId);
-            
-            if (!wasDeleted) {
-                return res.status(404).json({
-                    ok: false,
-                    message: `Ingreso con ID ${id} no encontrado.`
-                });
+
+            const deleted = await IncomeActions.delete({ id: incomeId });
+
+            if (!deleted) {
+                return res.status(404).json({ ok: false, message: 'No se encontró la ingreso para eliminar.' });
             }
-            
+
             return res.status(200).json({
                 ok: true,
-                message: 'Ingreso eliminado correctamente.',
+                message: 'Ingreso eliminada correctamente.',
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al eliminar la ingreso.' );
         }
     }
-}
+};

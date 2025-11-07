@@ -1,5 +1,6 @@
 import { DataTypes, Model as SequelizeModel, Optional } from "sequelize";
 import { getSequelizeConfig } from "../config/mysql";
+import { WeekModel } from "./week.model";
 
 const connection = getSequelizeConfig();
 
@@ -11,6 +12,11 @@ export interface ReportAttributes {
   total_outcome: number;
   net_balance: number;
 }
+
+export type ReportSearchData = {
+  id?: number;
+  week_id?: number;
+};
 
 /** Campos opcionales al crear (id autoincremental) */
 export interface ReportCreationAttributes
@@ -27,6 +33,16 @@ export class ReportModel
   declare total_outcome: number;
   declare net_balance: number;
 }
+
+// 💡 Constante para la configuración de inclusión (JOINs)
+const REPORT_INCLUDE_CONFIG = [
+    {
+        model: WeekModel, 
+        as: 'Week',
+        attributes: ['id', 'week_start', 'week_end'],
+        required: true,
+    }
+];
 
 /** Inicialización del modelo */
 ReportModel.init(
@@ -68,3 +84,61 @@ ReportModel.init(
     modelName: 'Report'
   }
 );
+
+export class ReportActions {
+
+  
+      /**
+       * Obtiene todas las reportes de la base de datos.
+       * @returns promise con un array de objetos ReportAttributes.
+       */
+      public static async getAll(): Promise<ReportAttributes[]> {
+          const reports = await ReportModel.findAll({ include: REPORT_INCLUDE_CONFIG });
+          return reports.map(report => report.get({ plain: true }));
+      }
+  
+      /**
+       * obtiene un reporte que cumpla con los criterios de búsqueda proporcionados.
+       * @param data criterios de búsqueda.
+       * @returns promise con un objeto ReportAttributes o null si no se encuentra ningun reporte.
+       */
+      public static async getOne(data: ReportSearchData): Promise<ReportAttributes | null> {
+        const report = await ReportModel.findOne({ where: data, include: REPORT_INCLUDE_CONFIG});
+        return report ? report.get({ plain: true }) : null;
+      }
+  
+      /**
+       * Crea un nuevo reporte en la base de datos.
+       * @param data datos de la reporte a crear.
+       * @returns promise con el objeto ReportAttributes creado.
+       */
+      public static async create(data: ReportCreationAttributes): Promise<ReportAttributes> {
+          const newReport = await ReportModel.create(data);
+          return newReport.get({ plain: true });
+      }
+  
+      /**
+       * Elimina un reporte de la base de datos por su ID.
+       * @param data criterios de búsqueda para la reporte a eliminar.
+       * @returns promise con un booleano que indica si la eliminación fue exitosa.
+       */
+      public static async delete(data: ReportSearchData): Promise<boolean> {
+          const deletedCount = await ReportModel.destroy({ where: data });
+          return deletedCount > 0;
+      }
+  
+      /**
+       * Actualiza un reporte existente en la base de datos.
+       * @param id ID de la reporte a actualizar.
+       * @param data datos a actualizar.
+       * @returns promise con un booleano que indica si la actualización fue exitosa.
+       */
+      public static async update(id: number, data: Partial<ReportCreationAttributes>): Promise<ReportAttributes | null> {
+          const [updatedCount] = await ReportModel.update(data, { where: { id } });
+          if(updatedCount === 0) {
+              return null;
+          }
+          const updatedReport = await ReportModel.findByPk(id);
+          return updatedReport ? updatedReport.get({ plain: true }) : null;
+      }
+}

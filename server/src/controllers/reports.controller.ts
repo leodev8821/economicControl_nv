@@ -1,128 +1,149 @@
 import { Request, Response } from 'express';
-import handlerControllerError from '../utils/handleControllerError';
-import { ReportService } from '../services/report.service';
+import ControllerErrorHandler from '../utils/ControllerErrorHandler';
+import type { ReportSearchData } from '../models/report.model';
+import { ReportActions, ReportCreationAttributes, ReportAttributes } from '../models/report.model';
+import { ReportCreationSchema, ReportCreationRequest, ReportUpdateSchema, ReportUpdateRequest } from '../schemas/report.schema';
 
 export const reportsController = {
+    // Obtiene todas las reportes
     allReports: async (_req: Request, res: Response) => {
         try {
-            const reports = await ReportService.getAll();
+            const reports: ReportAttributes[] = await ReportActions.getAll();
+
             if (reports.length === 0) {
-                return res.status(404).json({ ok: false, message: 'No se encontraron informes.' });
+                return res.status(404).json({ 
+                    ok: false, 
+                    message: 'No se encontraron reportes.' 
+                });
             }
+
             return res.status(200).json({
                 ok: true,
-                message: 'Informes obtenidos correctamente.',
+                message: 'Reportes obtenidas correctamente.',
                 data: reports,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al obtener las reportes.');
         }
     },
-    
-    // Esta función necesita una pequeña refactorización en el backend para buscar la semana
-    // por fecha antes de llamar al ReportService. O bien, podrías tener una ruta que reciba
-    // directamente el week_id. Por ahora, asumo que la búsqueda se hace aquí.
-    reportByWeek: async (req: Request, res: Response) => {
+
+    // Obtiene una reporte por ID o week_id
+    oneReport: async (req: Request, res: Response) => {
         try {
-            const { week_id } = req.params;
-            if (!week_id) {
-                 throw new Error('Falta el ID de la semana en los parámetros de la URL.');
+            const { id, week_id } = req.params;
+            const searchCriteria: ReportSearchData = {};
+
+            if (id) {
+                searchCriteria.id = parseInt(id, 10);
             }
-            const numericWeekId = parseInt(week_id, 10);
+            if (week_id) {
+                searchCriteria.week_id = parseInt(week_id, 10);
+            }
             
-            const report = await ReportService.getOneByWeekId(numericWeekId);
+            const report = await ReportActions.getOne(searchCriteria);
+
             if (!report) {
-                return res.status(404).json({ ok: false, message: 'No se encontró informe para esta semana.' });
+                return res.status(404).json({ message: 'No se encontró la reporte con los parámetros proporcionados.' });
             }
 
             return res.status(200).json({
                 ok: true,
-                message: 'Informe obtenido correctamente.',
+                message: 'Reporte obtenida correctamente.',
                 data: report,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al obtener la reporte.' );
         }
     },
 
+    // Crea una nueva reporte
     createReport: async (req: Request, res: Response) => {
         try {
-            const newReport = await ReportService.create(req.body);
+
+            const validationResult = ReportCreationSchema.safeParse(req.body);
+
+            if (!validationResult.success) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Datos de nueva reporte inválidos.',
+                    errors: validationResult.error.issues,
+                });
+            }
+
+            const reportData: ReportCreationRequest = validationResult.data;
+            
+            const newReport = await ReportActions.create(reportData as ReportCreationAttributes);
+
             return res.status(201).json({
                 ok: true,
-                message: 'Informe creado correctamente.',
+                message: 'Reporte creada correctamente.',
                 data: newReport,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
-        }
-    },
-
-    oneReport: async (req: Request, res: Response) => {
-        try {
-            const { id } = req.params;
-            if (!id) {
-                throw new Error('Falta el ID del informe en los parámetros de la URL.');
-            }
-            const numericId = parseInt(id, 10);
-            
-            const report = await ReportService.getOneById(numericId);
-            if (!report) {
-                return res.status(404).json({ ok: false, message: 'Informe no encontrado.' });
-            }
-
-            return res.status(200).json({
-                ok: true,
-                message: 'Informe obtenido correctamente.',
-                data: report,
-            });
-        } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al crear la reporte.' );
         }
     },
 
     updateReport: async (req: Request, res: Response) => {
         try {
-            const { id } = req.params;
-            if (!id) {
-                throw new Error('Falta el ID del informe en los parámetros de la URL.');
+            const reportId = parseInt(req.params.id || '0', 10);
+
+            if (!reportId) {
+                return res.status(400).json({ ok: false, message: 'ID de reporte inválido' });
             }
-            const numericId = parseInt(id, 10);
             
-            const updatedReport = await ReportService.update(numericId, req.body);
+            const validationResult = ReportUpdateSchema.safeParse(req.body);
+
+            if (!validationResult.success) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Datos de actualización de reporte inválidos.',
+                    errors: validationResult.error.issues,
+                });
+            }
+
+            const updateData : ReportUpdateRequest = validationResult.data;
+
+            if (Object.keys(updateData).length === 0) {
+                return res.status(400).json({ ok: false, message: 'No se proporcionaron datos para actualizar.' });
+            }
+
+            const updatedReport = await ReportActions.update(reportId, updateData as Partial<ReportCreationAttributes>);
+
             if (!updatedReport) {
-                return res.status(404).json({ ok: false, message: 'Informe no encontrado o sin cambios.' });
+                return res.status(404).json({ ok: false, message: 'Reporte no encontrada para actualizar.' });
             }
 
             return res.status(200).json({
                 ok: true,
-                message: 'Informe actualizado correctamente.',
+                message: 'Reporte actualizada correctamente.',
                 data: updatedReport,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al actualizar la reporte.' );
         }
     },
 
     deleteReport: async (req: Request, res: Response) => {
         try {
-            const { id } = req.params;
-            if (!id) {
-                throw new Error('Falta el ID del informe en los parámetros de la URL.');
+            const reportId = parseInt(req.params.id || '0', 10);
+
+            if (!reportId) {
+                return res.status(400).json({ ok: false, message: 'ID de reporte inválido' });
             }
-            const numericId = parseInt(id, 10);
-            
-            const wasDeleted = await ReportService.delete(numericId);
-            if (!wasDeleted) {
-                return res.status(404).json({ ok: false, message: 'Informe no encontrado.' });
+
+            const deleted = await ReportActions.delete({ id: reportId });
+
+            if (!deleted) {
+                return res.status(404).json({ ok: false, message: 'No se encontró la reporte para eliminar.' });
             }
 
             return res.status(200).json({
                 ok: true,
-                message: 'Informe eliminado correctamente.',
+                message: 'Reporte eliminada correctamente.',
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al eliminar la reporte.' );
         }
     }
 };

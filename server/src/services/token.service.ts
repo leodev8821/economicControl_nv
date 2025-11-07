@@ -1,16 +1,22 @@
-import jwt from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import { tokenUtils, TokenSignResult } from '../utils/token.utils';
 import { UserRole } from '../models/user.model';
 
 // Leer variables de entorno (token.utils ya llama a dotenv.config)
-const REFRESH_SECRET = process.env.REFRESH_SECRET;
-const REFRESH_TOKEN_EXPIRATION = process.env.REFRESH_TOKEN_EXPIRATION || '6d';
+const REFRESH_SECRET: Secret = process.env.REFRESH_SECRET || '';
+const REFRESH_TOKEN_EXPIRATION: string = process.env.REFRESH_TOKEN_EXPIRATION || '6d';
 
 if (!REFRESH_SECRET) {
   throw new Error('REFRESH_SECRET no está definida en las variables de entorno.');
 }
 
-export type LoginPayload = { id: number, role: UserRole, username: string, first_name: string, last_name: string };
+export type LoginPayload = { 
+  id: number, 
+  role: UserRole, 
+  username: string, 
+  first_name: string, 
+  last_name: string 
+};
 
 /**
  * Extrae el token sin el prefijo "Bearer "
@@ -34,9 +40,13 @@ export const createAccessToken = async (payload: LoginPayload): Promise<TokenSig
  */
 export const createRefreshToken = (payload: LoginPayload): string => {
   try {
-    const token = jwt.sign(payload, REFRESH_SECRET, {
-      expiresIn: REFRESH_TOKEN_EXPIRATION,
-    });
+    const token = jwt.sign(
+      payload as jwt.JwtPayload,
+      REFRESH_SECRET as Secret,
+      {
+        expiresIn: REFRESH_TOKEN_EXPIRATION,
+      } as jwt.SignOptions
+    );
     return token;
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido al crear refresh token';

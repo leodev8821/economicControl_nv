@@ -8,7 +8,7 @@ import { decodeAccessToken, verifyLogin } from "../middlewares/decode.middleware
 import { cashesController } from "../controllers/cashes.controller";
 import { incomesController } from "../controllers/incomes.controller";
 import { outcomesController } from "../controllers/outcomes.controller";
-import { personController } from "../controllers/persons.controller";
+import { personsController } from "../controllers/persons.controller";
 import { reportsController } from "../controllers/reports.controller";
 import { rolesController } from "../controllers/roles.controller";
 import { weeksController } from "../controllers/weeks.controller";
@@ -58,16 +58,16 @@ router.get('/outcomes/cash/:cash_id', decodeAccessToken, verifyLogin, outcomesCo
 // 🧑 PERSONAS (PERSONS)
 // Se usa :id/:dni para buscar por ambos
 // =================================================================
-router.get('/persons', decodeAccessToken, verifyLogin, personController.allPersons);
-router.get('/persons/:id', decodeAccessToken, verifyLogin, personController.onePerson);
-router.get('/persons/dni/:dni', decodeAccessToken, verifyLogin, personController.onePerson);
-router.post('/persons/new-person', decodeAccessToken, verifyLogin, personController.createPerson);
+router.get('/persons', decodeAccessToken, verifyLogin, personsController.allPersons);
+router.get('/persons/:id', decodeAccessToken, verifyLogin, personsController.onePerson);
+router.get('/persons/dni/:dni', decodeAccessToken, verifyLogin, personsController.onePerson);
+router.post('/persons/new-person', decodeAccessToken, verifyLogin, personsController.createPerson);
 // Se puede actualizar por id o dni
-router.put('/persons/:id', decodeAccessToken, verifyLogin, personController.updatePerson);
-router.put('/persons/dni/:dni', decodeAccessToken, verifyLogin, personController.updatePerson);
+router.put('/persons/:id', decodeAccessToken, verifyLogin, personsController.updatePerson);
+router.put('/persons/dni/:dni', decodeAccessToken, verifyLogin, personsController.updatePerson);
 // Se puede eliminar por id o dni
-router.delete('/persons/:id', decodeAccessToken, verifyLogin, personController.deletePerson);
-router.delete('/persons/dni/:dni', decodeAccessToken, verifyLogin, personController.deletePerson);
+router.delete('/persons/:id', decodeAccessToken, verifyLogin, personsController.deletePerson);
+router.delete('/persons/dni/:dni', decodeAccessToken, verifyLogin, personsController.deletePerson);
 
 
 // =================================================================
@@ -75,10 +75,10 @@ router.delete('/persons/dni/:dni', decodeAccessToken, verifyLogin, personControl
 // =================================================================
 router.get('/reports', decodeAccessToken, verifyLogin, reportsController.allReports);
 router.get('/reports/:id', decodeAccessToken, verifyLogin, reportsController.oneReport);
+router.get('/reports/week/:week_id', decodeAccessToken, verifyLogin, reportsController.oneReport);
 router.post('/reports', decodeAccessToken, verifyLogin, reportsController.createReport);
 router.put('/reports/:id', decodeAccessToken, verifyLogin, reportsController.updateReport);
 router.delete('/reports/:id', decodeAccessToken, verifyLogin, reportsController.deleteReport);
-router.get('/reports/week/:week_id', decodeAccessToken, verifyLogin, reportsController.reportByWeek);
 
 
 // =================================================================
@@ -92,7 +92,7 @@ router.get('/roles', decodeAccessToken, verifyLogin, rolesController.allRoles);
 // Nota: getWeekData usa :weekId en el controller, la ruta original era ambigua,
 // la renombro para usar el ID.
 router.get('/weeks', decodeAccessToken, verifyLogin, weeksController.allWeeks);
-router.get('/weeks/:weekId', decodeAccessToken, verifyLogin, weeksController.getWeekData);
+router.get('/weeks/:weekId', decodeAccessToken, verifyLogin, weeksController.oneWeek);
 router.post('/weeks/gen', decodeAccessToken, verifyLogin, weeksController.generateWeeks);
 router.get('/weeks/year/:year', decodeAccessToken, verifyLogin, weeksController.getWeeksByYear);
 

@@ -2,7 +2,9 @@ import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { Cash, Income, Outcome, Person, Report, Role, User, Week } from "../models/index.js";
+import { Cash, Income, Outcome, Person, Report, Role, User, Week } from "../models/index";
+
+import { RoleType } from "../models/role.model";
 
 // Interfaces para tipado
 interface SequelizeConfig {
@@ -13,11 +15,11 @@ interface SequelizeConfig {
 }
 
 interface RoleData {
-    role: string;
+    role: RoleType;
 }
 
 interface SudoUserData {
-    role: string;
+    role: RoleType;
     username: string;
     password: string;
     first_name: string;
@@ -88,8 +90,8 @@ const database: DatabaseConnection = {
             const roleCount: number = await Role.count();
             if (roleCount === 0) {
                 const rolesToInsert: RoleData[] = [
-                    { role: 'Administrador' },
-                    { role: 'SuperUser' }
+                    { role: RoleType.ADMINISTRADOR },
+                    { role: RoleType.SUPER_USER }
                 ];
                 await Role.bulkCreate(rolesToInsert);
                 console.log('✅ Roles iniciales insertados.');
@@ -106,8 +108,13 @@ const database: DatabaseConnection = {
                     throw new Error('Faltan variables de entorno requeridas para el superusuario');
                 }
 
+                // Validar que el rol del superusuario sea válido
+                if (!Object.values(RoleType).includes(MY_SUDO_ROLE as RoleType)) {
+                    throw new Error('El rol del superusuario no es válido');
+                }
+
                 const sudoUser: SudoUserData = {
-                    role: MY_SUDO_ROLE,
+                    role: MY_SUDO_ROLE as RoleType,
                     username: MY_SUDO_USER,
                     password: MY_SUDO_PASSWORD,
                     first_name: MY_SUDO_FIRSTNAME,

@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
-import handlerControllerError from '../utils/handleControllerError';
-import { CashService } from '../services/cash.service';
+import ControllerErrorHandler from '../utils/ControllerErrorHandler';
+import type { CashSearchData } from '../models/cash.model';
+import { CashActions, CashAttributes, CashCreationAttributes } from '../models/cash.model';
+import { CashCreationSchema, CashCreationRequest, CashUpdateSchema, CashUpdateRequest } from '../schemas/cash.schema';
 
 export const cashesController = {
+    // Obtiene todas las cajas
     allCash: async (_req: Request, res: Response) => {
         try {
-            const cashes = await CashService.getAll();
+            const cashes: CashAttributes[] = await CashActions.getAll();
 
             if (cashes.length === 0) {
                 return res.status(404).json({ 
@@ -20,16 +23,24 @@ export const cashesController = {
                 data: cashes,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al obtener las cajas.');
         }
     },
 
+    // Obtiene una caja por ID o nombre
     oneCash: async (req: Request, res: Response) => {
         try {
             const { id, name } = req.params;
-            const cashData = id ? { id: Number(id) } : { name: name! };
+            const searchCriteria: CashSearchData = {};
+
+            if (id) {
+                searchCriteria.id = parseInt(id, 10);
+            }
+            if (name) {
+                searchCriteria.name = name;
+            }
             
-            const cash = await CashService.getOne(cashData);
+            const cash = await CashActions.getOne(searchCriteria);
 
             if (!cash) {
                 return res.status(404).json({ message: 'No se encontró la caja con los parámetros proporcionados.' });
@@ -41,13 +52,27 @@ export const cashesController = {
                 data: cash,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al obtener la caja.' );
         }
     },
 
+    // Crea una nueva caja
     createCash: async (req: Request, res: Response) => {
         try {
-            const newCash = await CashService.create(req.body);
+
+            const validationResult = CashCreationSchema.safeParse(req.body);
+
+            if (!validationResult.success) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Datos de nueva caja inválidos.',
+                    errors: validationResult.error.issues,
+                });
+            }
+
+            const cashData: CashCreationRequest = validationResult.data;
+            
+            const newCash = await CashActions.create(cashData as CashCreationAttributes);
 
             return res.status(201).json({
                 ok: true,
@@ -55,22 +80,38 @@ export const cashesController = {
                 data: newCash,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al crear la caja.' );
         }
     },
 
     updateCash: async (req: Request, res: Response) => {
         try {
-            const { id } = req.params;
-            if (!id) {
-                return res.status(400).json({ ok: false, message: 'Falta el ID en los parámetros de la URL.' });
-            }
-            const numericId = Number(id);
+            const cashId = parseInt(req.params.id || '0', 10);
 
-            const updatedCash = await CashService.update(numericId, req.body);
+            if (!cashId) {
+                return res.status(400).json({ ok: false, message: 'ID de caja inválido' });
+            }
+            
+            const validationResult = CashUpdateSchema.safeParse(req.body);
+
+            if (!validationResult.success) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Datos de actualización de caja inválidos.',
+                    errors: validationResult.error.issues,
+                });
+            }
+
+            const updateData : CashUpdateRequest = validationResult.data;
+
+            if (Object.keys(updateData).length === 0) {
+                return res.status(400).json({ ok: false, message: 'No se proporcionaron datos para actualizar.' });
+            }
+
+            const updatedCash = await CashActions.update(cashId, updateData as Partial<CashCreationAttributes>);
 
             if (!updatedCash) {
-                return res.status(404).json({ ok: false, message: `No se encontró la caja con ID ${id} para actualizar.` });
+                return res.status(404).json({ ok: false, message: 'Caja no encontrada para actualizar.' });
             }
 
             return res.status(200).json({
@@ -79,18 +120,21 @@ export const cashesController = {
                 data: updatedCash,
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al actualizar la caja.' );
         }
     },
 
     deleteCash: async (req: Request, res: Response) => {
         try {
-            const { id, name } = req.params;
-            const cashData = id ? { id: Number(id) } : { name: name! };
+            const cashId = parseInt(req.params.id || '0', 10);
 
-            const wasDeleted = await CashService.delete(cashData);
+            if (!cashId) {
+                return res.status(400).json({ ok: false, message: 'ID de caja inválido' });
+            }
 
-            if (!wasDeleted) {
+            const deleted = await CashActions.delete({ id: cashId });
+
+            if (!deleted) {
                 return res.status(404).json({ ok: false, message: 'No se encontró la caja para eliminar.' });
             }
 
@@ -99,7 +143,7 @@ export const cashesController = {
                 message: 'Caja eliminada correctamente.',
             });
         } catch (error) {
-            return handlerControllerError(res, error);
+            return ControllerErrorHandler(res, error, 'Error al eliminar la caja.' );
         }
     }
 };
