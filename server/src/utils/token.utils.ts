@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { LoginPayload } from '../services/user.service'; // Importamos el tipo de payload del servicio
+import { LoginPayload } from '../controllers/users.controller';
 
 // Obtener la ruta absoluta del directorio del proyecto
 const __dirname = dirname(fileURLToPath(import.meta.url));

@@ -141,4 +141,14 @@ export class ReportActions {
           const updatedReport = await ReportModel.findByPk(id);
           return updatedReport ? updatedReport.get({ plain: true }) : null;
       }
+
+      /**
+       * Crea o actualiza un reporte en la base de datos.
+       * @param data Datos del reporte.
+       * @returns El reporte actualizado o creado.
+       */
+      public static async upsert(data: ReportCreationAttributes): Promise<ReportAttributes> {
+        const [report] = await ReportModel.upsert(data);
+        return report.get({ plain: true });
+      }
 }

@@ -3,6 +3,8 @@ import ControllerErrorHandler from '../utils/ControllerErrorHandler';
 import type { ReportSearchData } from '../models/report.model';
 import { ReportActions, ReportCreationAttributes, ReportAttributes } from '../models/report.model';
 import { ReportCreationSchema, ReportCreationRequest, ReportUpdateSchema, ReportUpdateRequest } from '../schemas/report.schema';
+import { IncomeActions } from '../models/income.model';
+import { OutcomeActions } from '../models/outcome.model';
 
 export const reportsController = {
     // Obtiene todas las reportes
@@ -30,7 +32,7 @@ export const reportsController = {
     // Obtiene una reporte por ID o week_id
     oneReport: async (req: Request, res: Response) => {
         try {
-            const { id, week_id } = req.params;
+            const { id, week_id } = req.body;
             const searchCriteria: ReportSearchData = {};
 
             if (id) {
@@ -60,6 +62,39 @@ export const reportsController = {
     createReport: async (req: Request, res: Response) => {
         try {
 
+            const { week_id } = req.body;
+            if (!week_id) {
+                return res.status(400).json({ ok: false, message: 'ID de semana (week_id) es requerido para crear un reporte.' });
+            }
+
+            const targetWeekId = parseInt(week_id, 10);
+
+            const incomesResult = (await IncomeActions.getIncomesByWeekId(targetWeekId)).map(i => ({
+            ...i,
+            amount: parseFloat(String(i.amount)),
+            }));
+
+            const outcomesResult = (await OutcomeActions.getOutcomesByWeekId(targetWeekId)).map(o => ({
+            ...o,
+            amount: parseFloat(String(o.amount)),
+            }));
+
+            if (incomesResult.length === 0 || outcomesResult.length === 0) {
+                return res.status(400).json({ 
+                    ok: false, 
+                    message: 'No se pueden crear reportes sin ingresos o gastos registrados.' 
+                });
+            }
+
+            const incomeTotal: number = incomesResult.reduce((sum, income) => sum + income.amount, 0);
+            const outcomeTotal: number = outcomesResult.reduce((sum, outcome) => sum + outcome.amount, 0);
+            const balance: number = incomeTotal - outcomeTotal;
+
+            req.body.week_id = week_id ? parseInt(week_id, 10) : 0;
+            req.body.total_income = incomeTotal;
+            req.body.total_outcome = outcomeTotal;
+            req.body.net_balance = balance;
+
             const validationResult = ReportCreationSchema.safeParse(req.body);
 
             if (!validationResult.success) {
@@ -72,12 +107,13 @@ export const reportsController = {
 
             const reportData: ReportCreationRequest = validationResult.data;
             
-            const newReport = await ReportActions.create(reportData as ReportCreationAttributes);
+            // Esto creará un nuevo registro si no existe, o actualizará el existente si week_id ya está registrado.
+            const report = await ReportActions.upsert(reportData as ReportCreationAttributes);
 
-            return res.status(201).json({
-                ok: true,
-                message: 'Reporte creada correctamente.',
-                data: newReport,
+            return res.status(200).json({
+            ok: true,
+            message: "Reporte creado o actualizado correctamente.",
+            data: report,
             });
         } catch (error) {
             return ControllerErrorHandler(res, error, 'Error al crear la reporte.' );

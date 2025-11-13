@@ -92,7 +92,10 @@ OutcomeModel.init(
     },
     amount: {
       type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
+      get() {
+        const val = this.getDataValue('amount');
+        return val ? parseFloat(String(val)) : 0;
+      },
     },
     description: {
       type: DataTypes.STRING,

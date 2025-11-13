@@ -6,6 +6,7 @@ import { decodeAccessToken, verifyLogin } from "../middlewares/decode.middleware
 
 // --- CONTROLLERS ---
 import { cashesController } from "../controllers/cashes.controller";
+import { dashboardController } from "../controllers/dashboard.controller";
 import { incomesController } from "../controllers/incomes.controller";
 import { outcomesController } from "../controllers/outcomes.controller";
 import { personsController } from "../controllers/persons.controller";
@@ -76,9 +77,14 @@ router.delete('/persons/dni/:dni', decodeAccessToken, verifyLogin, personsContro
 router.get('/reports', decodeAccessToken, verifyLogin, reportsController.allReports);
 router.get('/reports/:id', decodeAccessToken, verifyLogin, reportsController.oneReport);
 router.get('/reports/week/:week_id', decodeAccessToken, verifyLogin, reportsController.oneReport);
-router.post('/reports', decodeAccessToken, verifyLogin, reportsController.createReport);
+router.post('/create-report', decodeAccessToken, verifyLogin, reportsController.createReport);
 router.put('/reports/:id', decodeAccessToken, verifyLogin, reportsController.updateReport);
 router.delete('/reports/:id', decodeAccessToken, verifyLogin, reportsController.deleteReport);
+
+// =================================================================
+// 📄 BALANCE
+// =================================================================
+router.get('/balance/get-balance', decodeAccessToken, verifyLogin, dashboardController.getBalance);
 
 
 // =================================================================

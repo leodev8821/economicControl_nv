@@ -7,7 +7,7 @@ import { createAccessToken, createRefreshToken } from '../services/token.service
 import dotenv from 'dotenv';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { UniqueConstraintError, Op } from 'sequelize';
+import { UniqueConstraintError } from 'sequelize';
 
 // Tipos auxiliares
 export type LoginPayload = { id: number, role: UserRole, username: string, first_name: string, last_name: string };

@@ -15,7 +15,8 @@ export const ReportCreationSchema = z.object({
     }).positive("El total de egresos debe ser un valor positivo")
     .refine(v => Math.round(v * 100) === v * 100, {
         message: "El total de egresos solo puede tener dos decimales"}),
-
+    
+    net_balance: z.number()
 });
 
 export type ReportCreationRequest = z.infer<typeof ReportCreationSchema>;

@@ -88,8 +88,11 @@ IncomeModel.init({
         defaultValue: DataTypes.NOW,
     },
     amount: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false,
+      type: DataTypes.DECIMAL(10, 2),
+      get() {
+        const val = this.getDataValue('amount');
+        return val ? parseFloat(String(val)) : 0;
+      },
     },
     source: {
         type: DataTypes.ENUM(...Object.values(IncomeSource)),
