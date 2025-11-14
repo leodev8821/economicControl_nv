@@ -37,6 +37,18 @@ Week.hasMany(Income, {
   as: 'Incomes',
 });
 
+// --- Income <-> Cash ---
+Income.belongsTo(Cash, {
+  foreignKey: "cash_id",
+  as: 'Cash',
+});
+
+Cash.hasMany(Income, {
+  foreignKey: "cash_id",
+  onDelete: "CASCADE",
+  as: 'Incomes',
+});
+
 // --- Outcome <-> Cash ---
 Outcome.belongsTo(Cash, {
   foreignKey: "cash_id",

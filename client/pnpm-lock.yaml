@@ -41,6 +41,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.90.2
         version: 5.90.5(react@19.2.0)
+      Paper:
+        specifier: link:@mui/material/Paper
+        version: link:@mui/material/Paper
       axios:
         specifier: ^1.12.2
         version: 1.12.2

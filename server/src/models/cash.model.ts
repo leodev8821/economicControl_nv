@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from "sequelize";
+import { DataTypes, Model, Optional, Transaction } from "sequelize";
 import { getSequelizeConfig } from "../config/mysql";
 
 const connection = getSequelizeConfig();
@@ -98,17 +98,24 @@ export class CashActions {
     }
 
     /**
-     * Actualiza una caja existente en la base de datos.
+     * Actualiza una caja existente en la base de datos, con soporte para transacciones.
      * @param id ID de la caja a actualizar.
      * @param data datos a actualizar.
-     * @returns promise con un booleano que indica si la actualización fue exitosa.
+     * @param t (Opcional) Objeto de transacción de Sequelize.
+     * @returns promise con el objeto CashAttributes actualizado o null.
      */
-    public static async update(id: number, data: Partial<CashCreationAttributes>): Promise<CashAttributes | null> {
-        const [updatedCount] = await CashModel.update(data, { where: { id } });
+    public static async update(id: number, data: Partial<CashCreationAttributes>, t?: Transaction): Promise<CashAttributes | null> {
+        const transaction = t ?? null;
+
+        // Se añade el objeto de transacción a las opciones de la llamada:
+        const [updatedCount] = await CashModel.update(data, { where: { id }, transaction: transaction }); 
+        
         if(updatedCount === 0) {
             return null;
         }
-        const updatedCash = await CashModel.findByPk(id);
+        
+        // Se incluye la transacción en findByPk también:
+        const updatedCash = await CashModel.findByPk(id, { transaction: transaction });
         return updatedCash ? updatedCash.get({ plain: true }) : null;
     }
 }

@@ -2,6 +2,7 @@ import { DataTypes, Model, Optional } from "sequelize";
 import { getSequelizeConfig } from "../config/mysql";
 import { PersonModel } from "./person.model";
 import { WeekModel } from "./week.model";
+import { CashModel, CashActions } from "./cash.model";
 
 const connection = getSequelizeConfig();
 
@@ -16,6 +17,7 @@ export enum IncomeSource {
 export interface IncomeAttributes {
     id: number;
     person_id: number | null; // Usar 'null' para manejar la opcionalidad explícitamente en la base de datos
+    cash_id: number;
     week_id: number;
     date: string;
     amount: number;
@@ -25,6 +27,7 @@ export interface IncomeAttributes {
 export type IncomeSearchData = {
     id?: number;
     person_id?: number;
+    cash_id?: number;
     week_id?: number;
     date?: string;
     source?: string | IncomeSource;
@@ -37,6 +40,7 @@ export interface IncomeCreationAttributes extends Optional<IncomeAttributes, 'id
 export class IncomeModel extends Model<IncomeAttributes, IncomeCreationAttributes> implements IncomeAttributes {
     declare id: number;
     declare person_id: number | null;
+    declare cash_id: number;
     declare week_id: number;
     declare date: string;
     declare amount: number;
@@ -50,6 +54,12 @@ const INCOME_INCLUDE_CONFIG = [
         as: 'Person',
         attributes: ['id', 'dni', 'first_name', 'last_name'],
         required: false,
+    },
+    {
+        model: CashModel,
+        as: 'Cash',
+        attributes: ['id', 'name', 'actual_amount', 'pettyCash_limit'],
+        required: true,
     },
     {
         model: WeekModel, 
@@ -71,6 +81,14 @@ IncomeModel.init({
         allowNull: true,
         references: {
             model: 'persons',
+            key: 'id',
+        },
+    },
+    cash_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'cashes',
             key: 'id',
         },
     },
@@ -127,38 +145,112 @@ export class IncomeActions {
     }
 
     /**
-     * Crea un nuevo ingreso en la base de datos.
-     * @param data datos de la ingreso a crear.
+     * Crea un nuevo ingreso en la base de datos y actualiza el saldo de la caja.
+     * @param data datos del ingreso a crear.
      * @returns promise con el objeto IncomeAttributes creado.
      */
     public static async create(data: IncomeCreationAttributes): Promise<IncomeAttributes> {
         const newIncome = await IncomeModel.create(data);
+        const currentCash = await CashActions.getOne({ id: data.cash_id });
+
+        if (currentCash) {
+            const newAmount = parseFloat(String(currentCash.actual_amount)) + parseFloat(String(data.amount));
+            await CashActions.update(data.cash_id, { 
+                actual_amount: newAmount 
+            });
+        }
+        
         return newIncome.get({ plain: true });
     }
 
     /**
-     * Elimina un ingreso de la base de datos por su ID.
-     * @param data criterios de búsqueda para la ingreso a eliminar.
+     * Elimina un ingreso de la base de datos y revierte la transacción en la caja.
+     * @param data criterios de búsqueda para el ingreso a eliminar.
      * @returns promise con un booleano que indica si la eliminación fue exitosa.
      */
     public static async delete(data: IncomeSearchData): Promise<boolean> {
+        const incomeToDelete = await IncomeActions.getOne(data);
         const deletedCount = await IncomeModel.destroy({ where: data });
+
+        if (deletedCount > 0 && incomeToDelete) {
+            const currentCash = await CashActions.getOne({ id: incomeToDelete.cash_id });
+
+            if (currentCash) {
+                const newAmount = parseFloat(String(currentCash.actual_amount)) - parseFloat(String(incomeToDelete.amount));
+                await CashActions.update(incomeToDelete.cash_id, { 
+                    actual_amount: newAmount 
+                });
+            }
+        }
+        
         return deletedCount > 0;
     }
 
     /**
-     * Actualiza un ingreso existente en la base de datos.
-     * @param id ID de la ingreso a actualizar.
-     * @param data datos a actualizar.
-     * @returns promise con un booleano que indica si la actualización fue exitosa.
+     * Actualiza un ingreso existente en la base de datos y corrige los saldos de caja afectados.
+     * @param id ID del ingreso a actualizar.
+     * @param data datos a actualizar (puede incluir amount o cash_id).
+     * @returns promise con el objeto IncomeAttributes actualizado o null.
      */
     public static async update(id: number, data: Partial<IncomeCreationAttributes>): Promise<IncomeAttributes | null> {
-        const [updatedCount] = await IncomeModel.update(data, { where: { id } });
-        if(updatedCount === 0) {
-            return null;
-        }
-        const updatedIncome = await IncomeModel.findByPk(id);
-        return updatedIncome ? updatedIncome.get({ plain: true }) : null;
+
+        //Iniciar la transacción de Sequelize
+        return connection.transaction(async (t) => {
+
+            // 1. Obtener el registro original antes de la actualización
+            const originalIncome = await IncomeModel.findByPk(id, { transaction: t });
+            if (!originalIncome) {
+                return null; // Ingreso no encontrado
+            }
+
+            // Determinar si el monto o la caja están siendo actualizados
+            const isAmountChanged = data.amount !== undefined && parseFloat(String(data.amount)) !== parseFloat(String(originalIncome.amount));
+            const isCashIdChanged = data.cash_id !== undefined && data.cash_id !== originalIncome.cash_id;
+
+            // Si hay cambios en la transacción que afectan el saldo (monto o caja)
+            if (isAmountChanged || isCashIdChanged) {
+                
+                // Parámetros de la transacción original
+                const oldAmount = parseFloat(String(originalIncome.amount));
+                const oldCashId = originalIncome.cash_id;
+                
+                // Parámetros de la transacción nueva/actualizada
+                const newAmount = data.amount !== undefined ? parseFloat(String(data.amount)) : oldAmount;
+                const newCashId = data.cash_id !== undefined ? data.cash_id : oldCashId;
+
+                // --- 1. Revertir la transacción original (Restar el monto anterior) ---
+                let oldCash = await CashActions.getOne({ id: oldCashId });
+                if (oldCash) {
+                    // Cálculo: Saldo actual de la caja antigua - Monto antiguo (reversión de suma)
+                    const oldCashNewAmount = parseFloat(String(oldCash.actual_amount)) - oldAmount;
+                    await CashActions.update(oldCashId, { actual_amount: oldCashNewAmount }, t);
+                    oldCash = await CashActions.getOne({ id: oldCashId }); // Refrescar el objeto oldCash
+                }
+
+                // --- 2. Aplicar la nueva transacción (Sumar el nuevo monto) ---
+                // Si la caja no cambió, usamos el saldo recién actualizado de oldCash.
+                const targetCashId = newCashId;
+                let targetCash = oldCashId === newCashId ? oldCash : await CashActions.getOne({ id: targetCashId });
+                
+                if (targetCash) {
+                    // Cálculo: Saldo actual de la caja objetivo + Nuevo monto
+                    const newCashNewAmount = parseFloat(String(targetCash.actual_amount)) + newAmount;
+                    await CashActions.update(targetCashId, { actual_amount: newCashNewAmount }, t);
+                }
+            }
+            
+            // 3. Actualizar el registro de la tabla 'incomes'
+            const [updatedCount] = await IncomeModel.update(data, { where: { id }, transaction: t });
+
+            if (updatedCount === 0) {
+                return null;
+            }
+            
+            // 4. Obtener y retornar el registro actualizado
+            const updatedIncome = await IncomeModel.findByPk(id, { transaction: t });
+            return updatedIncome ? updatedIncome.get({ plain: true }) : null;
+
+            });
     }
 
     /**
