@@ -95,8 +95,6 @@ router.get('/roles', decodeAccessToken, verifyLogin, rolesController.allRoles);
 // =================================================================
 // 📅 SEMANAS (WEEKS)
 // =================================================================
-// Nota: getWeekData usa :weekId en el controller, la ruta original era ambigua,
-// la renombro para usar el ID.
 router.get('/weeks', decodeAccessToken, verifyLogin, weeksController.allWeeks);
 router.get('/weeks/:weekId', decodeAccessToken, verifyLogin, weeksController.oneWeek);
 router.post('/weeks/gen', decodeAccessToken, verifyLogin, weeksController.generateWeeks);

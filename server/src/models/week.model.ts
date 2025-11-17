@@ -79,8 +79,10 @@ export class WeekActions {
      * @returns promise con el objeto WeekAttributes creado.
      */
     public static async create(data: WeekCreationAttributes): Promise<WeekAttributes> {
-        const newWeek = await WeekModel.create(data);
-        return newWeek.get({ plain: true });
+        return connection.transaction(async (t) => {
+            const newWeek = await WeekModel.create(data, { transaction: t });
+            return newWeek.get({ plain: true });
+        });
     }
 
     /**
@@ -89,8 +91,11 @@ export class WeekActions {
      * @returns promise con un booleano que indica si la eliminación fue exitosa.
      */
     public static async delete(data: WeekSearchData): Promise<boolean> {
-        const deletedCount = await WeekModel.destroy({ where: data });
-        return deletedCount > 0;
+        return connection.transaction(async (t) => {
+            const deletedCount = await WeekModel.destroy({ where: data, transaction: t });
+            return deletedCount > 0;
+        });
+        
     }
 
     /**
@@ -100,12 +105,14 @@ export class WeekActions {
      * @returns promise con un booleano que indica si la actualización fue exitosa.
      */
     public static async update(id: number, data: Partial<WeekCreationAttributes>): Promise<WeekAttributes | null> {
-        const [updatedCount] = await WeekModel.update(data, { where: { id } });
-        if(updatedCount === 0) {
-            return null;
-        }
-        const updatedWeek = await WeekModel.findByPk(id);
-        return updatedWeek ? updatedWeek.get({ plain: true }) : null;
+        return connection.transaction(async (t) => {
+            const [updatedCount] = await WeekModel.update(data, { where: { id }, transaction: t });
+            if(updatedCount === 0) {
+                return null;
+            }
+            const updatedWeek = await WeekModel.findByPk(id, { transaction: t });
+            return updatedWeek ? updatedWeek.get({ plain: true }) : null;
+        });
     }
 
     // Genera semanas para un año específico

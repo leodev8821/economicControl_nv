@@ -93,8 +93,10 @@ export class PersonActions {
      * @returns promise con el objeto PersonAttributes creado.
      */
     public static async create(data: PersonCreationAttributes): Promise<PersonAttributes> {
-        const newPerson = await PersonModel.create(data);
+      return await connection.transaction(async (t) => {
+        const newPerson = await PersonModel.create(data, { transaction: t });
         return newPerson.get({ plain: true });
+      });
     }
 
     /**
@@ -103,8 +105,11 @@ export class PersonActions {
      * @returns promise con un booleano que indica si la eliminación fue exitosa.
      */
     public static async delete(data: PersonSearchData): Promise<boolean> {
-        const deletedCount = await PersonModel.destroy({ where: data });
+      return await connection.transaction(async (t) => {
+        const deletedCount = await PersonModel.destroy({ where: data, transaction: t });
         return deletedCount > 0;
+      });
+        
     }
 
     /**
@@ -114,11 +119,13 @@ export class PersonActions {
      * @returns promise con un booleano que indica si la actualización fue exitosa.
      */
     public static async update(id: number, data: Partial<PersonCreationAttributes>): Promise<PersonAttributes | null> {
-        const [updatedCount] = await PersonModel.update(data, { where: { id } });
-        if(updatedCount === 0) {
-            return null;
-        }
-        const updatedPerson = await PersonModel.findByPk(id);
-        return updatedPerson ? updatedPerson.get({ plain: true }) : null;
+      return await connection.transaction(async (t) => {
+         const [updatedCount] = await PersonModel.update(data, { where: { id }, transaction: t });
+          if(updatedCount === 0) {
+              return null;
+          }
+          const updatedPerson = await PersonModel.findByPk(id, { transaction: t });
+          return updatedPerson ? updatedPerson.get({ plain: true }) : null;
+      });
     }
 }

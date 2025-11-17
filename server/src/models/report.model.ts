@@ -113,8 +113,16 @@ export class ReportActions {
        * @returns promise con el objeto ReportAttributes creado.
        */
       public static async create(data: ReportCreationAttributes): Promise<ReportAttributes> {
-          const newReport = await ReportModel.create(data);
+        return connection.transaction(async (t) => {
+          // Verificar si ya existe un reporte para la semana dada
+          const existingReport = await ReportModel.findOne({ where: { week_id: data.week_id }, transaction: t });
+          if (existingReport) {
+              throw new Error(`Ya existe un reporte para la semana con ID ${data.week_id}`);
+          }
+  
+          const newReport = await ReportModel.create(data, { transaction: t });
           return newReport.get({ plain: true });
+        });
       }
   
       /**
@@ -134,12 +142,15 @@ export class ReportActions {
        * @returns promise con un booleano que indica si la actualización fue exitosa.
        */
       public static async update(id: number, data: Partial<ReportCreationAttributes>): Promise<ReportAttributes | null> {
-          const [updatedCount] = await ReportModel.update(data, { where: { id } });
+        return connection.transaction(async (t) => {
+
+          const [updatedCount] = await ReportModel.update(data, { where: { id }, transaction: t });
           if(updatedCount === 0) {
               return null;
           }
-          const updatedReport = await ReportModel.findByPk(id);
+          const updatedReport = await ReportModel.findByPk(id, { transaction: t });
           return updatedReport ? updatedReport.get({ plain: true }) : null;
+        });
       }
 
       /**

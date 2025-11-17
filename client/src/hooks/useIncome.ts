@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UseQueryResult, UseMutationResult } from '@tanstack/react-query';
-import { getAllIncomes, createIncome } from '../api/incomeApi';
+import { getAllIncomes, createIncome, updateIncome, deleteIncome } from '../api/incomeApi';
 import type { Income } from '../types/income';
+import type { IncomeUpdateData } from '../api/incomeApi';
 import type { IncomeFormData } from '../schemas/income.schema';
 
 // Definimos una clave única (queryKey) para esta consulta.
@@ -45,6 +46,48 @@ export const useCreateIncome = (): UseMutationResult<Income, Error, IncomeFormDa
         // Opcional: Manejo de errores global.
         onError: (error: Error) => {
             console.error("Fallo la creación del ingreso:", error);
+        },
+    });
+};
+
+/**
+ * Hook personalizado para actualizar un ingreso existente.
+ * * En el onSuccess, invalida la caché de la lista para refrescar la tabla.
+ * @returns El resultado de la mutación (mutate, isLoading, isError, etc.).
+ */
+export const useUpdateIncome = (): UseMutationResult<Income, Error, IncomeUpdateData> => {
+    const queryClient = useQueryClient();
+
+    return useMutation<Income, Error, IncomeUpdateData>({
+        mutationFn: updateIncome, // Usa la función API de actualización
+        
+        // Al tener éxito, invalida la caché
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [INCOMES_QUERY_KEY] });
+        },
+        onError: (error: Error) => {
+            console.error("Fallo la actualización del ingreso:", error);
+        },
+    });
+};
+
+/**
+ * Hook personalizado para eliminar un ingreso existente.
+ * * En el onSuccess, invalida la caché de la lista para refrescar la tabla.
+ * @returns El resultado de la mutación (mutate, isLoading, isError, etc.).
+ */
+export const useDeleteIncome = (): UseMutationResult<Income, Error, number> => {
+    const queryClient = useQueryClient();
+
+    return useMutation<Income, Error, number>({
+        mutationFn: deleteIncome, // Usa la función API de eliminación
+        
+        // Al tener éxito, invalida la caché
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [INCOMES_QUERY_KEY] });
+        },
+        onError: (error: Error) => {
+            console.error("Fallo la eliminación del ingreso:", error);
         },
     });
 };

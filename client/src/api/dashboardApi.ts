@@ -1,24 +1,20 @@
 /* eslint-disable no-useless-catch */
 import apiClient from './axios';
-import type { Balance } from '../types/balance';
+import type { CashBalance } from '../types/balance'; // Asegúrate de importar el nuevo tipo
 import type { ApiResponse } from '../types/apiResponse';
 
 /**
- * Función que realiza la petición GET al backend para obtener el balance.
  * Ruta: GET /ec/api/v1/balance/get-balance
- * @returns Promesa que resuelve en un array de objetos Cash.
+ * @returns Promesa que resuelve en un array de objetos CashBalance.
  */
-export const getBalance = async (): Promise<Balance[]> => {
+export const getBalance = async (): Promise<CashBalance[]> => {
   try {
-    // Usamos la ruta relativa, el proxy de Vite y el prefijo de Axios hacen el resto.
-    const response = await apiClient.get<ApiResponse<Balance>>('/balance/get-balance');
+    // El endpoint devuelve una lista de cajas con sus balances
+    const response = await apiClient.get<ApiResponse<CashBalance>>('/balance/get-balance');
 
-    // Obtenemos el array de balance desde la respuesta
-    const balanceArray = response.data.data;
-
-    return balanceArray; // Devolvemos el array de balance
+    // Axios + Tu estructura ApiResponse: response.data.data es el array
+    return response.data.data; 
   } catch (error) {
-    // Dejamos que React Query maneje el error en el componente, solo re-lanzamos.
     throw error;
   }
 };

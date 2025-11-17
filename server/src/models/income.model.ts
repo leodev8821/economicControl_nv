@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from "sequelize";
+import { DataTypes, Model, Optional, Transaction } from "sequelize";
 import { getSequelizeConfig } from "../config/mysql";
 import { PersonModel } from "./person.model";
 import { WeekModel } from "./week.model";
@@ -150,17 +150,28 @@ export class IncomeActions {
      * @returns promise con el objeto IncomeAttributes creado.
      */
     public static async create(data: IncomeCreationAttributes): Promise<IncomeAttributes> {
-        const newIncome = await IncomeModel.create(data);
-        const currentCash = await CashActions.getOne({ id: data.cash_id });
+        // Iniciamos una transacción
+        return connection.transaction(async (t) => {
+            
+            // 1. Crear el ingreso DENTRO de la transacción
+            const newIncome = await IncomeModel.create(data, { transaction: t });
 
-        if (currentCash) {
-            const newAmount = parseFloat(String(currentCash.actual_amount)) + parseFloat(String(data.amount));
-            await CashActions.update(data.cash_id, { 
-                actual_amount: newAmount 
-            });
-        }
-        
-        return newIncome.get({ plain: true });
+            // 2. Obtener la caja (pasando la transacción si getOne lo soporta, o lockeando)
+            const currentCash = await CashModel.findByPk(data.cash_id, { transaction: t });
+
+            if (currentCash) {
+                const newAmount = parseFloat(String(currentCash.actual_amount)) + parseFloat(String(data.amount));
+                
+                // 3. Actualizar la caja DENTRO de la transacción
+                await CashActions.update(
+                    data.cash_id, 
+                    { actual_amount: newAmount }, 
+                    t
+                );
+            }
+            
+            return newIncome.get({ plain: true });
+        });
     }
 
     /**

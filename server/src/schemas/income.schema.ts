@@ -5,9 +5,11 @@ const incomeSources = Object.values(IncomeSource) as [IncomeSource, ...IncomeSou
 
 export const IncomeCreationSchema = z.object({
 
-    person_id: z.number().int().positive().optional(),
+    person_id: z.coerce.number().int().positive().optional(),
 
-    week_id: z.number().int({
+    cash_id: z.coerce.number().int().positive(),
+
+    week_id: z.coerce.number().int({
         error: "El ID de la semana es obligatorio",
     }).positive("El ID de la semana debe ser un número entero positivo"),
 
@@ -15,7 +17,7 @@ export const IncomeCreationSchema = z.object({
         error: "La fecha es obligatoria",
     }).regex(/^\d{4}-\d{2}-\d{2}$/, "El formato de fecha es inválido (debe ser AAAA-MM-DD)"),
 
-    amount: z.number({
+    amount: z.coerce.number({
         error: "El monto es obligatorio",
     }).positive("El monto debe ser un valor positivo")
     .refine(v => Math.round(v * 100) === v * 100, {

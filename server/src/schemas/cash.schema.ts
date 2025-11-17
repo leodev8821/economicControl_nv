@@ -6,13 +6,12 @@ export const CashCreationSchema = z.object({
         error: "El nombre es obligatorio",
     }).min(1, "El nombre no puede estar vacío"),
     
-    actual_amount: z.number({
+    actual_amount: z.coerce.number({
         error: "El monto es obligatorio",
-    }).positive("El monto debe ser un valor positivo")
-    .refine(v => Math.round(v * 100) === v * 100, {
+    }).refine(v => Math.round(v * 100) === v * 100, {
         message: "El monto solo puede tener dos decimales"}),
 
-    pettyCash_limit: z.number().positive("El límite de caja chica debe ser un valor positivo").optional(),
+    pettyCash_limit: z.coerce.number().positive("El límite de caja chica debe ser un valor positivo").optional(),
 
 });
 

@@ -141,18 +141,27 @@ export class OutcomeActions {
      * @returns promise con el objeto OutcomeAttributes creado.
      */
     public static async create(data: OutcomeCreationAttributes): Promise<OutcomeAttributes> {
+        return await connection.transaction(async (t) => {
+            // 1. Crear el egreso dentro de la transacción
+            const newOutcome = await OutcomeModel.create(data, { transaction: t });
 
-        const newOutcome = await OutcomeModel.create(data);
-        const currentCash = await CashActions.getOne({ id: data.cash_id });
+            // 2. Obtener la caja bloqueando la fila dentro de la transacción
+            const currentCash = await CashModel.findByPk(data.cash_id, { transaction: t });
 
-        if (currentCash) {
-            const newAmount = parseFloat(String(currentCash.actual_amount)) - parseFloat(String(data.amount));
-            await CashActions.update(data.cash_id, { 
-                actual_amount: newAmount 
-            });
-        }
-        
-        return newOutcome.get({ plain: true });
+            if (currentCash) {
+                // Cálculo: Saldo actual - Monto del egreso
+                const newAmount = parseFloat(String(currentCash.actual_amount)) - parseFloat(String(data.amount));
+                
+                // 3. Actualizar caja pasando la transacción
+                await CashActions.update(
+                  data.cash_id, 
+                  { actual_amount: newAmount },
+                  t
+                );
+            }
+            
+            return newOutcome.get({ plain: true });
+        });
     }
 
     /**
@@ -161,22 +170,29 @@ export class OutcomeActions {
      * @returns promise con un booleano que indica si la eliminación fue exitosa.
      */
     public static async delete(data: OutcomeSearchData): Promise<boolean> {
+        return await connection.transaction(async (t) => {
+            // 1. Buscar el egreso antes de borrarlo
+            const outcomeToDelete = await OutcomeModel.findOne({ where: data, transaction: t });
+            
+            if (!outcomeToDelete) return false;
 
-        const outcomeToDelete = await OutcomeActions.getOne(data);
-        const deletedCount = await OutcomeModel.destroy({ where: data });
+            // 2. Eliminar el registro
+            const deletedCount = await OutcomeModel.destroy({ where: data, transaction: t });
 
-        if (deletedCount > 0 && outcomeToDelete) {
-            const currentCash = await CashActions.getOne({ id: outcomeToDelete.cash_id });
+            if (deletedCount > 0) {
+                const currentCash = await CashModel.findByPk(outcomeToDelete.cash_id, { transaction: t });
 
-            if (currentCash) {
-                const newAmount = parseFloat(String(currentCash.actual_amount)) + parseFloat(String(outcomeToDelete.amount));
-                await CashActions.update(outcomeToDelete.cash_id, { 
-                    actual_amount: newAmount 
-                });
+                if (currentCash) {
+                    // Devolver el dinero a la caja (Revertir resta)
+                    const newAmount = parseFloat(String(currentCash.actual_amount)) + parseFloat(String(outcomeToDelete.amount));
+                    await CashActions.update(outcomeToDelete.cash_id, { 
+                        actual_amount: newAmount 
+                    }, t);
+                }
             }
-        }
-        
-        return deletedCount > 0;
+            
+            return deletedCount > 0;
+        });
     }
 
     /**
@@ -186,64 +202,45 @@ export class OutcomeActions {
      * @returns promise con el objeto OutcomeAttributes actualizado o null.
      */
     public static async update(id: number, data: Partial<OutcomeCreationAttributes>): Promise<OutcomeAttributes | null> {
+        return connection.transaction(async (t) => {
+            // 1. Obtener registro original
+            const originalOutcome = await OutcomeModel.findByPk(id, { transaction: t });
+            if (!originalOutcome) return null;
 
-      return connection.transaction(async (t) => {
+            const isAmountChanged = data.amount !== undefined && parseFloat(String(data.amount)) !== parseFloat(String(originalOutcome.amount));
+            const isCashIdChanged = data.cash_id !== undefined && data.cash_id !== originalOutcome.cash_id;
 
-        // 1. Obtener el registro original antes de la actualización
-        const originalOutcome = await OutcomeModel.findByPk(id, { transaction: t });
+            if (isAmountChanged || isCashIdChanged) {
+                const oldAmount = parseFloat(String(originalOutcome.amount));
+                const oldCashId = originalOutcome.cash_id;
+                const newAmount = data.amount !== undefined ? parseFloat(String(data.amount)) : oldAmount;
+                const newCashId = data.cash_id !== undefined ? data.cash_id : oldCashId;
 
-        if (!originalOutcome) {
-            return null; // Egreso no encontrado
-        }
+                // A. Revertir en caja vieja (Sumar lo que se había restado)
+                // Usamos findByPk con transacción 't' en lugar de getOne para seguridad
+                const oldCash = await CashModel.findByPk(oldCashId, { transaction: t });
+                if (oldCash) {
+                    const oldCashNewAmount = parseFloat(String(oldCash.actual_amount)) + oldAmount;
+                    await CashActions.update(oldCashId, { actual_amount: oldCashNewAmount }, t);
+                }
 
-        // Determinar si el monto o la caja están siendo actualizados
-        const isAmountChanged = data.amount !== undefined && parseFloat(String(data.amount)) !== parseFloat(String(originalOutcome.amount));
-        const isCashIdChanged = data.cash_id !== undefined && data.cash_id !== originalOutcome.cash_id;
-
-        // Si hay cambios en la transacción que afectan el saldo (monto o caja)
-        if (isAmountChanged || isCashIdChanged) {
-            
-            // Parámetros de la transacción original
-            const oldAmount = parseFloat(String(originalOutcome.amount));
-            const oldCashId = originalOutcome.cash_id;
-            
-            // Parámetros de la transacción nueva/actualizada
-            const newAmount = data.amount !== undefined ? parseFloat(String(data.amount)) : oldAmount;
-            const newCashId = data.cash_id !== undefined ? data.cash_id : oldCashId;
-
-            // --- 1. Revertir la transacción original (Sumar el monto anterior) ---
-            let oldCash = await CashActions.getOne({ id: oldCashId });
-            if (oldCash) {
-                // Cálculo: Saldo actual de la caja antigua + Monto antiguo (reversión de resta)
-                const oldCashNewAmount = parseFloat(String(oldCash.actual_amount)) + oldAmount;
-                await CashActions.update(oldCashId, { actual_amount: oldCashNewAmount }, t);
-                oldCash = await CashActions.getOne({ id: oldCashId }); // Refrescar el objeto oldCash
+                // B. Aplicar en caja nueva/actual (Restar el nuevo monto)
+                const targetCashId = newCashId;
+                // Si es la misma caja, necesitamos refrescar el dato recién actualizado
+                const targetCash = await CashModel.findByPk(targetCashId, { transaction: t });
+                
+                if (targetCash) {
+                    const newCashNewAmount = parseFloat(String(targetCash.actual_amount)) - newAmount;
+                    await CashActions.update(targetCashId, { actual_amount: newCashNewAmount }, t);
+                }
             }
-
-            // --- 2. Aplicar la nueva transacción (Restar el nuevo monto) ---
-            // Si la caja no cambió, usamos el saldo recién actualizado de oldCash.
-            const targetCashId = newCashId;
-            let targetCash = oldCashId === newCashId ? oldCash : await CashActions.getOne({ id: targetCashId });
             
-            if (targetCash) {
-                // Cálculo: Saldo actual de la caja objetivo - Nuevo monto
-                const newCashNewAmount = parseFloat(String(targetCash.actual_amount)) - newAmount;
-                await CashActions.update(targetCashId, { actual_amount: newCashNewAmount }, t);
-            }
-        }
-        
-        // 3. Actualizar el registro de la tabla 'outcomes'
-        const [updatedCount] = await OutcomeModel.update(data, { where: { id }, transaction: t });
-
-        if (updatedCount === 0) {
-            return null;
-        }
-        
-        // 4. Obtener y retornar el registro actualizado
-        const updatedOutcome = await OutcomeModel.findByPk(id, { transaction: t });
-        return updatedOutcome ? updatedOutcome.get({ plain: true }) : null;
-
-      });
+            const [updatedCount] = await OutcomeModel.update(data, { where: { id }, transaction: t });
+            if (updatedCount === 0) return null;
+            
+            const updatedOutcome = await OutcomeModel.findByPk(id, { transaction: t });
+            return updatedOutcome ? updatedOutcome.get({ plain: true }) : null;
+        });
     }
 
      /**

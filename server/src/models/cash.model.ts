@@ -83,8 +83,10 @@ export class CashActions {
      * @returns promise con el objeto CashAttributes creado.
      */
     public static async create(data: CashCreationAttributes): Promise<CashAttributes> {
-        const newCash = await CashModel.create(data);
-        return newCash.get({ plain: true });
+        return connection.transaction(async (t) => {
+            const newCash = await CashModel.create(data, { transaction: t });
+            return newCash.get({ plain: true });
+        });
     }
 
     /**
