@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RoleType } from "./role.schema";
+import { RoleType } from "./role.schema.ts";
 
 const allowedCreationRoles = [
   RoleType.ADMINISTRADOR,

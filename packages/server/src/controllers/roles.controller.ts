@@ -1,34 +1,34 @@
-import { Request, Response } from 'express';
-import ControllerErrorHandler from '../utils/ControllerErrorHandler';
-import { RoleActions, RoleAttributes } from '../models/role.model';
+import { Request, Response } from "express";
+import ControllerErrorHandler from "../utils/ControllerErrorHandler.ts";
+import { RoleActions, RoleAttributes } from "../models/role.model.ts";
 //import { RoleCreationAttributes } from '../models/role.model';
 //import type { RoleSearchData } from '../models/role.model';
 //import { RoleCreationSchema, RoleCreationRequest, RoleUpdateSchema, RoleUpdateRequest } from '../schemas/role.schema';
 
 export const rolesController = {
-    // Obtiene todas las rols
-    allRoles: async (_req: Request, res: Response) => {
-        try {
-            const roles: RoleAttributes[] = await RoleActions.getAll();
+  // Obtiene todas las rols
+  allRoles: async (_req: Request, res: Response) => {
+    try {
+      const roles: RoleAttributes[] = await RoleActions.getAll();
 
-            if (roles.length === 0) {
-                return res.status(404).json({ 
-                    ok: false, 
-                    message: 'No se encontraron roles.' 
-                });
-            }
+      if (roles.length === 0) {
+        return res.status(404).json({
+          ok: false,
+          message: "No se encontraron roles.",
+        });
+      }
 
-            return res.status(200).json({
-                ok: true,
-                message: 'Roles obtenidas correctamente.',
-                data: roles,
-            });
-        } catch (error) {
-            return ControllerErrorHandler(res, error, 'Error al obtener los roles.');
-        }
-    },
+      return res.status(200).json({
+        ok: true,
+        message: "Roles obtenidas correctamente.",
+        data: roles,
+      });
+    } catch (error) {
+      return ControllerErrorHandler(res, error, "Error al obtener los roles.");
+    }
+  },
 
-    /* ---- IMPLEMENTAR SI ES NECESARIO ----
+  /* ---- IMPLEMENTAR SI ES NECESARIO ----
     // Obtiene una rol por ID o nombre
     oneRol: async (req: Request, res: Response) => {
         try {

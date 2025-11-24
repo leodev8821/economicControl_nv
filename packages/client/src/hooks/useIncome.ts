@@ -7,8 +7,12 @@ import {
   deleteIncome,
 } from "../api/incomeApi";
 import type { Income } from "../types/income.type";
-import type { IncomeUpdateData } from "../api/incomeApi";
-import type { IncomeFormData } from "../schemas/income.schema";
+//import type { IncomeUpdateData } from "../api/incomeApi";
+//import type { IncomeFormData } from "../schemas/income.schema";
+import type {
+  CreateIncomeDTO,
+  UpdateIncomeDTO,
+} from "@economic-control/shared";
 
 // Definimos una clave única (queryKey) para esta consulta.
 // React Query usa esta clave para almacenar en caché los datos.
@@ -41,11 +45,13 @@ export const useIncomes = (): UseQueryResult<Income[], Error> => {
 export const useCreateIncome = (): UseMutationResult<
   Income,
   Error,
-  IncomeFormData
+  CreateIncomeDTO
+  //IncomeFormData
 > => {
   const queryClient = useQueryClient();
 
-  return useMutation<Income, Error, IncomeFormData>({
+  //return useMutation<Income, Error, IncomeFormData>({
+  return useMutation<Income, Error, CreateIncomeDTO>({
     mutationFn: createIncome, // Usa la función API de creación
 
     // Al tener éxito, invalida la caché de la lista de ingresos para forzar un re-fetch.
@@ -67,11 +73,11 @@ export const useCreateIncome = (): UseMutationResult<
 export const useUpdateIncome = (): UseMutationResult<
   Income,
   Error,
-  IncomeUpdateData
+  UpdateIncomeDTO
 > => {
   const queryClient = useQueryClient();
 
-  return useMutation<Income, Error, IncomeUpdateData>({
+  return useMutation<Income, Error, UpdateIncomeDTO>({
     mutationFn: updateIncome, // Usa la función API de actualización
 
     // Al tener éxito, invalida la caché

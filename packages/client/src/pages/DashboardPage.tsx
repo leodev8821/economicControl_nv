@@ -2,9 +2,8 @@ import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useBalance } from '../hooks/useBalance';
 import { PieChart } from '@mui/x-charts/PieChart';
-import { Paper, Grid, Typography, Box, Divider, Card, CardContent } from '@mui/material';
+import { Paper, Grid, Typography, Box, Card, CardContent } from '@mui/material';
 import type { PieValueType } from '@mui/x-charts';
-import type { CashBalance } from '../types/balance.type';
 
 // Helper para transformar el objeto Record<string, number> al formato del PieChart
 const transformToPieData = (dataObj: Record<string, number>): PieValueType[] => {
@@ -64,7 +63,7 @@ export const DashboardPage: React.FC = () => {
             <Grid container spacing={3}>
               
               {/* === CARD 1: SALDO ACTUAL === */}
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Card elevation={3} sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f5f5f5' }}>
                   <CardContent sx={{ textAlign: 'center' }}>
                     <Typography variant="h6" color="textSecondary" gutterBottom>
@@ -85,7 +84,7 @@ export const DashboardPage: React.FC = () => {
               </Grid>
 
               {/* === CARD 2: INGRESOS POR FUENTE === */}
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Paper elevation={3} sx={{ p: 2, height: '100%', minHeight: 300, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <Typography variant="h6" gutterBottom color="success.main">
                     Ingresos por Fuente
@@ -102,11 +101,11 @@ export const DashboardPage: React.FC = () => {
                         outerRadius: 100,
                         paddingAngle: 2,
                         cornerRadius: 4,
-                        highlightScope: { faded: 'global', highlighted: 'item' },
+                        highlightScope: { fade: 'global', highlight: 'item' },
                       }]}
                       width={300}
                       height={200}
-                      slotProps={{ legend: { hidden: true } }} // Ocultamos leyenda si ocupa mucho espacio, o usa 'direction: row'
+                      slotProps={{ legend: { sx: { display: 'none' } } }} // Ocultamos leyenda si ocupa mucho espacio, o usa 'direction: row'
                     />
                   ) : (
                     <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
@@ -117,7 +116,7 @@ export const DashboardPage: React.FC = () => {
               </Grid>
 
               {/* === CARD 3: EGRESOS POR CATEGORÍA === */}
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Paper elevation={3} sx={{ p: 2, height: '100%', minHeight: 300, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <Typography variant="h6" gutterBottom color="error.main">
                     Egresos por Categoría
@@ -135,11 +134,11 @@ export const DashboardPage: React.FC = () => {
                         outerRadius: 100,
                         paddingAngle: 2,
                         cornerRadius: 4,
-                        highlightScope: { faded: 'global', highlighted: 'item' },
+                        highlightScope: { fade: 'global', highlight: 'item' },
                       }]}
                       width={300}
                       height={200}
-                      slotProps={{ legend: { hidden: true } }}
+                      slotProps={{ legend: { sx: { display: 'none' } } }}
                     />
                   ) : (
                     <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>

@@ -1,21 +1,24 @@
-import jwt, { Secret } from 'jsonwebtoken';
-import { tokenUtils, TokenSignResult } from '../utils/token.utils';
-import { UserRole } from '../models/user.model';
+import jwt, { Secret } from "jsonwebtoken";
+import { tokenUtils, TokenSignResult } from "../utils/token.utils.ts";
+import { UserRole } from "../models/user.model.ts";
 
 // Leer variables de entorno (token.utils ya llama a dotenv.config)
-const REFRESH_SECRET: Secret = process.env.REFRESH_SECRET || '';
-const REFRESH_TOKEN_EXPIRATION: string = process.env.REFRESH_TOKEN_EXPIRATION || '6d';
+const REFRESH_SECRET: Secret = process.env.REFRESH_SECRET || "";
+const REFRESH_TOKEN_EXPIRATION: string =
+  process.env.REFRESH_TOKEN_EXPIRATION || "6d";
 
 if (!REFRESH_SECRET) {
-  throw new Error('REFRESH_SECRET no está definida en las variables de entorno.');
+  throw new Error(
+    "REFRESH_SECRET no está definida en las variables de entorno."
+  );
 }
 
-export type LoginPayload = { 
-  id: number, 
-  role: UserRole, 
-  username: string, 
-  first_name: string, 
-  last_name: string 
+export type LoginPayload = {
+  id: number;
+  role: UserRole;
+  username: string;
+  first_name: string;
+  last_name: string;
 };
 
 /**
@@ -23,14 +26,16 @@ export type LoginPayload = {
  */
 export const extractBearer = (bearerToken?: string | null): string | null => {
   if (!bearerToken) return null;
-  return bearerToken.startsWith('Bearer ') ? bearerToken.slice(7) : bearerToken;
+  return bearerToken.startsWith("Bearer ") ? bearerToken.slice(7) : bearerToken;
 };
 
 /**
  * Crea un Access Token usando tokenUtils.signJwt.
  * Devuelve exactamente lo que signJwt retorna (message, token (con "Bearer " prefix)).
  */
-export const createAccessToken = async (payload: LoginPayload): Promise<TokenSignResult> => {
+export const createAccessToken = async (
+  payload: LoginPayload
+): Promise<TokenSignResult> => {
   return tokenUtils.signJwt(payload);
 };
 
@@ -49,7 +54,10 @@ export const createRefreshToken = (payload: LoginPayload): string => {
     );
     return token;
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Error desconocido al crear refresh token';
+    const message =
+      err instanceof Error
+        ? err.message
+        : "Error desconocido al crear refresh token";
     throw new Error(message);
   }
 };
