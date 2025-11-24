@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json", // <--- Aquí hereda la base
+  "files": [],
+  "compilerOptions": {
+    "baseUrl": ".",
+    //"moduleResolution": "node", // Asegura la correcta resolución de módulos
+    "moduleResolution": "bundler", // Vite usa bundler
+    "esModuleInterop": true,   // Es importante para mezclar CommonJS y ES Modules
+    "jsxImportSource": "react",
+
+    "paths": {
+      "@/*": ["src/*"], // Alias interno del cliente
+      
+      // Mapeo directo al SOURCE del shared. 
+      // Esto permite que VS Code entienda los tipos sin compilar nada.
+      "@economic-control/shared": ["../../packages/shared/src/index.ts"] 
+    }
+  },
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
