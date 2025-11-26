@@ -1,26 +1,47 @@
 import { z } from "zod";
 
-export const ReportCreationSchema = z.object({
+// ----------------------------------------------------------------------
+// 1. DEFINICIÓN BASE (Campos comunes y limpieza de datos)
+// ----------------------------------------------------------------------
+const BaseReportSchema = z.object({
+  id: z.number().int().positive().optional(),
 
-    week_id: z.coerce.number().int("El ID de la semana debe ser un número entero").positive("El ID de la semana debe ser un número positivo"),
-    
-    total_income: z.coerce.number({
-        error: "El total de ingresos es obligatorio",
-    }).positive("El total de ingresos debe ser un valor positivo")
-    .refine(v => Math.round(v * 100) === v * 100, {
-        message: "El total de ingresos solo puede tener dos decimales"}),
+  week_id: z.coerce
+    .number()
+    .int()
+    .positive("El ID de la semana debe ser válido"),
 
-    total_outcome: z.coerce.number({
-        error: "El total de egresos es obligatorio",
-    }).positive("El total de egresos debe ser un valor positivo")
-    .refine(v => Math.round(v * 100) === v * 100, {
-        message: "El total de egresos solo puede tener dos decimales"}),
-    
-    net_balance: z.coerce.number()
+  total_income: z.coerce
+    .number()
+    .positive()
+    .refine((v) => Math.round(v * 100) === v * 100, "Máximo dos decimales"),
+
+  total_outcome: z.coerce
+    .number()
+    .positive()
+    .refine((v) => Math.round(v * 100) === v * 100, "Máximo dos decimales"),
+
+  // net_balance suele ser calculado, pero si se guarda/envía, lo validamos igual
+  net_balance: z.coerce
+    .number()
+    .refine((v) => Math.round(v * 100) === v * 100, "Máximo dos decimales"),
 });
 
-export type ReportCreationRequest = z.infer<typeof ReportCreationSchema>;
+// ----------------------------------------------------------------------
+// 2. ESQUEMA de Creación
+// ----------------------------------------------------------------------
+export const ReportCreationSchema = BaseReportSchema;
 
-// Para Actualización, todos los campos son opcionales
-export const ReportUpdateSchema = ReportCreationSchema.partial();
+// ----------------------------------------------------------------------
+// 3. ESQUEMA de Actualización
+// ----------------------------------------------------------------------
+export const ReportUpdateSchema = BaseReportSchema.partial();
+
+// ----------------------------------------------------------------------
+// 4. EXPORTACIÓN DE TIPOS E INTERFACES
+// ----------------------------------------------------------------------
+export type ReportCreationRequest = z.infer<typeof ReportCreationSchema>;
 export type ReportUpdateRequest = z.infer<typeof ReportUpdateSchema>;
+
+// Para UI
+export type ReportType = z.infer<typeof BaseReportSchema>;

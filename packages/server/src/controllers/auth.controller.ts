@@ -9,6 +9,12 @@ import {
 } from "../services/token.service.ts";
 
 export const authController = {
+  /**
+   * Función para iniciar sesión del usuario.
+   * @param req Request
+   * @param res Response
+   * @returns Access Token en el body y Refresh Token en la cookie HttpOnly.
+   */
   loginUser: async (req: Request, res: Response) => {
     try {
       const { login_data, password } = req.body;

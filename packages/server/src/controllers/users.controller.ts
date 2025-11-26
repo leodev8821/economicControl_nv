@@ -40,15 +40,23 @@ dotenv.config({ path: envPath });
 const sudoRole = process.env.SUDO_ROLE || "SuperUser"; // Valor por defecto seguro
 
 export const usersController = {
+  /**
+   * Función para iniciar sesión del usuario.
+   * @param login_data Nombre de usuario
+   * @param password Contraseña
+   * @returns Access Token en el body y Refresh Token en la cookie HttpOnly.
+   */
   loginUser: async (
-    username: string,
+    login_data: string,
     password: string
   ): Promise<LoginResult> => {
-    if (!username || !password) {
+    if (!login_data || !password) {
       throw new Error("Faltan datos de inicio de sesión.");
     }
 
-    const userInstance = await UserActions.getOneInstance({ username });
+    const userInstance = await UserActions.getOneInstance({
+      username: login_data,
+    });
 
     if (!userInstance) {
       throw new Error("Usuario no encontrado.");
@@ -130,12 +138,10 @@ export const usersController = {
       const user = await UserActions.getOne(searchCriteria);
 
       if (!user) {
-        return res
-          .status(404)
-          .json({
-            message:
-              "No se encontró la usuario con los parámetros proporcionados.",
-          });
+        return res.status(404).json({
+          message:
+            "No se encontró la usuario con los parámetros proporcionados.",
+        });
       }
 
       return res.status(200).json({
@@ -248,12 +254,10 @@ export const usersController = {
       }
 
       if (Object.keys(updateData).length === 0) {
-        return res
-          .status(400)
-          .json({
-            ok: false,
-            message: "No se proporcionaron datos para actualizar.",
-          });
+        return res.status(400).json({
+          ok: false,
+          message: "No se proporcionaron datos para actualizar.",
+        });
       }
 
       const updatedUser = await UserActions.update(
@@ -262,12 +266,10 @@ export const usersController = {
       );
 
       if (!updatedUser) {
-        return res
-          .status(404)
-          .json({
-            ok: false,
-            message: "Usuario no encontrada para actualizar.",
-          });
+        return res.status(404).json({
+          ok: false,
+          message: "Usuario no encontrada para actualizar.",
+        });
       }
 
       return res.status(200).json({
@@ -303,12 +305,10 @@ export const usersController = {
       const deleted = await UserActions.delete({ id: userId });
 
       if (!deleted) {
-        return res
-          .status(404)
-          .json({
-            ok: false,
-            message: "No se encontró la usuario para eliminar.",
-          });
+        return res.status(404).json({
+          ok: false,
+          message: "No se encontró la usuario para eliminar.",
+        });
       }
 
       return res.status(200).json({

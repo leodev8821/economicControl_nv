@@ -1,22 +1,42 @@
 import { z } from "zod";
 
-export const RoleType = {
+// ----------------------------------------------------------------------
+// 1. DEFINICIÓN DE CONSTANTES (Single Source of Truth)
+// ----------------------------------------------------------------------
+export const ROLE_TYPES = {
   ADMINISTRADOR: "ADMINISTRADOR",
   SUPER_USER: "SUPER_USER",
+  USUARIO: "USUARIO",
 } as const;
 
-export type RoleType = (typeof RoleType)[keyof typeof RoleType];
+export const ROLE_VALUES = Object.values(ROLE_TYPES) as [string, ...string[]];
 
-const roleTypes = Object.values(RoleType) as [RoleType, ...RoleType[]];
+// ----------------------------------------------------------------------
+// 2. DEFINICIÓN DE BASE (Campos comunes y limpieza de datos)
+// ----------------------------------------------------------------------
+const BaseRoleSchema = z.object({
+  id: z.number().int().positive().optional(),
 
-export const RoleCreationSchema = z.object({
-  source: z.enum(roleTypes, {
+  source: z.enum(ROLE_VALUES, {
     message: "El tipo de rol es obligatorio",
   }),
 });
 
-export type RoleCreationRequest = z.infer<typeof RoleCreationSchema>;
+// ----------------------------------------------------------------------
+// 3. ESQUEMA de Creación
+// ----------------------------------------------------------------------
+export const RoleCreationSchema = BaseRoleSchema;
 
-// Para Actualización, todos los campos son opcionales
-export const RoleUpdateSchema = RoleCreationSchema.partial();
+// ----------------------------------------------------------------------
+// 4. ESQUEMA de Actualización
+// ----------------------------------------------------------------------
+export const RoleUpdateSchema = BaseRoleSchema.partial();
+
+// ----------------------------------------------------------------------
+// 5. EXPORTACIÓN DE TIPOS E INTERFACES
+// ----------------------------------------------------------------------
+export type RoleCreationRequest = z.infer<typeof RoleCreationSchema>;
 export type RoleUpdateRequest = z.infer<typeof RoleUpdateSchema>;
+
+// Para la UI
+export type RoleType = z.infer<typeof BaseRoleSchema>;

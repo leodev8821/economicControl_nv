@@ -1,55 +1,46 @@
 import { z } from "zod";
-import { RoleType } from "./role.schema.ts";
+import { ROLE_VALUES } from "./role.schema";
 
-const allowedCreationRoles = [
-  RoleType.ADMINISTRADOR,
-  RoleType.SUPER_USER,
-] as const;
+// 1. Base Schema (Datos del usuario SIN contraseña)
+const BaseUserSchema = z.object({
+  id: z.number().int().positive().optional(),
 
-export const UserCreationSchema = z.object({
-  role: z.enum(allowedCreationRoles, {
-    message:
-      "El rol del usuario es obligatorio y debe ser ADMINISTRADOR o SUPER_USER",
+  role: z.enum(ROLE_VALUES, {
+    message: "El rol es obligatorio",
   }),
 
   username: z
-    .string({
-      message: "El nombre de usuario es obligatorio",
-    })
-    .min(3, "El nombre de usuario debe tener al menos 3 caracteres")
-    .max(30, "El nombre de usuario no puede exceder los 30 caracteres"),
+    .string()
+    .min(3, "Mínimo 3 caracteres")
+    .max(30, "Máximo 30 caracteres"),
 
-  password: z
-    .string({
-      message: "La contraseña es obligatoria",
-    })
-    .min(6, "La contraseña debe tener al menos 6 caracteres")
-    .max(30, "La contraseña no puede exceder los 30 caracteres"),
+  first_name: z.string().min(1, "El nombre es obligatorio").max(50),
+  last_name: z.string().min(1, "El apellido es obligatorio").max(50),
 
-  first_name: z
-    .string({
-      message: "El nombre es obligatorio",
-    })
-    .min(1, "El nombre no puede estar vacío")
-    .max(50, "El nombre no puede exceder los 50 caracteres"),
-
-  last_name: z
-    .string({
-      message: "El apellido es obligatorio",
-    })
-    .min(1, "El apellido no puede estar vacío")
-    .max(50, "El apellido no puede exceder los 50 caracteres"),
-
-  isVisible: z
-    .boolean({
-      message: "El campo de visibilidad es obligatorio",
-    })
-    .default(true)
-    .optional(),
+  isVisible: z.boolean().default(true).optional(),
 });
 
-export type UserCreationRequest = z.infer<typeof UserCreationSchema>;
+// 2. Validación de Contraseña (Reutilizable)
+const PasswordSchema = z
+  .string()
+  .min(6, "Mínimo 6 caracteres")
+  .max(30, "Máximo 30 caracteres");
 
-// Para Actualización, todos los campos son opcionales
-export const UserUpdateSchema = UserCreationSchema.partial();
+// 3. Schemas de Operación
+
+// CREAR: Base + Contraseña obligatoria
+export const UserCreationSchema = BaseUserSchema.extend({
+  password: PasswordSchema,
+});
+
+// ACTUALIZAR: Todo opcional (incluida la contraseña)
+export const UserUpdateSchema = BaseUserSchema.partial().extend({
+  password: PasswordSchema.optional(),
+});
+
+// 4. Tipos
+export type UserCreationRequest = z.infer<typeof UserCreationSchema>;
 export type UserUpdateRequest = z.infer<typeof UserUpdateSchema>;
+
+// ¡Importante! El tipo UserType NO debe tener password para seguridad en el Front
+export type UserType = z.infer<typeof BaseUserSchema>;

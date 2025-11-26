@@ -8,10 +8,10 @@ import {
 } from "../models/income.model.ts";
 //import { IncomeCreationSchema, IncomeCreationRequest, IncomeUpdateSchema, IncomeUpdateRequest } from '../schemas/income.schema';
 import {
-  CreateIncomeSchema,
+  IncomeCreationRequest,
+  IncomeUpdateRequest,
+  IncomeCreationSchema,
   IncomeUpdateSchema,
-  type UpdateIncomeDTO,
-  type CreateIncomeDTO,
 } from "@economic-control/shared";
 
 export const incomesController = {
@@ -152,7 +152,7 @@ export const incomesController = {
   createIncome: async (req: Request, res: Response) => {
     try {
       //const validationResult = IncomeCreationSchema.safeParse(req.body);
-      const validationResult = CreateIncomeSchema.safeParse(req.body);
+      const validationResult = IncomeCreationSchema.safeParse(req.body);
 
       if (!validationResult.success) {
         return res.status(400).json({
@@ -163,7 +163,7 @@ export const incomesController = {
       }
 
       //const incomeData: IncomeCreationRequest = validationResult.data;
-      const incomeData: CreateIncomeDTO = validationResult.data;
+      const incomeData: IncomeCreationRequest = validationResult.data;
 
       //const newIncome = await IncomeActions.create(incomeData as IncomeCreationAttributes);
       const newIncome = await IncomeActions.create(
@@ -202,7 +202,7 @@ export const incomesController = {
       }
 
       //const updateData : IncomeUpdateRequest = validationResult.data;
-      const updateData: UpdateIncomeDTO = validationResult.data;
+      const updateData: IncomeUpdateRequest = validationResult.data;
 
       if (Object.keys(updateData).length === 0) {
         return res.status(400).json({
