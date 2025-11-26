@@ -16,20 +16,14 @@ export const INCOME_SOURCES = [
 export type IncomeSource = (typeof INCOME_SOURCES)[number];
 
 // ----------------------------------------------------------------------
-// 2. DEFINICIÓN BASE (ESTRUCTURA PURA)
+// 2. DEFINICIÓN BASE (Campos comunes y limpieza de datos)
 // ----------------------------------------------------------------------
-// Definimos esto en una constante interna (no exportada directamente como 'IncomeSchema')
-// para poder usar .partial() más abajo.
 const BaseIncomeSchema = z.object({
   // ID: Opcional (no existe al crear, sí al editar)
   id: z.number().int().positive().optional(),
 
   // PERSON_ID:
-  person_id: z.preprocess((val) => {
-    if (val === "" || val === null || typeof val === "undefined") return null;
-    const parsed = Number(val);
-    return isNaN(parsed) ? null : parsed;
-  }, z.number().int().positive().nullable().default(null)),
+  person_id: z.coerce.number().int().positive().nullable().optional(),
 
   // CASH_ID:
   cash_id: z.coerce
@@ -58,23 +52,14 @@ const BaseIncomeSchema = z.object({
     ),
 
   // AMOUNT:
-  amount: z.preprocess(
-    (val) => {
-      if (typeof val === "string") {
-        const cleanVal = val.replace(/,/g, "");
-        return cleanVal === "" ? NaN : Number(cleanVal);
-      }
-      return val;
-    },
-    z
-      .number({
-        message: "El monto es obligatorio",
-      })
-      .positive("El monto debe ser un valor positivo")
-      .refine((v) => Math.round(v * 100) === v * 100, {
-        message: "El monto solo puede tener dos decimales",
-      })
-  ),
+  amount: z.coerce
+    .number({
+      message: "El monto es obligatorio",
+    })
+    .positive("El monto debe ser un valor positivo")
+    .refine((v) => Math.round(v * 100) === v * 100, {
+      message: "El monto solo puede tener dos decimales",
+    }),
 
   // SOURCE:
   source: z.enum(INCOME_SOURCES, {
@@ -83,32 +68,31 @@ const BaseIncomeSchema = z.object({
 });
 
 // ----------------------------------------------------------------------
-// 3. ESQUEMAS FINALES (REFINADOS Y PARCIALES)
+// 3. ESQUEMA de Creación
 // ----------------------------------------------------------------------
-
-// Schema PRINCIPAL (Con validaciones de negocio, usado para Crear)
-export const IncomeSchema = BaseIncomeSchema.superRefine((data, ctx) => {
-  // Regla: Si es "Diezmo", debe tener una persona asociada
-  if (data.source === "Diezmo" && !data.person_id) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Un diezmo debe estar asociado a una persona.",
-      path: ["person_id"],
-    });
+export const IncomeCreationSchema = BaseIncomeSchema.superRefine(
+  (data, ctx) => {
+    // Regla: Si es "Diezmo", debe tener una persona asociada
+    if (data.source === "Diezmo" && !data.person_id) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Un diezmo debe estar asociado a una persona.",
+        path: ["person_id"],
+      });
+    }
   }
-});
-
-// Schema para ACTUALIZACIÓN (Todos los campos opcionales)
-export const UpdateIncomeSchema = BaseIncomeSchema.partial();
+);
 
 // ----------------------------------------------------------------------
-// 4. EXPORTACIÓN DE TIPOS E INTERFACES
+// 4. ESQUEMA de Actualización
 // ----------------------------------------------------------------------
+export const IncomeUpdateSchema = BaseIncomeSchema.partial();
 
-export type IncomeType = z.infer<typeof IncomeSchema>;
+// ----------------------------------------------------------------------
+// 5. EXPORTACIÓN DE TIPOS E INTERFACES
+// ----------------------------------------------------------------------
+export type IncomeCreationRequest = z.infer<typeof IncomeCreationSchema>;
+export type IncomeUpdateRequest = z.infer<typeof IncomeUpdateSchema>;
 
-// Alias para claridad
-export const CreateIncomeSchema = IncomeSchema;
-
-export type CreateIncomeDTO = z.infer<typeof CreateIncomeSchema>;
-export type UpdateIncomeDTO = z.infer<typeof UpdateIncomeSchema>;
+// Para la UI
+export type IncomeType = z.infer<typeof BaseIncomeSchema>;

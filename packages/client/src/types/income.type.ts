@@ -1,4 +1,4 @@
-import type { IncomeType } from "@economic-control/shared";
+import type { IncomeCreationRequest } from "@economic-control/shared";
 import type { Person } from "./person.type";
 import type { Week } from "./week.type";
 
@@ -25,7 +25,7 @@ export type IncomeSource = (typeof INCOME_SOURCES)[number];*/
   source: IncomeSource;
 }*/
 
-export interface Income extends IncomeType {
+export interface Income extends IncomeCreationRequest {
   Person: Person | null;
   Week: Week;
 }

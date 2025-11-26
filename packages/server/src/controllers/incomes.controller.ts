@@ -9,7 +9,7 @@ import {
 //import { IncomeCreationSchema, IncomeCreationRequest, IncomeUpdateSchema, IncomeUpdateRequest } from '../schemas/income.schema';
 import {
   CreateIncomeSchema,
-  UpdateIncomeSchema,
+  IncomeUpdateSchema,
   type UpdateIncomeDTO,
   type CreateIncomeDTO,
 } from "@economic-control/shared";
@@ -191,7 +191,7 @@ export const incomesController = {
       }
 
       //const validationResult = IncomeUpdateSchema.safeParse(req.body);
-      const validationResult = UpdateIncomeSchema.safeParse(req.body);
+      const validationResult = IncomeUpdateSchema.safeParse(req.body);
 
       if (!validationResult.success) {
         return res.status(400).json({
