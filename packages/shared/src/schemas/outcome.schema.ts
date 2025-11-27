@@ -3,8 +3,8 @@ import { z } from "zod";
 // ----------------------------------------------------------------------
 // 1. DEFINICIÓN DE CONSTANTES (Single Source of Truth)
 // ----------------------------------------------------------------------
-export const OUTCOME_CATEGORY = ["Fijos", "Variables", "Otro"] as const;
-export type OutcomeCategory = (typeof OUTCOME_CATEGORY)[number];
+export const OUTCOME_CATEGORIES = ["Fijos", "Variables", "Otro"] as const;
+export type OutcomeCategories = (typeof OUTCOME_CATEGORIES)[number];
 
 // ----------------------------------------------------------------------
 // 2. DEFINICIÓN BASE (Campos comunes y limpieza de datos)
@@ -48,7 +48,7 @@ const BaseOutcomeSchema = z.object({
     })
     .min(1, "La descripción no puede estar vacía"),
 
-  category: z.enum(OUTCOME_CATEGORY, {
+  category: z.enum(OUTCOME_CATEGORIES, {
     message: "La categoría de egreso es obligatoria",
   }),
 });

@@ -1,6 +1,11 @@
 // models/week.ts
-import { DataTypes, Model as SequelizeModel, Optional, Op } from "sequelize";
-import { getSequelizeConfig } from "../config/mysql.ts";
+import {
+  DataTypes,
+  Model as SequelizeModel,
+  type Optional,
+  Op,
+} from "sequelize";
+import { getSequelizeConfig } from "../config/sequelize.config.ts";
 import { addDays, addWeeks, startOfWeek } from "date-fns";
 
 const connection = getSequelizeConfig();

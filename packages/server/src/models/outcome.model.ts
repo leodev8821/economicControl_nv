@@ -1,17 +1,14 @@
 // models/outcome.ts
-import { DataTypes, Model, Optional } from "sequelize";
-import { getSequelizeConfig } from "../config/mysql.ts";
+import { DataTypes, Model, type Optional } from "sequelize";
+import { getSequelizeConfig } from "../config/sequelize.config.ts";
 import { CashModel, CashActions } from "./cash.model.ts";
 import { WeekModel } from "./week.model.ts";
+import {
+  OUTCOME_CATEGORIES,
+  type OutcomeCategories,
+} from "@economic-control/shared";
 
 const connection = getSequelizeConfig();
-
-/** Tipos para los atributos del modelo */
-export enum OutcomeCategory {
-  FIJOS = "Fijos",
-  VARIABLES = "Variables",
-  OTRO = "Otro",
-}
 
 export interface OutcomeAttributes {
   id: number;
@@ -20,7 +17,7 @@ export interface OutcomeAttributes {
   date: string;
   amount: number;
   description: string;
-  category: OutcomeCategory;
+  category: OutcomeCategories;
 }
 
 export type OutcomeSearchData = {
@@ -28,7 +25,7 @@ export type OutcomeSearchData = {
   cash_id?: number;
   week_id?: number;
   date?: string;
-  category?: string | OutcomeCategory;
+  category?: string | OutcomeCategories;
 };
 
 /** Campos opcionales al crear un Outcome (id auto-incremental) */
@@ -46,7 +43,7 @@ export class OutcomeModel
   declare date: string;
   declare amount: number;
   declare description: string;
-  declare category: OutcomeCategory;
+  declare category: OutcomeCategories;
 }
 
 // 💡 Constante para la configuración de inclusión (JOINs)
@@ -106,7 +103,7 @@ OutcomeModel.init(
       allowNull: false,
     },
     category: {
-      type: DataTypes.ENUM(...Object.values(OutcomeCategory)),
+      type: DataTypes.ENUM(...OUTCOME_CATEGORIES),
       allowNull: false,
     },
   },

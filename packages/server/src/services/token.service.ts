@@ -1,6 +1,7 @@
-import jwt, { Secret } from "jsonwebtoken";
-import { tokenUtils, TokenSignResult } from "../utils/token.utils.ts";
-import { UserRole } from "../models/user.model.ts";
+import jwt from "jsonwebtoken";
+import type { Secret } from "jsonwebtoken";
+import { tokenUtils, type TokenSignResult } from "../utils/token.utils.ts";
+import { type LoginPayload } from "../models/user.model.ts";
 
 // Leer variables de entorno (token.utils ya llama a dotenv.config)
 const REFRESH_SECRET: Secret = process.env.REFRESH_SECRET || "";
@@ -12,14 +13,6 @@ if (!REFRESH_SECRET) {
     "REFRESH_SECRET no está definida en las variables de entorno."
   );
 }
-
-export type LoginPayload = {
-  id: number;
-  role: UserRole;
-  username: string;
-  first_name: string;
-  last_name: string;
-};
 
 /**
  * Extrae el token sin el prefijo "Bearer "

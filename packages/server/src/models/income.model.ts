@@ -1,17 +1,11 @@
-import { DataTypes, Model, Optional } from "sequelize";
-import { getSequelizeConfig } from "../config/mysql.ts";
+import { DataTypes, Model, type Optional } from "sequelize";
+import { getSequelizeConfig } from "../config/sequelize.config.ts";
 import { PersonModel } from "./person.model.ts";
 import { WeekModel } from "./week.model.ts";
 import { CashModel, CashActions } from "./cash.model.ts";
+import { INCOME_SOURCES, type IncomeSource } from "@economic-control/shared";
 
 const connection = getSequelizeConfig();
-
-export enum IncomeSource {
-  DIEZMO = "Diezmo",
-  OFRENDA = "Ofrenda",
-  CAFETERIA = "Cafetería",
-  OTRO = "Otro",
-}
 
 // Interfaces para el modelo Income
 export interface IncomeAttributes {
@@ -118,7 +112,7 @@ IncomeModel.init(
       },
     },
     source: {
-      type: DataTypes.ENUM(...Object.values(IncomeSource)),
+      type: DataTypes.ENUM(...INCOME_SOURCES),
       allowNull: false,
     },
   },
@@ -312,13 +306,14 @@ export class IncomeActions {
   ): Promise<IncomeAttributes[]> {
     const person = await PersonModel.findOne({
       where: { dni },
-      include: INCOME_INCLUDE_CONFIG,
+      //include: INCOME_INCLUDE_CONFIG,
+      include: ["id"],
     });
     if (!person) {
       return [];
     }
     const incomes = await IncomeModel.findAll({
-      where: { person_id: person.id, source: IncomeSource.DIEZMO },
+      where: { person_id: person.id, source: "Diezmo" },
       include: INCOME_INCLUDE_CONFIG,
     });
     return incomes.map((income) => income.get({ plain: true }));

@@ -1,16 +1,12 @@
 // models/role.ts
-import { DataTypes, Model as SequelizeModel, Optional } from "sequelize";
-import { getSequelizeConfig } from "../config/mysql.ts";
+import { DataTypes, Model as SequelizeModel, type Optional } from "sequelize";
+import { ROLE_TYPES } from "@economic-control/shared";
+export { ROLE_TYPES };
+import { getSequelizeConfig } from "../config/sequelize.config.ts";
 
 const connection = getSequelizeConfig();
 
-/**
- * Posibles valores para el campo role.
- */
-export enum RoleType {
-  ADMINISTRADOR = "Administrador",
-  SUPER_USER = "SuperUser",
-}
+export type RoleType = (typeof ROLE_TYPES)[keyof typeof ROLE_TYPES];
 
 /**
  * Atributos del modelo Role.
@@ -51,7 +47,7 @@ RoleModel.init(
       autoIncrement: true,
     },
     role: {
-      type: DataTypes.ENUM(...Object.values(RoleType)),
+      type: DataTypes.ENUM(...Object.values(ROLE_TYPES)),
       allowNull: false,
       unique: true,
     },

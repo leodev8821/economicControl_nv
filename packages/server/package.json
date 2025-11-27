@@ -5,7 +5,7 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "node dist/app.js",
+    "start": "node src/app.ts",
     "dev": "tsx watch --clear-screen=false src/app.ts",
     "dev:debug": "tsx watch --inspect src/app.ts",
     "build": "tsc"

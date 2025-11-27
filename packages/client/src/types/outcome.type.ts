@@ -3,8 +3,8 @@ import type { Week } from "./week.type";
 import type { Cash } from "./cash.type";
 
 export {
-  OUTCOME_CATEGORY,
-  type OutcomeCategory,
+  OUTCOME_CATEGORIES as OUTCOME_CATEGORY,
+  type OutcomeCategories as OutcomeCategory,
 } from "@economic-control/shared";
 
 export interface Outcome extends OutcomeCreationRequest {

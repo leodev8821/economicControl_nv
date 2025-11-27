@@ -1,16 +1,16 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import ControllerErrorHandler from "../utils/ControllerErrorHandler.ts";
 import {
   UserActions,
-  UserAttributes,
-  UserCreationAttributes,
-  UserRole,
+  type UserAttributes,
+  type UserCreationAttributes,
+  type LoginPayload,
 } from "../models/user.model.ts";
 import {
   UserCreationSchema,
-  UserCreationRequest,
+  type UserCreationRequest,
   UserUpdateSchema,
-  UserUpdateRequest,
+  type UserUpdateRequest,
 } from "@economic-control/shared";
 import type { UserSearchData } from "../models/user.model.ts";
 import {
@@ -23,13 +23,6 @@ import { fileURLToPath } from "url";
 import { UniqueConstraintError } from "sequelize";
 
 // Tipos auxiliares
-export type LoginPayload = {
-  id: number;
-  role: UserRole;
-  username: string;
-  first_name: string;
-  last_name: string;
-};
 export type LoginResult = { token: string; message: string };
 
 // Inicializar dotenv

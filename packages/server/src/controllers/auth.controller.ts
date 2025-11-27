@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import ControllerErrorHandler from "../utils/ControllerErrorHandler.ts";
 import { usersController } from "./users.controller.ts";
 import { REFRESH_COOKIE_OPTIONS } from "../config/cookies.config.ts";

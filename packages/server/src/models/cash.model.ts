@@ -1,5 +1,5 @@
-import { DataTypes, Model, Optional, Transaction } from "sequelize";
-import { getSequelizeConfig } from "../config/mysql.ts";
+import { DataTypes, Model, type Optional, type Transaction } from "sequelize";
+import { getSequelizeConfig } from "../config/sequelize.config.ts";
 
 const connection = getSequelizeConfig();
 

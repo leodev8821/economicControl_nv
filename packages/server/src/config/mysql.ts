@@ -13,22 +13,19 @@ import {
   Week,
 } from "../models/index.ts";
 
-import { RoleType } from "../models/role.model.ts";
+import { ROLE_TYPES } from "@economic-control/shared";
 
-// Interfaces para tipado
-interface SequelizeConfig {
-  host: string;
-  port: number;
-  dialect: "mysql";
-  logging: boolean;
-}
+type RoleType = (typeof ROLE_TYPES)[keyof typeof ROLE_TYPES];
+type UserRole = typeof ROLE_TYPES.ADMINISTRADOR | typeof ROLE_TYPES.SUPER_USER;
+
+import { getSequelizeConfig } from "./sequelize.config.ts";
 
 interface RoleData {
   role: RoleType;
 }
 
 interface SudoUserData {
-  role: RoleType;
+  role: UserRole;
   username: string;
   password: string;
   first_name: string;
@@ -38,34 +35,6 @@ interface SudoUserData {
 
 interface DatabaseConnection {
   connection: () => Promise<void>;
-}
-
-export function getSequelizeConfig(): Sequelize {
-  const __dirname: string = dirname(fileURLToPath(import.meta.url));
-  const envPath: string = join(__dirname, "../../.env");
-  dotenv.config({ path: envPath });
-
-  const MY_DB: string | undefined = process.env.DB_DB;
-  const MY_USER: string | undefined = process.env.DB_USER;
-  const MY_PASSWORD: string | undefined = process.env.DB_PASSWORD;
-  const MY_HOST: string | undefined = process.env.DB_HOST;
-  const MY_PORT: number = parseInt(process.env.DB_PORT || "3306", 10);
-
-  // Validación de variables de entorno requeridas
-  if (!MY_DB || !MY_USER || !MY_PASSWORD || !MY_HOST) {
-    throw new Error(
-      "Faltan variables de entorno requeridas para la base de datos"
-    );
-  }
-
-  const config: SequelizeConfig = {
-    host: MY_HOST,
-    port: MY_PORT,
-    dialect: "mysql",
-    logging: false,
-  };
-
-  return new Sequelize(MY_DB, MY_USER, MY_PASSWORD, config);
 }
 
 const database: DatabaseConnection = {
@@ -101,8 +70,8 @@ const database: DatabaseConnection = {
       const roleCount: number = await Role.count();
       if (roleCount === 0) {
         const rolesToInsert: RoleData[] = [
-          { role: RoleType.ADMINISTRADOR },
-          { role: RoleType.SUPER_USER },
+          { role: ROLE_TYPES.ADMINISTRADOR },
+          { role: ROLE_TYPES.SUPER_USER },
         ];
         await Role.bulkCreate(rolesToInsert);
         console.log("✅ Roles iniciales insertados.");
@@ -130,12 +99,12 @@ const database: DatabaseConnection = {
         }
 
         // Validar que el rol del superusuario sea válido
-        if (!Object.values(RoleType).includes(MY_SUDO_ROLE as RoleType)) {
+        if (!Object.values(ROLE_TYPES).includes(MY_SUDO_ROLE as RoleType)) {
           throw new Error("El rol del superusuario no es válido");
         }
 
         const sudoUser: SudoUserData = {
-          role: MY_SUDO_ROLE as RoleType,
+          role: MY_SUDO_ROLE as UserRole,
           username: MY_SUDO_USER,
           password: MY_SUDO_PASSWORD,
           first_name: MY_SUDO_FIRSTNAME,

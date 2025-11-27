@@ -1,12 +1,19 @@
-import { DataTypes, Model as SequelizeModel, Optional, Op } from "sequelize";
+import {
+  DataTypes,
+  Model as SequelizeModel,
+  type Optional,
+  Op,
+} from "sequelize";
 import bcrypt from "bcryptjs";
-import { getSequelizeConfig } from "../config/mysql.ts";
-import { RoleType } from "./role.model.ts";
+import { getSequelizeConfig } from "../config/sequelize.config.ts";
+import { ROLE_TYPES } from "./role.model.ts";
 
 const connection = getSequelizeConfig();
 
 /** Tipos del modelo */
-export type UserRole = RoleType.ADMINISTRADOR | RoleType.SUPER_USER;
+export type UserRole =
+  | typeof ROLE_TYPES.ADMINISTRADOR
+  | typeof ROLE_TYPES.SUPER_USER;
 
 export interface UserAttributes {
   id: number;
@@ -17,6 +24,14 @@ export interface UserAttributes {
   last_name: string;
   isVisible: boolean;
 }
+
+export type LoginPayload = {
+  id: number;
+  role: UserRole;
+  username: string;
+  first_name: string;
+  last_name: string;
+};
 
 export type UserSearchData = {
   id?: number;
@@ -57,7 +72,7 @@ UserModel.init(
     },
     role: {
       // Usamos los valores de RoleType definidos en role.model
-      type: DataTypes.ENUM(...Object.values(RoleType)),
+      type: DataTypes.ENUM(...Object.values(ROLE_TYPES)),
       allowNull: false,
       references: {
         model: "roles", // Asumiendo que esta es la tabla

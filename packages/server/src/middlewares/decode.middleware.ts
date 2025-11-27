@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { tokenUtils } from "../utils/token.utils.ts";
 import { verifyRefreshToken } from "../services/token.service.ts";
 import dotenv from "dotenv";
@@ -37,12 +37,10 @@ export const decodeAccessToken = (
 
   if (!token) {
     console.error("decodeAccessToken: Formato de cabecera inválido.");
-    return res
-      .status(401)
-      .json({
-        ok: false,
-        message: "No autorizado. Formato de token inválido.",
-      });
+    return res.status(401).json({
+      ok: false,
+      message: "No autorizado. Formato de token inválido.",
+    });
   }
 
   try {
@@ -55,12 +53,10 @@ export const decodeAccessToken = (
       !decoded.username ||
       !decoded.role
     ) {
-      return res
-        .status(401)
-        .json({
-          ok: false,
-          message: "No autorizado. Access Token inválido o payload incompleto.",
-        });
+      return res.status(401).json({
+        ok: false,
+        message: "No autorizado. Access Token inválido o payload incompleto.",
+      });
     }
 
     // ✅ Asignación de propiedades personalizadas a la Request (tipadas)
@@ -75,12 +71,10 @@ export const decodeAccessToken = (
       "Error al decodificar/verificar Access Token:",
       (error as Error).message
     );
-    return res
-      .status(401)
-      .json({
-        ok: false,
-        message: "No autorizado. Access Token inválido o expirado.",
-      });
+    return res.status(401).json({
+      ok: false,
+      message: "No autorizado. Access Token inválido o expirado.",
+    });
   }
 };
 
@@ -115,13 +109,10 @@ export const decodeRefreshToken = (
       !decoded.username ||
       !decoded.role
     ) {
-      return res
-        .status(401)
-        .json({
-          ok: false,
-          message:
-            "No autorizado. Refresh Token inválido o payload incompleto.",
-        });
+      return res.status(401).json({
+        ok: false,
+        message: "No autorizado. Refresh Token inválido o payload incompleto.",
+      });
     }
 
     // ✅ Asignación de propiedades para la generación del nuevo Access Token
@@ -136,12 +127,10 @@ export const decodeRefreshToken = (
       "Error al decodificar/verificar Refresh Token:",
       (error as Error).message
     );
-    return res
-      .status(401)
-      .json({
-        ok: false,
-        message: "No autorizado. Refresh Token inválido o expirado.",
-      });
+    return res.status(401).json({
+      ok: false,
+      message: "No autorizado. Refresh Token inválido o expirado.",
+    });
   }
 };
 
@@ -156,12 +145,10 @@ export const verifyLogin = (
 ) => {
   // Verificamos si decodeUser fue exitoso revisando una propiedad clave
   if (!req.username || !req.userRole) {
-    return res
-      .status(401)
-      .json({
-        ok: false,
-        message: "No autorizado. Usuario no autenticado o token incompleto.",
-      });
+    return res.status(401).json({
+      ok: false,
+      message: "No autorizado. Usuario no autenticado o token incompleto.",
+    });
   }
   return next();
 };

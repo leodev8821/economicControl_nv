@@ -4,9 +4,9 @@ import { z } from "zod";
 // 1. DEFINICIÓN DE CONSTANTES (Single Source of Truth)
 // ----------------------------------------------------------------------
 export const ROLE_TYPES = {
-  ADMINISTRADOR: "ADMINISTRADOR",
-  SUPER_USER: "SUPER_USER",
-  USUARIO: "USUARIO",
+  ADMINISTRADOR: "Administrador",
+  SUPER_USER: "SuperUser",
+  USUARIO: "Usuario",
 } as const;
 
 export const ROLE_VALUES = Object.values(ROLE_TYPES) as [string, ...string[]];
