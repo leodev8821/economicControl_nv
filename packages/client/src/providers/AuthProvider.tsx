@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = useCallback(async (credentials: LoginCredentials) => {
     setIsLoading(true);
     try {
-      console.warn('datos de login', credentials);
+      
       // 1. Petición de Login (Obtiene Access Token en el body y Refresh Token en la cookie HttpOnly)
       const { token: newAccessToken, message } = await apiLogin(credentials);
 
