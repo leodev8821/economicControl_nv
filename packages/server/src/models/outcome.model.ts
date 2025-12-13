@@ -115,6 +115,19 @@ OutcomeModel.init(
   }
 );
 
+/** Función helper de normalización */
+const normalizeOutcomeCategory = (category: string): OutcomeCategories => {
+  const found = OUTCOME_CATEGORIES.find(
+    (s) => s.toLowerCase() === category.toLowerCase()
+  );
+
+  if (!found) {
+    throw new Error(`Categoría de egreso inválida: ${category}`);
+  }
+
+  return found;
+};
+
 export class OutcomeActions {
   /**
    * Obtiene todas las egresos de la base de datos.
@@ -151,8 +164,16 @@ export class OutcomeActions {
     data: OutcomeCreationAttributes
   ): Promise<OutcomeAttributes> {
     return await connection.transaction(async (t) => {
+      // Validamos la fuente de ingreso
+      const normalizedData = {
+        ...data,
+        category: normalizeOutcomeCategory(data.category),
+      };
+
       // 1. Crear el egreso dentro de la transacción
-      const newOutcome = await OutcomeModel.create(data, { transaction: t });
+      const newOutcome = await OutcomeModel.create(normalizedData, {
+        transaction: t,
+      });
 
       // 2. Obtener la caja bloqueando la fila dentro de la transacción
       const currentCash = await CashActions.getOne({ id: data.cash_id }, t);

@@ -82,7 +82,7 @@ export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoadin
     // Local state for MUI Selects
     const [cashId, setCashId] = React.useState(initialValues?.cash_id?.toString() || '');
     const [weekId, setWeekId] = React.useState(initialValues?.week_id?.toString() || '');
-    const [source, setSource] = React.useState(initialValues?.source || '');
+    //const [source, setSource] = React.useState(initialValues?.source || '');
     const [personId, setPersonId] = React.useState(initialValues?.person_id?.toString() || '');
     const [selectedDate, setSelectedDate] = React.useState<Dayjs | null>(initialValues?.date ? dayjs(initialValues.date) : null);
 
@@ -91,14 +91,14 @@ export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoadin
         if (initialValues) {
             setCashId(initialValues.cash_id?.toString() || '');
             setWeekId(initialValues.week_id?.toString() || '');
-            setSource(initialValues.source || '');
+            //setSource(initialValues.source || '');
             setPersonId(initialValues.person_id?.toString() || '');
             setSelectedDate(initialValues.date ? dayjs(initialValues.date) : null);
         } else {
              // Reset fields if switching to create mode (and no initialValues)
              setCashId('');
              setWeekId('');
-             setSource('');
+             //setSource('');
              setPersonId('');
              setSelectedDate(null);
         }
@@ -112,9 +112,9 @@ export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoadin
         setWeekId(event.target.value);
     };
 
-    const handleSourceChange = (event: SelectChangeEvent) => {
+    /*const handleSourceChange = (event: SelectChangeEvent) => {
         setSource(event.target.value);
-    };
+    };*/
 
     const handlePersonChange = (event: SelectChangeEvent) => {
         setPersonId(event.target.value);
@@ -164,7 +164,7 @@ export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoadin
              // Reset local state
              setCashId('');
              setWeekId('');
-             setSource('');
+             //setSource('');
              setPersonId('');
              setSelectedDate(null);
         }
@@ -303,8 +303,9 @@ export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoadin
                             labelId="source-select-label"
                             id={fields.source.id}
                             name={fields.source.name}
-                            value={source}
-                            onChange={handleSourceChange}
+                            defaultValue={initialValues?.source ?? ''}
+                            //value={source}
+                            //onChange={handleSourceChange}
                             input={<OutlinedInput label="Fuente *" />}
                             MenuProps={MenuProps}
                             disabled={isLoading}
@@ -316,7 +317,7 @@ export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoadin
                                 <MenuItem
                                     key={src}
                                     value={src}
-                                    style={getStyles(src, source, theme)}
+                                    style={getStyles(src, initialValues?.source ?? '', theme)}
                                 >
                                     {src}
                                 </MenuItem>

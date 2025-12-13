@@ -21,16 +21,12 @@ export const reportsController = {
     try {
       const reports: ReportAttributes[] = await ReportActions.getAll();
 
-      if (reports.length === 0) {
-        return res.status(404).json({
-          ok: false,
-          message: "No se encontraron reportes.",
-        });
-      }
-
       return res.status(200).json({
         ok: true,
-        message: "Reportes obtenidas correctamente.",
+        message:
+          reports.length === 0
+            ? "No hay reportes registrados."
+            : "Reportes obtenidos correctamente.",
         data: reports,
       });
     } catch (error) {
@@ -58,12 +54,10 @@ export const reportsController = {
       const report = await ReportActions.getOne(searchCriteria);
 
       if (!report) {
-        return res
-          .status(404)
-          .json({
-            message:
-              "No se encontró la reporte con los parámetros proporcionados.",
-          });
+        return res.status(404).json({
+          message:
+            "No se encontró la reporte con los parámetros proporcionados.",
+        });
       }
 
       return res.status(200).json({
@@ -81,13 +75,10 @@ export const reportsController = {
     try {
       const { week_id } = req.body;
       if (!week_id) {
-        return res
-          .status(400)
-          .json({
-            ok: false,
-            message:
-              "ID de semana (week_id) es requerido para crear un reporte.",
-          });
+        return res.status(400).json({
+          ok: false,
+          message: "ID de semana (week_id) es requerido para crear un reporte.",
+        });
       }
 
       const targetWeekId = parseInt(week_id, 10);
@@ -179,12 +170,10 @@ export const reportsController = {
       const updateData: ReportUpdateRequest = validationResult.data;
 
       if (Object.keys(updateData).length === 0) {
-        return res
-          .status(400)
-          .json({
-            ok: false,
-            message: "No se proporcionaron datos para actualizar.",
-          });
+        return res.status(400).json({
+          ok: false,
+          message: "No se proporcionaron datos para actualizar.",
+        });
       }
 
       const updatedReport = await ReportActions.update(
@@ -193,12 +182,10 @@ export const reportsController = {
       );
 
       if (!updatedReport) {
-        return res
-          .status(404)
-          .json({
-            ok: false,
-            message: "Reporte no encontrada para actualizar.",
-          });
+        return res.status(404).json({
+          ok: false,
+          message: "Reporte no encontrada para actualizar.",
+        });
       }
 
       return res.status(200).json({
@@ -228,12 +215,10 @@ export const reportsController = {
       const deleted = await ReportActions.delete({ id: reportId });
 
       if (!deleted) {
-        return res
-          .status(404)
-          .json({
-            ok: false,
-            message: "No se encontró la reporte para eliminar.",
-          });
+        return res.status(404).json({
+          ok: false,
+          message: "No se encontró la reporte para eliminar.",
+        });
       }
 
       return res.status(200).json({

@@ -88,16 +88,12 @@ export const usersController = {
     try {
       const users: UserAttributes[] = await UserActions.getAll();
 
-      if (users.length === 0) {
-        return res.status(404).json({
-          ok: false,
-          message: "No se encontraron usuarios.",
-        });
-      }
-
       return res.status(200).json({
         ok: true,
-        message: "Usuarios obtenidas correctamente.",
+        message:
+          users.length === 0
+            ? "No hay usuarios registrados."
+            : "Usuarios obtenidos correctamente.",
         data: users,
       });
     } catch (error) {

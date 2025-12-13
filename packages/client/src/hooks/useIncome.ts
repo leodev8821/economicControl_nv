@@ -31,6 +31,7 @@ export const useReadIncomes = (): UseQueryResult<Income[], Error> => {
   return useQuery<Income[], Error>({
     queryKey: [INCOMES_QUERY_KEY],
     queryFn: getAllIncomes,
+    staleTime: 5 * 60 * 1000, // 5 min
   });
 };
 

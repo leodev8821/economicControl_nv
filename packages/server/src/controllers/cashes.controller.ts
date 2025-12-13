@@ -19,16 +19,12 @@ export const cashesController = {
     try {
       const cashes: CashAttributes[] = await CashActions.getAll();
 
-      if (cashes.length === 0) {
-        return res.status(404).json({
-          ok: false,
-          message: "No se encontraron ingresos.",
-        });
-      }
-
       return res.status(200).json({
         ok: true,
-        message: "Cajas obtenidas correctamente.",
+        message:
+          cashes.length === 0
+            ? "No hay cajas registradas."
+            : "Cajas obtenidas correctamente.",
         data: cashes,
       });
     } catch (error) {
@@ -52,12 +48,9 @@ export const cashesController = {
       const cash = await CashActions.getOne(searchCriteria);
 
       if (!cash) {
-        return res
-          .status(404)
-          .json({
-            message:
-              "No se encontró la caja con los parámetros proporcionados.",
-          });
+        return res.status(404).json({
+          message: "No se encontró la caja con los parámetros proporcionados.",
+        });
       }
 
       return res.status(200).json({
@@ -122,12 +115,10 @@ export const cashesController = {
       const updateData: CashUpdateRequest = validationResult.data;
 
       if (Object.keys(updateData).length === 0) {
-        return res
-          .status(400)
-          .json({
-            ok: false,
-            message: "No se proporcionaron datos para actualizar.",
-          });
+        return res.status(400).json({
+          ok: false,
+          message: "No se proporcionaron datos para actualizar.",
+        });
       }
 
       const updatedCash = await CashActions.update(
@@ -164,12 +155,10 @@ export const cashesController = {
       const deleted = await CashActions.delete({ id: cashId });
 
       if (!deleted) {
-        return res
-          .status(404)
-          .json({
-            ok: false,
-            message: "No se encontró la caja para eliminar.",
-          });
+        return res.status(404).json({
+          ok: false,
+          message: "No se encontró la caja para eliminar.",
+        });
       }
 
       return res.status(200).json({

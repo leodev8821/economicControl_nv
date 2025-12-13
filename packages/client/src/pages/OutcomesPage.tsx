@@ -59,36 +59,7 @@ export const OutcomesPage: React.FC = () => {
       setEditingOutcome(null);
   };
 
-  // 1. Estado de Carga
-  if (isLoading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        <CircularProgress />
-        <Typography variant="h6" ml={2}>
-          Cargando listado de egresos...
-        </Typography>
-      </Box>
-    );
-  }
-
-  // 2. Estado de Error
-  if (isError) {
-    return (
-      <Box p={3} color="error.main">
-        <Typography variant="h4" gutterBottom>
-          Error al cargar egresos
-        </Typography>
-        <Typography variant="body1" component="p" sx={{ mb: 2 }}>
-          Mensaje: {error?.message}
-        </Typography>
-        <Typography variant="body1" component="p" sx={{ mb: 2 }}>
-          No se pudo completar la solicitud. Por favor, intente cerrar sesión y volver a entrar.
-        </Typography>
-      </Box>
-    );
-  }
-
-  // 3. Renderizado de la Data
+  // 1. Renderizado Principal (Siempre muestra el formulario)
   return (
       <Box p={3}>
         {/* Indicador de que una mutación está en curso (opcional) */}
@@ -121,16 +92,42 @@ export const OutcomesPage: React.FC = () => {
           </Typography>
         </Box>
   
-        {outcomes.length > 0 ? (
-          <OutcomeTable 
+        {/* Sección Condicional: Loading / Error / Tabla / Vacío */}
+        {isLoading && (
+          <Box display="flex" justifyContent="center" alignItems="center" py={5}>
+            <CircularProgress />
+            <Typography variant="h6" ml={2}>
+              Cargando listado de egresos...
+            </Typography>
+          </Box>
+        )}
+
+        {/* Error real */}
+        {isError && !isLoading && (
+          <Box p={3} color="error.main">
+            <Typography variant="h6" gutterBottom>
+              Error al cargar egresos
+            </Typography>
+            <Typography variant="body2">
+              Mensaje: {error?.message}
+            </Typography>
+          </Box>
+        )}
+
+        {/* Lista vacía */}
+        {!isLoading && !isError && outcomes.length === 0 && (
+          <Typography variant="body1">
+            No hay egresos registrados en este momento.
+          </Typography>
+        )}
+
+        {/* Tabla */}
+        {!isLoading && !isError && outcomes.length > 0 && (
+          <OutcomeTable
             outcomes={outcomes}
             onEdit={handleStartEdit}
             onDelete={handleDeleteOutcome}
           />
-        ) : (
-          <Typography variant="body1">
-            No hay egresos registrados en este momento.
-          </Typography>
         )}
       </Box>
     );

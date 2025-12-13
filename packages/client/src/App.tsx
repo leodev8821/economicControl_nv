@@ -8,7 +8,6 @@ import { CashesPage } from './pages/CashesPage';
 import { IncomesPage } from './pages/IncomesPage';
 import { OutcomesPage } from './pages/OutcomesPage';
 import { PersonsPage } from './pages/PersonsPage';
-import IncomeForm from './components/forms/IncomeForm'
 import SignIn from './pages/SignIn';
 
 function App() {
@@ -34,7 +33,6 @@ function App() {
           <Route path="/cajas" element={<CashesPage />} />
           <Route path="/ingresos" element={<IncomesPage />} />
           <Route path="/egresos" element={<OutcomesPage />} />
-          <Route path="/nuevo-ingreso" element={<IncomeForm />} />
           {/* Ejemplo de otra ruta protegida: */}
           {/* <Route path="/usuarios" element={<UsersManagementPage />} /> */}
         </Route>

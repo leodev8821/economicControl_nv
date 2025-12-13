@@ -53,7 +53,8 @@ export const dashboardController = {
         }, 0);
 
         // D. Calcular Balance Neto de la caja
-        const balance = totalIncome - totalOutcome;
+        const balance =
+          parseFloat(String(cash.actual_amount)) + totalIncome - totalOutcome;
 
         // E. Estructurar respuesta para esta caja
         return {

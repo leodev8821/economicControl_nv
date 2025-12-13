@@ -31,6 +31,7 @@ export const useReadOutcomes = (): UseQueryResult<Outcome[], Error> => {
   return useQuery<Outcome[], Error>({
     queryKey: [OUTCOMES_QUERY_KEY],
     queryFn: getAllOutcomes,
+    staleTime: 5 * 60 * 1000, // 5 min
   });
 };
 

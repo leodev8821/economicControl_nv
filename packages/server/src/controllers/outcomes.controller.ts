@@ -19,17 +19,13 @@ export const outcomesController = {
     try {
       const outcomes: OutcomeAttributes[] = await OutcomeActions.getAll();
 
-      if (outcomes.length === 0) {
-        return res.status(404).json({
-          ok: false,
-          message: "No se encontraron egresos.",
-        });
-      }
-
       return res.status(200).json({
         ok: true,
-        message: "Egresos obtenidas correctamente.",
-        data: outcomes,
+        message:
+          outcomes.length === 0
+            ? "No hay egresos registrados."
+            : "Egresos obtenidos correctamente.",
+        data: outcomes, // ← array vacío si no hay registros
       });
     } catch (error) {
       return ControllerErrorHandler(

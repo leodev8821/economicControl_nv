@@ -20,16 +20,12 @@ export const personsController = {
     try {
       const persons: PersonAttributes[] = await PersonActions.getAll();
 
-      if (persons.length === 0) {
-        return res.status(404).json({
-          ok: false,
-          message: "No se encontraron personas.",
-        });
-      }
-
       return res.status(200).json({
         ok: true,
-        message: "Personas obtenidas correctamente.",
+        message:
+          persons.length === 0
+            ? "No hay personas registradas."
+            : "Personas obtenidas correctamente.",
         data: persons,
       });
     } catch (error) {
@@ -63,12 +59,10 @@ export const personsController = {
       const person = await PersonActions.getOne(searchCriteria);
 
       if (!person) {
-        return res
-          .status(404)
-          .json({
-            message:
-              "No se encontró la persona con los parámetros proporcionados.",
-          });
+        return res.status(404).json({
+          message:
+            "No se encontró la persona con los parámetros proporcionados.",
+        });
       }
 
       return res.status(200).json({
@@ -160,12 +154,10 @@ export const personsController = {
       }
 
       if (Object.keys(updateData).length === 0) {
-        return res
-          .status(400)
-          .json({
-            ok: false,
-            message: "No se proporcionaron datos para actualizar.",
-          });
+        return res.status(400).json({
+          ok: false,
+          message: "No se proporcionaron datos para actualizar.",
+        });
       }
 
       const updatedPerson = await PersonActions.update(
@@ -174,12 +166,10 @@ export const personsController = {
       );
 
       if (!updatedPerson) {
-        return res
-          .status(404)
-          .json({
-            ok: false,
-            message: "Persona no encontrada para actualizar.",
-          });
+        return res.status(404).json({
+          ok: false,
+          message: "Persona no encontrada para actualizar.",
+        });
       }
 
       return res.status(200).json({
@@ -215,12 +205,10 @@ export const personsController = {
       const deleted = await PersonActions.delete({ id: personId });
 
       if (!deleted) {
-        return res
-          .status(404)
-          .json({
-            ok: false,
-            message: "No se encontró la persona para eliminar.",
-          });
+        return res.status(404).json({
+          ok: false,
+          message: "No se encontró la persona para eliminar.",
+        });
       }
 
       return res.status(200).json({

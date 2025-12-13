@@ -124,6 +124,19 @@ IncomeModel.init(
   }
 );
 
+/** Función helper de normalización */
+const normalizeIncomeSource = (source: string): IncomeSource => {
+  const found = INCOME_SOURCES.find(
+    (s) => s.toLowerCase() === source.toLowerCase()
+  );
+
+  if (!found) {
+    throw new Error(`Fuente de ingreso inválida: ${source}`);
+  }
+
+  return found;
+};
+
 export class IncomeActions {
   /**
    * Obtiene todas las ingresos de la base de datos.
@@ -159,10 +172,23 @@ export class IncomeActions {
   public static async create(
     data: IncomeCreationAttributes
   ): Promise<IncomeAttributes> {
+    // Validamos la fuente de ingreso
+    if (!INCOME_SOURCES.includes(data.source)) {
+      throw new Error(`Fuente inválida: ${data.source}`);
+    }
+
     // Iniciamos una transacción
     return connection.transaction(async (t) => {
+      // Validamos la fuente de ingreso
+      const normalizedData = {
+        ...data,
+        source: normalizeIncomeSource(data.source),
+      };
+
       // 1. Crear el ingreso DENTRO de la transacción
-      const newIncome = await IncomeModel.create(data, { transaction: t });
+      const newIncome = await IncomeModel.create(normalizedData, {
+        transaction: t,
+      });
 
       // 2. Obtener la caja (pasando la transacción si getOne lo soporta, o lockeando)
       const currentCash = await CashModel.findByPk(data.cash_id, {

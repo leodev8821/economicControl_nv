@@ -20,17 +20,13 @@ export const incomesController = {
     try {
       const incomes: IncomeAttributes[] = await IncomeActions.getAll();
 
-      if (incomes.length === 0) {
-        return res.status(404).json({
-          ok: false,
-          message: "No se encontraron ingresos.",
-        });
-      }
-
       return res.status(200).json({
         ok: true,
-        message: "Ingresos obtenidas correctamente.",
-        data: incomes,
+        message:
+          incomes.length === 0
+            ? "No hay ingresos registrados."
+            : "Ingresos obtenidos correctamente.",
+        data: incomes, // ← array vacío si no hay registros
       });
     } catch (error) {
       return ControllerErrorHandler(
@@ -162,10 +158,8 @@ export const incomesController = {
         });
       }
 
-      //const incomeData: IncomeCreationRequest = validationResult.data;
       const incomeData: IncomeCreationRequest = validationResult.data;
 
-      //const newIncome = await IncomeActions.create(incomeData as IncomeCreationAttributes);
       const newIncome = await IncomeActions.create(
         incomeData as unknown as IncomeCreationAttributes
       );

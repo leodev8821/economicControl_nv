@@ -11,16 +11,12 @@ export const rolesController = {
     try {
       const roles: RoleAttributes[] = await RoleActions.getAll();
 
-      if (roles.length === 0) {
-        return res.status(404).json({
-          ok: false,
-          message: "No se encontraron roles.",
-        });
-      }
-
       return res.status(200).json({
         ok: true,
-        message: "Roles obtenidas correctamente.",
+        message:
+          roles.length === 0
+            ? "No hay roles registrados."
+            : "Roles obtenidos correctamente.",
         data: roles,
       });
     } catch (error) {
