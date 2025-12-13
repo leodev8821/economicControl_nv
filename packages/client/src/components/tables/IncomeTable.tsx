@@ -1,76 +1,16 @@
-import React, { useState } from 'react';
 import Box from '@mui/material/Box';
-import { DataGrid } from '@mui/x-data-grid';
-import type { GridColDef, GridRowId } from '@mui/x-data-grid';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { DataGrid, type GridColDef, type GridRowId, GridActionsCellItem } from '@mui/x-data-grid';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import type { Income } from '../../types/income.type';
 
 interface IncomeTableProps {
   incomes: Income[];
-  onUpdate: (id: GridRowId) => void; 
+  onEdit: (income: Income) => void; 
   onDelete: (id: GridRowId) => void;
 }
 
-interface IncomeActionsCellProps {
-    id: GridRowId;
-    onUpdate: (id: GridRowId) => void;
-    onDelete: (id: GridRowId) => void;
-}
-
-// Componente para el menú de opciones
-const IncomeActionsCell: React.FC<IncomeActionsCellProps> = ({ id, onUpdate, onDelete }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleUpdateClick = () => {
-    handleClose();
-    // Llama a la prop onUpdate
-    onUpdate(id); 
-  };
-
-  const handleDeleteClick = () => {
-    handleClose();
-    // Llama a la prop onDelete
-    onDelete(id);
-  };
-
-  return (
-    <>
-      <IconButton
-        aria-label="más opciones"
-        aria-controls={open ? 'menu-acciones' : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
-        onClick={handleClick}
-        size="small"
-      >
-        <MoreVertIcon />
-      </IconButton>
-      <Menu
-        id="menu-acciones"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleUpdateClick}>Actualizar</MenuItem>
-        <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>Eliminar</MenuItem>
-      </Menu>
-    </>
-  );
-};
-
-export default function IncomeTable({ incomes, onUpdate, onDelete }: IncomeTableProps) {
+export default function IncomeTable({ incomes, onEdit, onDelete }: IncomeTableProps) {
 
   const columns: GridColDef<Income>[] = [
     { 
@@ -121,16 +61,20 @@ export default function IncomeTable({ incomes, onUpdate, onDelete }: IncomeTable
       headerName: 'Acciones',
       type: 'actions',
       width: 100,
-      sortable: false,
-      filterable: false,
-      // La función renderCell ahora recibe las funciones onUpdate/onDelete
-      renderCell: (params) => (
-        <IncomeActionsCell 
-            id={params.id} 
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-          />
-      ),
+      getActions: (params) => [
+        <GridActionsCellItem
+          icon={<EditIcon />}
+          label="Editar"
+          onClick={() => onEdit(params.row)}
+          key="edit"
+        />,
+        <GridActionsCellItem
+          icon={<DeleteIcon />}
+          label="Eliminar"
+          onClick={() => onDelete(params.id)}
+          key="delete"
+        />,
+      ],
     },
   ];
 
@@ -147,7 +91,6 @@ export default function IncomeTable({ incomes, onUpdate, onDelete }: IncomeTable
           },
         }}
         pageSizeOptions={[5, 10, 25]}
-        checkboxSelection
         disableRowSelectionOnClick
       />
     </Box>

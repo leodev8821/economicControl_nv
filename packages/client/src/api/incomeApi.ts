@@ -3,11 +3,11 @@ import apiClient from "./axios";
 import type { Income } from "../types/income.type";
 import type { ApiResponse, ApiResponseData } from "../types/apiResponse";
 import type {
-  CreateIncomeDTO,
-  UpdateIncomeDTO,
+  IncomeCreationRequest,
+  IncomeUpdateRequest,
 } from "@economic-control/shared";
 
-export type IncomeUpdateData = UpdateIncomeDTO & { id: number };
+export type IncomeUpdateData = IncomeUpdateRequest & { id: number };
 
 /**
  * Función que realiza la petición GET al backend para obtener todos los ingresos.
@@ -39,7 +39,9 @@ export const getAllIncomes = async (): Promise<Income[]> => {
  * @param data Los datos del ingreso validados por Zod.
  * @returns Promesa que resuelve en el objeto Income creado.
  */
-export const createIncome = async (data: CreateIncomeDTO): Promise<Income> => {
+export const createIncome = async (
+  data: IncomeCreationRequest
+): Promise<Income> => {
   try {
     // El backend espera la data en el cuerpo (body) de la petición
     // Usamos el tipo IncomeFormData que ya fue validado.
@@ -109,8 +111,7 @@ export const deleteIncome = async (id: number): Promise<Income> => {
       `/incomes/${id}`
     );
 
-    // Nota: Aunque el backend podría devolver un objeto de éxito simple,
-    // asumimos que devuelve el objeto Income eliminado o al menos el ID.
+    // El backend devuelve el objeto Income eliminado o al menos el ID.
     return response.data.data;
   } catch (error) {
     throw error;

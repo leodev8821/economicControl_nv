@@ -1,7 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
-import type { UseQueryResult } from "@tanstack/react-query";
-import { getAllOutcomes } from "../api/outcomeApi";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
+import {
+  createOutcome,
+  getAllOutcomes,
+  updateOutcome,
+  deleteOutcome,
+  type OutcomeUpdateData,
+} from "../api/outcomeApi";
 import type { Outcome } from "../types/outcome.type";
+import type { OutcomeCreationRequest } from "@economic-control/shared";
 
 // Definimos una clave única (queryKey) para esta consulta.
 // React Query usa esta clave para almacenar en caché los datos.
@@ -20,9 +27,86 @@ const OUTCOMES_QUERY_KEY = "outcomes";
  * 4. Maneja los estados: isLoading, isError, error, data.
  * * @returns El resultado de la consulta de React Query (data, isLoading, isError, etc.).
  */
-export const useOutcomes = (): UseQueryResult<Outcome[], Error> => {
+export const useReadOutcomes = (): UseQueryResult<Outcome[], Error> => {
   return useQuery<Outcome[], Error>({
     queryKey: [OUTCOMES_QUERY_KEY],
     queryFn: getAllOutcomes,
+  });
+};
+
+/**
+ * Hook personalizado para crear un nuevo egreso.
+ * @returns El resultado de la mutación (mutate, isLoading, isError, etc.).
+ */
+export const useCreateOutcome = (): UseMutationResult<
+  Outcome,
+  Error,
+  OutcomeCreationRequest
+  //IncomeFormData
+> => {
+  const queryClient = useQueryClient();
+
+  //return useMutation<Income, Error, IncomeFormData>({
+  return useMutation<Outcome, Error, OutcomeCreationRequest>({
+    mutationFn: createOutcome, // Usa la función API de creación
+
+    // Al tener éxito, invalida la caché de la lista de ingresos para forzar un re-fetch.
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [OUTCOMES_QUERY_KEY] });
+    },
+    // Opcional: Manejo de errores global.
+    onError: (error: Error) => {
+      console.error("Fallo la creación del ingreso:", error);
+    },
+  });
+};
+
+/**
+ * Hook personalizado para actualizar un egreso existente.
+ * * En el onSuccess, invalida la caché de la lista para refrescar la tabla.
+ * @returns El resultado de la mutación (mutate, isLoading, isError, etc.).
+ */
+export const useUpdateOutcome = (): UseMutationResult<
+  Outcome,
+  Error,
+  OutcomeUpdateData
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Outcome, Error, OutcomeUpdateData>({
+    mutationFn: updateOutcome, // Usa la función API de actualización
+
+    // Al tener éxito, invalida la caché
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [OUTCOMES_QUERY_KEY] });
+    },
+    onError: (error: Error) => {
+      console.error("Fallo la actualización del ingreso:", error);
+    },
+  });
+};
+
+/**
+ * Hook personalizado para eliminar un egreso existente.
+ * * En el onSuccess, invalida la caché de la lista para refrescar la tabla.
+ * @returns El resultado de la mutación (mutate, isLoading, isError, etc.).
+ */
+export const useDeleteOutcome = (): UseMutationResult<
+  Outcome,
+  Error,
+  number
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Outcome, Error, number>({
+    mutationFn: deleteOutcome, // Usa la función API de eliminación
+
+    // Al tener éxito, invalida la caché
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [OUTCOMES_QUERY_KEY] });
+    },
+    onError: (error: Error) => {
+      console.error("Fallo la eliminación del ingreso:", error);
+    },
   });
 };

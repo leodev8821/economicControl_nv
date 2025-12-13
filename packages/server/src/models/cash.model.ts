@@ -78,10 +78,20 @@ export class CashActions {
    * @param data criterios de búsqueda.
    * @returns promise con un objeto CashAttributes o null si no se encuentra ninguna caja.
    */
+  /**
+   * obtiene una caja que cumpla con los criterios de búsqueda proporcionados.
+   * @param data criterios de búsqueda.
+   * @param t (Opcional) Objeto de transacción de Sequelize.
+   * @returns promise con un objeto CashAttributes o null si no se encuentra ninguna caja.
+   */
   public static async getOne(
-    data: CashSearchData
+    data: CashSearchData,
+    t?: Transaction
   ): Promise<CashAttributes | null> {
-    const cash = await CashModel.findOne({ where: data });
+    const cash = await CashModel.findOne({
+      where: data,
+      transaction: t ?? null,
+    });
     return cash ? cash.get({ plain: true }) : null;
   }
 

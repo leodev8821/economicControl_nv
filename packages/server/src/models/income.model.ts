@@ -249,7 +249,7 @@ export class IncomeActions {
         const newCashId = data.cash_id !== undefined ? data.cash_id : oldCashId;
 
         // --- 1. Revertir la transacción original (Restar el monto anterior) ---
-        let oldCash = await CashActions.getOne({ id: oldCashId });
+        let oldCash = await CashActions.getOne({ id: oldCashId }, t);
         if (oldCash) {
           // Cálculo: Saldo actual de la caja antigua - Monto antiguo (reversión de suma)
           const oldCashNewAmount =
@@ -259,7 +259,7 @@ export class IncomeActions {
             { actual_amount: oldCashNewAmount },
             t
           );
-          oldCash = await CashActions.getOne({ id: oldCashId }); // Refrescar el objeto oldCash
+          oldCash = await CashActions.getOne({ id: oldCashId }, t); // Refrescar el objeto oldCash
         }
 
         // --- 2. Aplicar la nueva transacción (Sumar el nuevo monto) ---
@@ -268,7 +268,7 @@ export class IncomeActions {
         let targetCash =
           oldCashId === newCashId
             ? oldCash
-            : await CashActions.getOne({ id: targetCashId });
+            : await CashActions.getOne({ id: targetCashId }, t);
 
         if (targetCash) {
           // Cálculo: Saldo actual de la caja objetivo + Nuevo monto

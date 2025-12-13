@@ -1,30 +1,52 @@
-import { useIncomes, useDeleteIncome, useUpdateIncome } from '../hooks/useIncome';
+import React, { useState } from 'react';
+import { useReadIncomes, useCreateIncome, useDeleteIncome, useUpdateIncome } from '../hooks/useIncome';
 import IncomeTable from '../components/tables/IncomeTable';
 import IncomeForm from '../components/forms/IncomeForm';
 import { Box, Typography, CircularProgress, Paper } from '@mui/material';
 import type { GridRowId } from '@mui/x-data-grid';
+import type { Income } from '../types/income.type';
+import type { IncomeUpdateData } from '../api/incomeApi';
+import * as SharedIncomeSchemas from '@economic-control/shared';
 
 export const IncomesPage: React.FC = () => {
-  const { data: incomes = [], isLoading, isError, error } = useIncomes();
+  const { data: incomes = [], isLoading, isError, error } = useReadIncomes();
+  const createMutation = useCreateIncome();
   const deleteMutation = useDeleteIncome();
   const updateMutation = useUpdateIncome();
 
-  // Definición de las funciones de acción
-  const handleUpdateIncome = (id: GridRowId) => {
-    // Al hacer clic, aquí es donde se abriría un modal/formulario precargado.
-    // Una vez que el formulario se envía, se llama a updateMutation.mutate()
-    console.log(`[Página] Solicitud para Abrir Formulario de Actualización para ID: ${id}`);
+  const [editingIncome, setEditingIncome] = useState<Income | null>(null);
 
-    // EJEMPLO (en un flujo real, la data vendría de un formulario):
-    // const incomeId = parseInt(id.toString());
-    // updateMutation.mutate({
-    //   id: incomeId,
-    //   date: new Date().toISOString(), // Valores de ejemplo para update
-    //   amount: 150.00,
-    //   source: 'Diezmo',
-    //   week_id: 10,
-    //   person_id: 1,
-    // });
+  const handleCreateIncome = (income: SharedIncomeSchemas.IncomeCreationRequest) => {
+    createMutation.mutate(income, {
+        onSuccess: () => {
+             // Success logic
+        }
+    });
+  };
+
+  const handleUpdateIncome = (income: IncomeUpdateData) => {
+    updateMutation.mutate(income, {
+        onSuccess: () => {
+             setEditingIncome(null);
+        }
+    });
+  };
+
+  const handleFormSubmit = (data: SharedIncomeSchemas.IncomeCreationRequest) => {
+       if (editingIncome) {
+           handleUpdateIncome({ ...data, id: editingIncome.id });
+       } else {
+           handleCreateIncome(data);
+       }
+  };
+
+  const handleStartEdit = (income: Income) => {
+      setEditingIncome(income);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+      setEditingIncome(null);
   };
 
   const handleDeleteIncome = (id: GridRowId) => {
@@ -56,7 +78,7 @@ export const IncomesPage: React.FC = () => {
           Error al cargar ingresos
         </Typography>
         <Typography variant="body1" component="p" sx={{ mb: 2 }}>
-          Mensaje: {error.message}
+          Mensaje: {error?.message}
         </Typography>
         <Typography variant="body1" component="p" sx={{ mb: 2 }}>
           No se pudo completar la solicitud. Por favor, intente cerrar sesión y volver a entrar.
@@ -69,21 +91,27 @@ export const IncomesPage: React.FC = () => {
   return (
     <Box p={3}>
       {/* Indicador de que una mutación está en curso (opcional) */}
-      {(deleteMutation.isPending || updateMutation.isPending) && (
+      {(deleteMutation.isPending || updateMutation.isPending || createMutation.isPending) && (
         <Typography color="primary">
           Realizando acción en el servidor...
         </Typography>
       )}
 
       {/* Mensaje de error si la eliminación o actualización falló */}
-      {deleteMutation.isError && (
+      {(deleteMutation.isError || updateMutation.isError || createMutation.isError) && (
         <Typography color="error.main">
-          Error al eliminar el ingreso: {deleteMutation.error.message}
+          Error: {deleteMutation.error?.message || updateMutation.error?.message || createMutation.error?.message}
         </Typography>
       )}
 
       <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: 'background.paper' }}>
-        <IncomeForm /> 
+        <IncomeForm 
+            initialValues={editingIncome}
+            onSubmit={handleFormSubmit}
+            isLoading={createMutation.isPending || updateMutation.isPending}
+            isUpdateMode={!!editingIncome}
+            onCancel={handleCancelEdit}
+        /> 
       </Paper>
       
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
@@ -95,7 +123,7 @@ export const IncomesPage: React.FC = () => {
       {incomes.length > 0 ? (
         <IncomeTable 
           incomes={incomes}
-          onUpdate={handleUpdateIncome}
+          onEdit={handleStartEdit}
           onDelete={handleDeleteIncome}
         />
       ) : (

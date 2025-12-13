@@ -26,6 +26,7 @@ export type IncomeSource = (typeof INCOME_SOURCES)[number];*/
 }*/
 
 export interface Income extends IncomeCreationRequest {
+  id: number;
   Person: Person | null;
   Week: Week;
 }

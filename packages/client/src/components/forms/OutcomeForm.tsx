@@ -18,16 +18,14 @@ import { useForm } from '@conform-to/react';
 
 /** Schemas de validación */
 import { parseWithZod } from '@conform-to/zod/v4';
-import * as SharedIncomeSchemas from '@economic-control/shared';
+import * as SharedOutcomeSchemas from '@economic-control/shared';
 
 /**Types */
-import type { Income } from '../../types/income.type';
+import type { Outcome } from '../../types/outcome.type';
 
 /**Hooks de datos necesarios: cajas, semanas y personas */
-import { usePersons } from '../../hooks/usePerson';
 import { useWeeks } from '../../hooks/useWeek';
 import { useCashes } from '../../hooks/useCash';
-
 
 // Constantes para MUI Select
 const ITEM_HEIGHT = 48;
@@ -49,18 +47,17 @@ function getStyles(name: string, selectedValue: string, theme: Theme) {
   };
 }
 
-interface IncomeFormProps {
-    initialValues?: Income | null;
-    onSubmit: (data: SharedIncomeSchemas.IncomeCreationRequest) => void;
+interface OutcomeFormProps {
+    initialValues?: Outcome | null;
+    onSubmit: (data: SharedOutcomeSchemas.OutcomeCreationRequest) => void;
     onCancel?: () => void;
     isLoading?: boolean;
     isUpdateMode?: boolean;
 }
 
-export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoading = false, isUpdateMode = false }: IncomeFormProps) {
+export default function OutcomeForm({ initialValues, onSubmit, onCancel, isLoading = false, isUpdateMode = false }: OutcomeFormProps) {
     const theme = useTheme();
 
-    // 1. Hooks de datos necesarios: cajas, semanas y personas
     const {
         data: availableCashes = [],
         isLoading: isLoadingCashes,
@@ -68,22 +65,16 @@ export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoadin
     } = useCashes();
 
     const {
-        data: availableWeeks = [], 
-        isLoading: isLoadingWeeks, 
-        isError: isErrorWeeks 
+        data: availableWeeks = [],
+        isLoading: isLoadingWeeks,
+        isError: isErrorWeeks
     } = useWeeks();
 
-    const { 
-        data: availablePersons = [], 
-        isLoading: isLoadingPersons, 
-        isError: isErrorPersons 
-    } = usePersons();
-    
     // Local state for MUI Selects
+    // Initialize with default values if provided
     const [cashId, setCashId] = React.useState(initialValues?.cash_id?.toString() || '');
     const [weekId, setWeekId] = React.useState(initialValues?.week_id?.toString() || '');
-    const [source, setSource] = React.useState(initialValues?.source || '');
-    const [personId, setPersonId] = React.useState(initialValues?.person_id?.toString() || '');
+    const [category, setCategory] = React.useState(initialValues?.category || '');
     const [selectedDate, setSelectedDate] = React.useState<Dayjs | null>(initialValues?.date ? dayjs(initialValues.date) : null);
 
     // Update local state when initialValues change
@@ -91,18 +82,17 @@ export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoadin
         if (initialValues) {
             setCashId(initialValues.cash_id?.toString() || '');
             setWeekId(initialValues.week_id?.toString() || '');
-            setSource(initialValues.source || '');
-            setPersonId(initialValues.person_id?.toString() || '');
+            setCategory(initialValues.category || '');
             setSelectedDate(initialValues.date ? dayjs(initialValues.date) : null);
         } else {
-             // Reset fields if switching to create mode (and no initialValues)
-             setCashId('');
-             setWeekId('');
-             setSource('');
-             setPersonId('');
-             setSelectedDate(null);
+            // Reset fields if switching to create mode (and no initialValues)
+            setCashId('');
+            setWeekId('');
+            setCategory('');
+            setSelectedDate(null);
         }
     }, [initialValues]);
+
 
     const handleCashChange = (event: SelectChangeEvent) => {
         setCashId(event.target.value);
@@ -112,45 +102,41 @@ export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoadin
         setWeekId(event.target.value);
     };
 
-    const handleSourceChange = (event: SelectChangeEvent) => {
-        setSource(event.target.value);
+    const handleCategoryChange = (event: SelectChangeEvent) => {
+        setCategory(event.target.value);
     };
 
-    const handlePersonChange = (event: SelectChangeEvent) => {
-        setPersonId(event.target.value);
-    };
+    // 2. Estado de deshabilitación: si está enviando, o si está cargando/fallando la lista de cajas y semanas
+    const isFormDisabled = isLoading || isLoadingWeeks || isErrorWeeks || isLoadingCashes || isErrorCashes;
 
-    // 2. Estado de deshabilitación: si está enviando, o si está cargando/fallando la lista de personas
-    const isFormDisabled = isLoading || isLoadingPersons || isErrorPersons || isLoadingWeeks || isErrorWeeks || isLoadingCashes || isErrorCashes;
-
-    // 3. Inicialización de Conform
+    // 3. Inicializacion  de Conform-to
     const [form, fields] = useForm({
         onValidate({ formData }) {
-            return parseWithZod(formData, { schema: SharedIncomeSchemas.IncomeCreationSchema });
+            return parseWithZod(formData, { schema: SharedOutcomeSchemas.OutcomeCreationSchema });
         },
-        shouldValidate: 'onBlur', // Valida al salir del campo
-        shouldRevalidate: 'onInput', // Vuelve a validar al escribir
+        shouldValidate: 'onBlur',
+        shouldRevalidate: 'onInput',
         defaultValue: initialValues ? {
              ...initialValues,
              cash_id: initialValues.cash_id.toString(),
              week_id: initialValues.week_id.toString(),
-             person_id: initialValues.person_id?.toString(),
-             date: initialValues.date,
+             date: initialValues.date, 
+             // amount might need string conversion depending on how conform handles it, but usually number is fine or string
+             // HTML inputs usually return strings.
         } as any : undefined
     });
 
-    // 4. Manejador de Envío
+    // 4. Manejador de envío
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         
-        // Guardar referencia al formulario
+        // Guarda referencia al formulario
         const formEl = event.currentTarget;
         const formData = new FormData(formEl);
         
-        // 4a. Validación Final en el Cliente
-        const submission = parseWithZod(formData, { schema: SharedIncomeSchemas.IncomeCreationSchema });
+        // Validación final en el cliente
+        const submission = parseWithZod(formData, { schema: SharedOutcomeSchemas.OutcomeCreationSchema });
 
-        // Si la validación local falla (ej. campo requerido vacío), Conform actualiza los errores.
         if (submission.status !== 'success') {
             return;
         }
@@ -158,22 +144,20 @@ export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoadin
         // Pass clean data to parent
         onSubmit(submission.value);
 
-        // Reset if not in update mode
+        // Only reset if NOT in update mode? Or let parent handle it? 
+        // Usually better to let parent decide, or if Create mode, reset.
         if (!isUpdateMode) {
              formEl.reset(); 
-             // Reset local state
              setCashId('');
              setWeekId('');
-             setSource('');
-             setPersonId('');
+             setCategory('');
              setSelectedDate(null);
         }
     };
 
-
     return (
-        <form method="post" id={form.id} onSubmit={handleSubmit} className="income-form">
-            <h2>{isUpdateMode ? 'Editar Ingreso' : 'Crear Nuevo Ingreso'}</h2>
+        <form method="post" id={form.id} onSubmit={handleSubmit} className="outcome-form">
+            <h2>{isUpdateMode ? 'Editar Gasto' : 'Crear Nuevo Gasto'}</h2>
             
             {/* Errores a nivel de formulario (si existen) */}
             {form.errors && <div style={{ color: 'red' }}>{form.errors}</div>}
@@ -295,74 +279,53 @@ export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoadin
                     </FormControl>
                 </Grid>
 
-                {/* --- Campo source (Requerido, ENUM) --- */}
                 <Grid size={{ xs: 12, sm: 6 }}>
-                    <FormControl fullWidth error={!!fields.source.errors}>
-                        <InputLabel id="source-select-label">Fuente *</InputLabel>
+                    <FormControl fullWidth error={!!fields.description.errors}>
+                        <InputLabel htmlFor={fields.description.id}>Descripción *</InputLabel>
+                        <OutlinedInput
+                            id={fields.description.id}
+                            name={fields.description.name}
+                            placeholder='Ej: Alquiler mes enero'
+                            disabled={isLoading}
+                            defaultValue={initialValues?.description}
+                            required
+                            label="Descripción *"
+                        />
+                        {fields.description.errors && <FormHelperText>{fields.description.errors}</FormHelperText>}
+                    </FormControl>
+                </Grid>
+
+                {/* --- Campo category (Requerido, ENUM) --- */}
+                <Grid size={{ xs: 12, sm: 6 }}>
+                    <FormControl fullWidth error={!!fields.category.errors}>
+                        <InputLabel id="category-select-label">Categoría *</InputLabel>
                         <Select
-                            labelId="source-select-label"
-                            id={fields.source.id}
-                            name={fields.source.name}
-                            value={source}
-                            onChange={handleSourceChange}
-                            input={<OutlinedInput label="Fuente *" />}
+                            labelId="category-select-label"
+                            id={fields.category.id}
+                            name={fields.category.name}
+                            value={category}
+                            onChange={handleCategoryChange}
+                            input={<OutlinedInput label="Categoría *" />}
                             MenuProps={MenuProps}
                             disabled={isLoading}
                         >
                             <MenuItem value="">
-                                <em>Seleccione una fuente</em>
+                                <em>Seleccione una categoría</em>
                             </MenuItem>
-                            {SharedIncomeSchemas.INCOME_SOURCES.map((src) => (
+                            {SharedOutcomeSchemas.OUTCOME_CATEGORIES.map((src) => (
                                 <MenuItem
                                     key={src}
                                     value={src}
-                                    style={getStyles(src, source, theme)}
+                                    style={getStyles(src, category, theme)}
                                 >
                                     {src}
                                 </MenuItem>
                             ))}
                         </Select>
-                        {fields.source.errors && <FormHelperText>{fields.source.errors}</FormHelperText>}
+                        {fields.category.errors && <FormHelperText>{fields.category.errors}</FormHelperText>}
                     </FormControl>
                 </Grid>
                 
-                {/* --- Campo person_id (Opcional pero condicional) --- */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                    <FormControl fullWidth error={!!fields.person_id.errors}>
-                        <InputLabel id="person-select-label">Persona (Obligatorio para Diezmo)</InputLabel>
-                        <Select
-                            labelId="person-select-label"
-                            id={fields.person_id.id}
-                            name={fields.person_id.name}
-                            value={personId}
-                            onChange={handlePersonChange}
-                            input={<OutlinedInput label="Persona (Obligatorio para Diezmo)" />}
-                            MenuProps={MenuProps}
-                            disabled={isFormDisabled}
-                        >
-                            <MenuItem value="">
-                                <em>
-                                    {isLoadingPersons && 'Cargando personas...'}
-                                    {isErrorPersons && 'Error al cargar personas'}
-                                    {!isLoadingPersons && !isErrorPersons && availablePersons?.length === 0 && 'No hay personas disponibles'}
-                                    {!isLoadingPersons && !isErrorPersons && availablePersons?.length > 0 && 'Seleccione una persona'}
-                                </em>
-                            </MenuItem>
-                            {!isLoadingPersons && !isErrorPersons && availablePersons && availablePersons.map((p) => (
-                                <MenuItem
-                                    key={p.id}
-                                    value={p.id}
-                                    style={getStyles(`${p.first_name} ${p.last_name}`, personId, theme)}
-                                >
-                                    {p.first_name} {p.last_name}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                        {fields.person_id.errors && <FormHelperText>{fields.person_id.errors}</FormHelperText>}
-                        {isErrorPersons && <FormHelperText error>Hubo un error al cargar la lista de personas.</FormHelperText>}
-                    </FormControl>
-                </Grid>
-
                 <Grid size={12}>
                     <Stack direction="row" spacing={2} justifyContent="flex-end">
                          {isUpdateMode && onCancel && (
@@ -380,11 +343,12 @@ export default function IncomeForm({ initialValues, onSubmit, onCancel, isLoadin
                             disabled={isLoading}
                             sx={{ minWidth: 150 }}
                         >
-                            {isLoading ? 'Guardando...' : (isUpdateMode ? 'Actualizar Ingreso' : 'Guardar Ingreso')}
+                            {isLoading ? 'Guardando...' : (isUpdateMode ? 'Actualizar Egreso' : 'Guardar Egreso')}
                         </Button>
                     </Stack>
                 </Grid>
             </Grid>
         </form>
     );
-}
+
+};

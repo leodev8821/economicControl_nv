@@ -5,14 +5,10 @@ import {
   createIncome,
   updateIncome,
   deleteIncome,
+  type IncomeUpdateData,
 } from "../api/incomeApi";
 import type { Income } from "../types/income.type";
-//import type { IncomeUpdateData } from "../api/incomeApi";
-//import type { IncomeFormData } from "../schemas/income.schema";
-import type {
-  CreateIncomeDTO,
-  UpdateIncomeDTO,
-} from "@economic-control/shared";
+import type { IncomeCreationRequest } from "@economic-control/shared";
 
 // Definimos una clave única (queryKey) para esta consulta.
 // React Query usa esta clave para almacenar en caché los datos.
@@ -31,7 +27,7 @@ const INCOMES_QUERY_KEY = "incomes";
  * 4. Maneja los estados: isLoading, isError, error, data.
  * * @returns El resultado de la consulta de React Query (data, isLoading, isError, etc.).
  */
-export const useIncomes = (): UseQueryResult<Income[], Error> => {
+export const useReadIncomes = (): UseQueryResult<Income[], Error> => {
   return useQuery<Income[], Error>({
     queryKey: [INCOMES_QUERY_KEY],
     queryFn: getAllIncomes,
@@ -45,13 +41,13 @@ export const useIncomes = (): UseQueryResult<Income[], Error> => {
 export const useCreateIncome = (): UseMutationResult<
   Income,
   Error,
-  CreateIncomeDTO
+  IncomeCreationRequest
   //IncomeFormData
 > => {
   const queryClient = useQueryClient();
 
   //return useMutation<Income, Error, IncomeFormData>({
-  return useMutation<Income, Error, CreateIncomeDTO>({
+  return useMutation<Income, Error, IncomeCreationRequest>({
     mutationFn: createIncome, // Usa la función API de creación
 
     // Al tener éxito, invalida la caché de la lista de ingresos para forzar un re-fetch.
@@ -73,11 +69,11 @@ export const useCreateIncome = (): UseMutationResult<
 export const useUpdateIncome = (): UseMutationResult<
   Income,
   Error,
-  UpdateIncomeDTO
+  IncomeUpdateData
 > => {
   const queryClient = useQueryClient();
 
-  return useMutation<Income, Error, UpdateIncomeDTO>({
+  return useMutation<Income, Error, IncomeUpdateData>({
     mutationFn: updateIncome, // Usa la función API de actualización
 
     // Al tener éxito, invalida la caché

@@ -155,9 +155,7 @@ export class OutcomeActions {
       const newOutcome = await OutcomeModel.create(data, { transaction: t });
 
       // 2. Obtener la caja bloqueando la fila dentro de la transacción
-      const currentCash = await CashModel.findByPk(data.cash_id, {
-        transaction: t,
-      });
+      const currentCash = await CashActions.getOne({ id: data.cash_id }, t);
 
       if (currentCash) {
         // Cálculo: Saldo actual - Monto del egreso
@@ -195,9 +193,10 @@ export class OutcomeActions {
       });
 
       if (deletedCount > 0) {
-        const currentCash = await CashModel.findByPk(outcomeToDelete.cash_id, {
-          transaction: t,
-        });
+        const currentCash = await CashActions.getOne(
+          { id: outcomeToDelete.cash_id },
+          t
+        );
 
         if (currentCash) {
           // Devolver el dinero a la caja (Revertir resta)
@@ -252,8 +251,7 @@ export class OutcomeActions {
         const newCashId = data.cash_id !== undefined ? data.cash_id : oldCashId;
 
         // A. Revertir en caja vieja (Sumar lo que se había restado)
-        // Usamos findByPk con transacción 't' en lugar de getOne para seguridad
-        const oldCash = await CashModel.findByPk(oldCashId, { transaction: t });
+        const oldCash = await CashActions.getOne({ id: oldCashId }, t);
         if (oldCash) {
           const oldCashNewAmount =
             parseFloat(String(oldCash.actual_amount)) + oldAmount;
@@ -267,9 +265,8 @@ export class OutcomeActions {
         // B. Aplicar en caja nueva/actual (Restar el nuevo monto)
         const targetCashId = newCashId;
         // Si es la misma caja, necesitamos refrescar el dato recién actualizado
-        const targetCash = await CashModel.findByPk(targetCashId, {
-          transaction: t,
-        });
+        // getOne con transacción nos dará el dato fresco dentro de la tx
+        const targetCash = await CashActions.getOne({ id: targetCashId }, t);
 
         if (targetCash) {
           const newCashNewAmount =
