@@ -1,0 +1,43 @@
+{
+  "extends": "../../tsconfig.base.json", // <--- Aquí hereda la base
+  "compilerOptions": {
+    /* Opciones de diseño de archivos */
+    "rootDirs": ["src"],
+    /*"rootDir": "./",*/
+    "outDir": "./dist",
+    
+    /* Opciones del entorno */
+    "types": ["node"],
+    "moduleResolution": "node16",
+    "module": "node16",
+
+    /* Interop */
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+
+    "allowImportingTsExtensions": true, 
+    "noEmit": true,
+    
+    /* Salidas */
+    "sourceMap": true,
+    //"declaration": true,
+    //"declarationMap": true,
+    "strict": true,
+    
+    /* Opciones de comprobación de tipos */
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedParameters": true,
+
+    /* Opciones adicionales */
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "src/**/*",
+    "types/express.d.ts" // Incluir definiciones personalizadas
+  ]
+}

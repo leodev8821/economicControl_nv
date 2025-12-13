@@ -1,0 +1,21 @@
+{
+  "name": "economic-control-root",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Configuration root package for Economic Control monorepo",
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter @economic-control/server dev\" \"pnpm --filter @economic-control/client dev\"",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "test": "pnpm -r run test",
+    "clean": "rm -rf node_modules packages/*/node_modules"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@10.22.0"
+}

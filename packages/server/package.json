@@ -1,0 +1,43 @@
+{
+  "name": "@economic-control/server",
+  "version": "1.0.0",
+  "description": "economic control server",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.ts",
+    "dev": "tsx watch --clear-screen=false src/app.ts",
+    "dev:debug": "tsx watch --inspect src/app.ts",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "leodev",
+  "license": "ISC",
+  "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b",
+  "dependencies": {
+    "@economic-control/shared": "workspace:*",
+    "axios": "^1.13.2",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.15.3",
+    "sequelize": "^6.37.7",
+    "socket.io": "^4.8.1",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.4",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.10.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

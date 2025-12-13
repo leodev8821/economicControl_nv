@@ -1,0 +1,46 @@
+import { z } from "zod";
+import { ROLE_VALUES } from "./role.schema.ts";
+
+// 1. Base Schema (Datos del usuario SIN contraseña)
+const BaseUserSchema = z.object({
+  id: z.number().int().positive().optional(),
+
+  role: z.enum(ROLE_VALUES, {
+    message: "El rol es obligatorio",
+  }),
+
+  username: z
+    .string()
+    .min(3, "Mínimo 3 caracteres")
+    .max(30, "Máximo 30 caracteres"),
+
+  first_name: z.string().min(1, "El nombre es obligatorio").max(50),
+  last_name: z.string().min(1, "El apellido es obligatorio").max(50),
+
+  isVisible: z.boolean().default(true).optional(),
+});
+
+// 2. Validación de Contraseña (Reutilizable)
+const PasswordSchema = z
+  .string()
+  .min(6, "Mínimo 6 caracteres")
+  .max(30, "Máximo 30 caracteres");
+
+// 3. Schemas de Operación
+
+// CREAR: Base + Contraseña obligatoria
+export const UserCreationSchema = BaseUserSchema.extend({
+  password: PasswordSchema,
+});
+
+// ACTUALIZAR: Todo opcional (incluida la contraseña)
+export const UserUpdateSchema = BaseUserSchema.partial().extend({
+  password: PasswordSchema.optional(),
+});
+
+// 4. Tipos
+export type UserCreationRequest = z.infer<typeof UserCreationSchema>;
+export type UserUpdateRequest = z.infer<typeof UserUpdateSchema>;
+
+// ¡Importante! El tipo UserType NO debe tener password para seguridad en el Front
+export type UserType = z.infer<typeof BaseUserSchema>;
