@@ -259,34 +259,34 @@ router.get(
 router.get("/roles", decodeAccessToken, verifyLogin, rolesController.allRoles);
 
 // =================================================================
-// 💰 MONEDAS (CURRENCY)
+// 💰 MONEDAS (CASH DENOMINATIONS)
 // =================================================================
 router.get(
-  "/currencies",
+  "/cash-denominations",
   decodeAccessToken,
   verifyLogin,
   cashDenominationController.allCashDenominations
 );
 router.get(
-  "/currencies/:id",
+  "/cash-denominations/:id",
   decodeAccessToken,
   verifyLogin,
   cashDenominationController.oneCashDenomination
 );
 router.post(
-  "/currencies/new-currency",
+  "/cash-denominations/new-cash-denomination",
   decodeAccessToken,
   verifyLogin,
   cashDenominationController.createCashDenomination
 );
 router.put(
-  "/currencies/:id",
+  "/cash-denominations/:id",
   decodeAccessToken,
   verifyLogin,
   cashDenominationController.updateCashDenomination
 );
 router.delete(
-  "/currencies/:id",
+  "/cash-denominations/:id",
   decodeAccessToken,
   verifyLogin,
   cashDenominationController.deleteCashDenomination

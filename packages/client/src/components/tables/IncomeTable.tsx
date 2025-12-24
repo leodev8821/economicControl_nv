@@ -1,65 +1,74 @@
-import Box from '@mui/material/Box';
-import { DataGrid, type GridColDef, type GridRowId, GridActionsCellItem } from '@mui/x-data-grid';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import type { Income } from '../../types/income.type';
+import Box from "@mui/material/Box";
+import {
+  DataGrid,
+  type GridColDef,
+  type GridRowId,
+  GridActionsCellItem,
+} from "@mui/x-data-grid";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import type { Income } from "../../types/income.type";
 
 interface IncomeTableProps {
   incomes: Income[];
-  onEdit: (income: Income) => void; 
+  onEdit: (income: Income) => void;
   onDelete: (id: GridRowId) => void;
 }
 
-export default function IncomeTable({ incomes, onEdit, onDelete }: IncomeTableProps) {
-
+export default function IncomeTable({
+  incomes,
+  onEdit,
+  onDelete,
+}: IncomeTableProps) {
   const columns: GridColDef<Income>[] = [
-    { 
-      field: 'id', 
-      headerName: 'ID', 
-      width: 90 
+    {
+      field: "id",
+      headerName: "ID",
+      width: 90,
     },
     {
-      field: 'Week',
-      headerName: 'Semana',
+      field: "Week",
+      headerName: "Semana",
       width: 200,
       renderCell: (params) => {
         const week = params.row.Week;
-        return week ? 
-          `S${week.id} (${new Date(week.week_start).toLocaleDateString()} al ${new Date(week.week_end).toLocaleDateString()})` :
-          '-';
-      }
+        return week
+          ? `S${week.id} (${new Date(
+              week.week_start
+            ).toLocaleDateString()} al ${new Date(
+              week.week_end
+            ).toLocaleDateString()})`
+          : "-";
+      },
     },
     {
-      field: 'date',
-      headerName: 'Fecha',
+      field: "date",
+      headerName: "Fecha",
       width: 120,
-      renderCell: (params) => 
-        new Date(params.row.date).toLocaleDateString()
+      renderCell: (params) => new Date(params.row.date).toLocaleDateString(),
     },
     {
-      field: 'amount',
-      headerName: 'Monto',
-      type: 'number',
+      field: "amount",
+      headerName: "Monto",
+      type: "number",
       width: 110,
-      renderCell: (params) => 
-        `${params.row.amount.toFixed(2)} €`
+      renderCell: (params) => `${params.row.amount.toFixed(2)} €`,
     },
     {
-      field: 'source',
-      headerName: 'Fuente',
-      width: 130
+      field: "source",
+      headerName: "Fuente",
+      width: 130,
     },
     {
-      field: 'Person',
-      headerName: 'NIF de la Persona',
+      field: "Person",
+      headerName: "NIF de la Persona",
       width: 160,
-      renderCell: (params) => 
-        params.row.Person?.dni || '-'
+      renderCell: (params) => params.row.Person?.dni || "-",
     },
     {
-      field: 'actions',
-      headerName: 'Acciones',
-      type: 'actions',
+      field: "actions",
+      headerName: "Acciones",
+      type: "actions",
       width: 100,
       getActions: (params) => [
         <GridActionsCellItem
@@ -79,7 +88,15 @@ export default function IncomeTable({ incomes, onEdit, onDelete }: IncomeTablePr
   ];
 
   return (
-    <Box sx={{ height: 400, width: '100%' }}>
+    <Box
+      sx={{
+        p: 4,
+        borderRadius: 2,
+        width: "100%",
+        maxWidth: "1200px",
+        mx: "auto",
+      }}
+    >
       <DataGrid
         rows={incomes}
         columns={columns}

@@ -1,8 +1,13 @@
-import Box from '@mui/material/Box';
-import { DataGrid, type GridColDef, type GridRowId, GridActionsCellItem } from '@mui/x-data-grid';
-import type { Outcome } from '../../types/outcome.type';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import Box from "@mui/material/Box";
+import {
+  DataGrid,
+  type GridColDef,
+  type GridRowId,
+  GridActionsCellItem,
+} from "@mui/x-data-grid";
+import type { Outcome } from "../../types/outcome.type";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface OutcomeTableProps {
   outcomes: Outcome[];
@@ -10,65 +15,69 @@ interface OutcomeTableProps {
   onDelete: (id: GridRowId) => void;
 }
 
-export default function OutcomeTable({ outcomes, onEdit, onDelete }: OutcomeTableProps) {
-  
+export default function OutcomeTable({
+  outcomes,
+  onEdit,
+  onDelete,
+}: OutcomeTableProps) {
   const columns: GridColDef<Outcome>[] = [
-    { 
-      field: 'id', 
-      headerName: 'ID', 
-      width: 70 
+    {
+      field: "id",
+      headerName: "ID",
+      width: 70,
     },
     {
-      field: 'Cash',
-      headerName: 'Caja',
+      field: "Cash",
+      headerName: "Caja",
       width: 130,
       renderCell: (params) => {
         const cash = params.row.Cash;
-        return cash ? cash.name : '-';
-      }
+        return cash ? cash.name : "-";
+      },
     },
     {
-      field: 'Week',
-      headerName: 'Semana',
+      field: "Week",
+      headerName: "Semana",
       width: 200,
       renderCell: (params) => {
         const week = params.row.Week;
-        return week ? 
-          `S${week.id} (${new Date(week.week_start).toLocaleDateString()} al ${new Date(week.week_end).toLocaleDateString()})` :
-          '-';
-      }
+        return week
+          ? `S${week.id} (${new Date(
+              week.week_start
+            ).toLocaleDateString()} al ${new Date(
+              week.week_end
+            ).toLocaleDateString()})`
+          : "-";
+      },
     },
     {
-      field: 'date',
-      headerName: 'Fecha',
+      field: "date",
+      headerName: "Fecha",
       width: 120,
-      renderCell: (params) => 
-        new Date(params.row.date).toLocaleDateString()
+      renderCell: (params) => new Date(params.row.date).toLocaleDateString(),
     },
     {
-      field: 'amount',
-      headerName: 'Monto',
-      type: 'number',
+      field: "amount",
+      headerName: "Monto",
+      type: "number",
       width: 110,
-      renderCell: (params) => 
-        `${params.row.amount.toFixed(2)} €`
+      renderCell: (params) => `${params.row.amount.toFixed(2)} €`,
     },
     {
-      field: 'description',
-      headerName: 'Descripción',
+      field: "description",
+      headerName: "Descripción",
       width: 200,
-      renderCell: (params) => 
-        params.row.description || '-'
+      renderCell: (params) => params.row.description || "-",
     },
     {
-      field: 'category',
-      headerName: 'Categoría',
-      width: 130
+      field: "category",
+      headerName: "Categoría",
+      width: 130,
     },
     {
-      field: 'actions',
-      type: 'actions',
-      headerName: 'Acciones',
+      field: "actions",
+      type: "actions",
+      headerName: "Acciones",
       width: 100,
       getActions: (params) => [
         <GridActionsCellItem
@@ -88,7 +97,15 @@ export default function OutcomeTable({ outcomes, onEdit, onDelete }: OutcomeTabl
   ];
 
   return (
-    <Box sx={{ height: 400, width: '100%' }}>
+    <Box
+      sx={{
+        p: 4,
+        borderRadius: 2,
+        width: "100%",
+        maxWidth: "1200px",
+        mx: "auto",
+      }}
+    >
       <DataGrid
         rows={outcomes}
         columns={columns}

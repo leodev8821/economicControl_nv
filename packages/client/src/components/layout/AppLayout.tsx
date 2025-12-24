@@ -18,6 +18,7 @@ import {
   Home,
   Login,
   Menu,
+  FindInPage,
 } from "@mui/icons-material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -248,6 +249,7 @@ const AppLayout = () => {
         { segment: "/dashboard", title: "Dashboard", icon: <Home /> },
         { kind: "header", title: "Operaciones" },
         { segment: "/cajas", title: "Cajas", icon: <AccountBalance /> },
+        { segment: "/arqueo", title: "Arqueo", icon: <FindInPage /> },
         { segment: "/ingresos", title: "Ingresos", icon: <Euro /> },
         { segment: "/egresos", title: "Egresos", icon: <Payments /> },
         { kind: "divider" },
