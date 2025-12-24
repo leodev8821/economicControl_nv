@@ -7,7 +7,7 @@ import type { ApiResponse } from "../types/apiResponse";
  * Ruta: GET /ec/api/v1/balance/get-balance
  * @returns Promesa que resuelve en un array de objetos CashBalance.
  */
-export const getBalance = async (): Promise<CashBalance[]> => {
+export const getBalance = async (): Promise<ApiResponse<CashBalance>> => {
   try {
     // El endpoint devuelve una lista de cajas con sus balances
     const response = await apiClient.get<ApiResponse<CashBalance>>(
@@ -15,7 +15,7 @@ export const getBalance = async (): Promise<CashBalance[]> => {
     );
 
     // Axios + Tu estructura ApiResponse: response.data.data es el array
-    return response.data.data;
+    return response.data;
   } catch (error) {
     throw error;
   }

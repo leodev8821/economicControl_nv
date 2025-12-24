@@ -16,7 +16,11 @@ const transformToPieData = (dataObj: Record<string, number>): PieValueType[] => 
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const { data: balanceData, isLoading, isError, error } = useBalance();
+  const { data: apiResponse, isLoading, isError, error } = useBalance();
+
+  const balanceData = apiResponse?.data;
+  const apiResponseMessage = apiResponse?.message;
+
 
   if (isLoading) {
     return <Box p={3}>Cargando datos del balance...</Box>;
@@ -32,7 +36,14 @@ export const DashboardPage: React.FC = () => {
   }
 
   if (!balanceData || balanceData.length === 0) {
-    return <Box p={3}>No hay información de cajas disponible.</Box>;
+    return (
+      <Box p={3}>
+        <Typography variant="body1" color="textSecondary">
+            {/* Si existe el mensaje del servidor, lo mostramos. Si no, un default */}
+            {apiResponseMessage || "No hay información de cajas disponible."}
+        </Typography>
+      </Box>
+    );
   }
 
   return (
@@ -75,9 +86,6 @@ export const DashboardPage: React.FC = () => {
                       sx={{ fontWeight: 'bold', color: cash.cash_actual_amount >= 0 ? 'success.main' : 'error.main' }}
                     >
                       {cash.cash_actual_amount.toFixed(2)}€
-                    </Typography>
-                    <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                       (Balance Calculado: {cash.calculated_balance.toFixed(2)}€)
                     </Typography>
                   </CardContent>
                 </Card>

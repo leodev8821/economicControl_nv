@@ -13,9 +13,13 @@ export const dashboardController = {
       const allOutcomes = await OutcomeActions.getAll();
 
       if (!cashes || cashes.length === 0) {
-        return res.status(400).json({
-          ok: false,
-          message: "No hay cajas registradas para calcular balances.",
+        return res.status(200).json({
+          ok: true,
+          message:
+            cashes.length === 0
+              ? "No hay cajas registradas para calcular balances."
+              : "Cajas obtenidas correctamente.",
+          data: cashes, // ← array vacío si no hay registros
         });
       }
 
@@ -52,16 +56,11 @@ export const dashboardController = {
           return sum + amount;
         }, 0);
 
-        // D. Calcular Balance Neto de la caja
-        const balance =
-          parseFloat(String(cash.actual_amount)) + totalIncome - totalOutcome;
-
         // E. Estructurar respuesta para esta caja
         return {
           cash_id: cash.id,
           cash_name: cash.name,
           cash_actual_amount: parseFloat(String(cash.actual_amount)), // Saldo real en BD
-          calculated_balance: balance, // Saldo calculado por movimientos
           totals: {
             income: totalIncome,
             outcome: totalOutcome,

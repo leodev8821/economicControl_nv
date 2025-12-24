@@ -5,12 +5,3 @@ export interface Cash extends CashCreationRequest {
 }
 
 export type CashAttributes = Cash;
-
-/*export interface CashAttributes {
-  id: number;
-  name: string;
-  actual_amount: number;
-  pettyCash_limit: number | null;
-}
-
-export type Cash = CashAttributes;*/

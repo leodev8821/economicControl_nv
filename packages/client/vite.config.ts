@@ -28,7 +28,11 @@ export default defineConfig({
 
   // Exclusión de paquetes de servidor para evitar errores en el navegador
   optimizeDeps: {
-    include: ["@conform-to/react", "@conform-to/zod/v4", "react-query"],
+    include: [
+      "@conform-to/react",
+      "@conform-to/zod/v4",
+      "@tanstack/react-query",
+    ],
     exclude: [
       // Eliminados: 'sequelize', 'pg', 'pg-hstore', 'mysql2', 'express'
     ],
