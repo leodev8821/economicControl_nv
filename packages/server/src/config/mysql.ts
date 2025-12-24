@@ -11,6 +11,7 @@ import {
   Role,
   User,
   Week,
+  CashDenomination,
 } from "../models/index.ts";
 
 import { ROLE_TYPES } from "@economic-control/shared";
@@ -31,6 +32,11 @@ interface SudoUserData {
   first_name: string;
   last_name: string;
   isVisible: boolean;
+}
+
+interface CashDenominationData {
+  value: string;
+  quantity: number;
 }
 
 interface DatabaseConnection {
@@ -64,6 +70,7 @@ const database: DatabaseConnection = {
       await Income.sync();
       await Outcome.sync();
       await Report.sync();
+      await CashDenomination.sync();
       console.log("✅ Modelos sincronizados con la base de datos.");
 
       // Insertar roles si la tabla está vacía
@@ -78,6 +85,34 @@ const database: DatabaseConnection = {
       } else {
         console.log(
           "⚠️ Los roles ya existen, no se insertaron nuevos registros."
+        );
+      }
+
+      // Insertar monedas si la tabla está vacía
+      const cashDenominationCount: number = await CashDenomination.count();
+      if (cashDenominationCount === 0) {
+        const cashDenominationsToInsert: CashDenominationData[] = [
+          { value: "500", quantity: 0 },
+          { value: "200", quantity: 0 },
+          { value: "100", quantity: 0 },
+          { value: "50", quantity: 0 },
+          { value: "20", quantity: 0 },
+          { value: "10", quantity: 0 },
+          { value: "5", quantity: 0 },
+          { value: "2", quantity: 0 },
+          { value: "1", quantity: 0 },
+          { value: "0.5", quantity: 0 },
+          { value: "0.2", quantity: 0 },
+          { value: "0.1", quantity: 0 },
+          { value: "0.05", quantity: 0 },
+          { value: "0.02", quantity: 0 },
+          { value: "0.01", quantity: 0 },
+        ];
+        await CashDenomination.bulkCreate(cashDenominationsToInsert);
+        console.log("✅ Monedas iniciales insertadas.");
+      } else {
+        console.log(
+          "⚠️ Las monedas ya existen, no se insertaron nuevos registros."
         );
       }
 

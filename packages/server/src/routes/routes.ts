@@ -16,6 +16,7 @@ import { personsController } from "../controllers/persons.controller.ts";
 import { reportsController } from "../controllers/reports.controller.ts";
 import { rolesController } from "../controllers/roles.controller.ts";
 import { weeksController } from "../controllers/weeks.controller.ts";
+import { cashDenominationController } from "../controllers/cash-denomination.controller.ts";
 
 const router: Router = Router();
 
@@ -256,6 +257,40 @@ router.get(
 // 👤 ROLES (ROLES)
 // =================================================================
 router.get("/roles", decodeAccessToken, verifyLogin, rolesController.allRoles);
+
+// =================================================================
+// 💰 MONEDAS (CURRENCY)
+// =================================================================
+router.get(
+  "/currencies",
+  decodeAccessToken,
+  verifyLogin,
+  cashDenominationController.allCashDenominations
+);
+router.get(
+  "/currencies/:id",
+  decodeAccessToken,
+  verifyLogin,
+  cashDenominationController.oneCashDenomination
+);
+router.post(
+  "/currencies/new-currency",
+  decodeAccessToken,
+  verifyLogin,
+  cashDenominationController.createCashDenomination
+);
+router.put(
+  "/currencies/:id",
+  decodeAccessToken,
+  verifyLogin,
+  cashDenominationController.updateCashDenomination
+);
+router.delete(
+  "/currencies/:id",
+  decodeAccessToken,
+  verifyLogin,
+  cashDenominationController.deleteCashDenomination
+);
 
 // =================================================================
 // 📅 SEMANAS (WEEKS)

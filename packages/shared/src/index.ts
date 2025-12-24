@@ -7,3 +7,4 @@ export * from "./schemas/role.schema.ts";
 export * from "./schemas/user.schema.ts";
 export * from "./schemas/week.schema.ts";
 export * from "./schemas/auth.schema.ts";
+export * from "./schemas/cash-denomination.schema.ts";

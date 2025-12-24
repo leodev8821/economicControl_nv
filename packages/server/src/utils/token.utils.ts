@@ -46,7 +46,7 @@ export const tokenUtils = {
         } else {
           resolve({
             message: "---- Usuario logueado correctamente ------",
-            token: "Bearer " + token,
+            token: token || "",
           });
         }
       });

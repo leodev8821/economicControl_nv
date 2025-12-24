@@ -6,6 +6,7 @@ import { ReportModel as Report } from "./report.model.ts";
 import { RoleModel as Role } from "./role.model.ts";
 import { UserModel as User } from "./user.model.ts";
 import { WeekModel as Week } from "./week.model.ts";
+import { CashDenominationModel as CashDenomination } from "./cash-denomination.model.ts";
 
 // =================================================================
 // 🔗 DEFINICIÓN DE ASOCIACIONES
@@ -101,4 +102,14 @@ Week.hasOne(Report, {
 });
 
 // Exportar los modelos con sus nombres simples (aliaseados)
-export { Cash, Income, Outcome, Person, Report, Role, User, Week };
+export {
+  Cash,
+  Income,
+  Outcome,
+  Person,
+  Report,
+  Role,
+  User,
+  Week,
+  CashDenomination,
+};
