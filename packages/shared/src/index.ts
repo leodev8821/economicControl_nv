@@ -1,3 +1,4 @@
+export * from "./schemas/env.schema.ts";
 export * from "./schemas/income.schema.ts";
 export * from "./schemas/cash.schema.ts";
 export * from "./schemas/outcome.schema.ts";

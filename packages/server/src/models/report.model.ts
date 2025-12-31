@@ -62,17 +62,17 @@ ReportModel.init(
       unique: true, // Aseguramos que solo haya un informe por semana
     },
     total_income: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
       defaultValue: 0.0,
     },
     total_outcome: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
       defaultValue: 0.0,
     },
     net_balance: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
       defaultValue: 0.0,
     },

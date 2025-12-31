@@ -43,7 +43,7 @@ CashDenominationModel.init(
       allowNull: false,
     },
     quantity: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
       defaultValue: 0.0,
     },

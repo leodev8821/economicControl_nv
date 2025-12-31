@@ -13,7 +13,7 @@
   "keywords": [],
   "author": "leodev",
   "license": "ISC",
-  "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b",
+  "packageManager": "pnpm@10.26.2+sha512.0e308ff2005fc7410366f154f625f6631ab2b16b1d2e70238444dd6ae9d630a8482d92a451144debc492416896ed16f7b114a86ec68b8404b2443869e68ffda6",
   "dependencies": {
     "@economic-control/shared": "workspace:*",
     "axios": "^1.13.2",
@@ -25,6 +25,9 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.16.0",
+    "pg": "^8.16.3",
+    "pg-hstore": "^2.3.4",
+    "postgres": "^3.4.7",
     "sequelize": "^6.37.7",
     "socket.io": "^4.8.3",
     "zod": "^4.2.1"

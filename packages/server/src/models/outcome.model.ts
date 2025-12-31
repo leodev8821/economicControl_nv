@@ -14,7 +14,7 @@ export interface OutcomeAttributes {
   id: number;
   cash_id: number;
   week_id: number;
-  date: string;
+  date: Date;
   amount: number;
   description: string;
   category: OutcomeCategories;
@@ -24,7 +24,7 @@ export type OutcomeSearchData = {
   id?: number;
   cash_id?: number;
   week_id?: number;
-  date?: string;
+  date?: Date;
   category?: string | OutcomeCategories;
 };
 
@@ -40,7 +40,7 @@ export class OutcomeModel
   declare id: number;
   declare cash_id: number;
   declare week_id: number;
-  declare date: string;
+  declare date: Date;
   declare amount: number;
   declare description: string;
   declare category: OutcomeCategories;
@@ -87,12 +87,12 @@ OutcomeModel.init(
       },
     },
     date: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
     amount: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       get() {
         const val = this.getDataValue("amount");
         return val ? parseFloat(String(val)) : 0;

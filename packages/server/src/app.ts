@@ -1,90 +1,110 @@
 import express, { Express, json, urlencoded } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-import mysql from "./config/mysql.ts";
+import { Server } from "http";
 import router from "./routes/routes.ts";
+import database from "./config/initDatabases.ts";
+import { env } from "./config/env.ts";
 
-// Define el tipo para __dirname, ya que no existe en el módulo ES de forma nativa
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Cargar las variables de entorno
-const envPath = join(__dirname, "../.env");
-dotenv.config({ path: envPath });
-
-const FRONTEND_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173"; // Valor por defecto para desarrollo
-
-// Crear la aplicación de Express
 const app: Express = express();
+let server: Server;
 
-// Middlewares
+/* ===========================
+ * Middlewares
+ * =========================== */
 app.use(json());
 app.use(urlencoded({ extended: false }));
+
 app.use(
   cors({
-    origin: FRONTEND_ORIGIN, // Permitir el origen del frontend (ej: http://localhost:5173)
-    credentials: true, // ¡CRUCIAL para que el navegador envíe cookies HttpOnly!
+    origin: env.CORS_ORIGIN,
+    credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   })
 );
+
 app.use(cookieParser());
 
-// Configurar rutas
+/* ===========================
+ * Healthcheck
+ * =========================== */
+app.get("/health", (_req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: Date.now(),
+  });
+});
+
+/* ===========================
+ * Routes
+ * =========================== */
 app.use("/ec/api/v1", router);
 
-// Definir el tipo para el módulo `mysql`
-interface MySqlModule {
-  connection: () => Promise<void>;
-}
-
-// Función para inicializar conexiones y el servidor
-const startServer = async () => {
+/* ===========================
+ * Server bootstrap
+ * =========================== */
+const startServer = async (): Promise<void> => {
   try {
-    // Conectar base de datos MySQL
-    await (mysql as unknown as MySqlModule).connection();
-    console.log("✅ Base de datos MySQL conectada");
+    await database.connection();
+    console.log("✅ Base de datos conectada");
 
-    const HOST: string = process.env.SERVER_HOST || "localhost";
-    const PORT: number =
-      parseInt(process.env.SERVER_PORT as string, 10) || 3000;
-
-    // Iniciar el servidor
-    const server = app.listen(PORT, HOST, () => {
-      console.log(`🚀 Servidor en http://${HOST}:${PORT}`);
+    server = app.listen(env.SERVER_PORT, env.SERVER_HOST, () => {
+      console.log(
+        `🚀 Servidor en http://${env.SERVER_HOST}:${env.SERVER_PORT}`
+      );
     });
 
-    // Esperar a que el servidor esté escuchando o a que ocurra un error
     await new Promise<void>((resolve, reject) => {
       server.on("listening", resolve);
       server.on("error", (err: NodeJS.ErrnoException) => {
         if (err.code === "EADDRINUSE") {
-          console.error(
-            `❌ El puerto ${PORT} ya está en uso. Intentando en otro puerto.`
-          );
-          // Lógica para intentar otro puerto si es necesario, o simplemente rechazar
-          reject(err);
-        } else {
-          reject(err);
+          console.error(`❌ El puerto ${env.SERVER_PORT} ya está en uso`);
         }
+        reject(err);
       });
     });
   } catch (error) {
-    if (error instanceof Error) {
-      console.error(
-        "❌ Error crítico al iniciar la aplicación:",
-        error.message
-      );
-    } else {
-      console.error("❌ Error crítico al iniciar la aplicación:", error);
-    }
+    const message =
+      error instanceof Error ? error.message : "Error desconocido";
+
+    console.error("❌ Error crítico al iniciar la aplicación:", message);
     process.exit(1);
   }
 };
 
-// Iniciar la aplicación
+/* ===========================
+ * Graceful shutdown
+ * =========================== */
+const shutdown = async (signal: string) => {
+  console.log(`\n🛑 Recibida señal ${signal}. Cerrando aplicación...`);
+
+  try {
+    if (server) {
+      await new Promise<void>((resolve) => {
+        server.close(() => {
+          console.log("🧹 Servidor HTTP cerrado");
+          resolve();
+        });
+      });
+    }
+
+    await database.close?.(); // si implementas close()
+    console.log("🧹 Conexiones cerradas");
+
+    process.exit(0);
+  } catch (error) {
+    console.error("❌ Error durante el shutdown:", error);
+    process.exit(1);
+  }
+};
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
+
+/* ===========================
+ * Start app
+ * =========================== */
 startServer();
 
 export default app;

@@ -13,7 +13,7 @@ export interface IncomeAttributes {
   person_id: number | null; // Usar 'null' para manejar la opcionalidad explícitamente en la base de datos
   cash_id: number;
   week_id: number;
-  date: string;
+  date: Date;
   amount: number;
   source: IncomeSource;
 }
@@ -23,7 +23,7 @@ export type IncomeSearchData = {
   person_id?: number;
   cash_id?: number;
   week_id?: number;
-  date?: string;
+  date?: Date;
   source?: string | IncomeSource;
 };
 
@@ -40,7 +40,7 @@ export class IncomeModel
   declare person_id: number | null;
   declare cash_id: number;
   declare week_id: number;
-  declare date: string;
+  declare date: Date;
   declare amount: number;
   declare source: IncomeSource;
 }
@@ -100,12 +100,12 @@ IncomeModel.init(
       },
     },
     date: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
     amount: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       get() {
         const val = this.getDataValue("amount");
         return val ? parseFloat(String(val)) : 0;
@@ -359,7 +359,7 @@ export class IncomeActions {
   }
 
   /**
-   * Obtiene todos los ingresos para un ID de semana específico. ⬅️ NUEVA FUNCIÓN
+   * Obtiene todos los ingresos para un ID de semana específico.
    */
   public static async getIncomesByWeekId(
     weekId: number
@@ -369,5 +369,51 @@ export class IncomeActions {
       include: INCOME_INCLUDE_CONFIG,
     });
     return incomes.map((income) => income.get({ plain: true }));
+  }
+
+  /**
+   * Crea múltiples ingresos en una sola transacción y actualiza los saldos de caja.
+   * @param dataList Arreglo de datos de ingresos a crear.
+   * @returns Promise con el array de ingresos creados.
+   */
+  public static async createMultipleIncomes(
+    dataList: IncomeCreationAttributes[]
+  ): Promise<IncomeAttributes[]> {
+    return connection.transaction(async (t) => {
+      // 1. Validar fuentes de ingreso para todos
+      const normalizedData = dataList.map((item) => ({
+        ...item,
+        source: normalizeIncomeSource(item.source),
+      }));
+
+      // 2. Inserción masiva en la tabla incomes
+      const newIncomes = await IncomeModel.bulkCreate(normalizedData, {
+        transaction: t,
+        validate: true,
+      });
+
+      // 3. Agrupar montos por cash_id para minimizar updates a la base de datos
+      const cashTotals = new Map<number, number>();
+
+      for (const { cash_id, amount } of dataList) {
+        const value = Number(amount);
+        if (!Number.isFinite(value)) continue;
+
+        cashTotals.set(cash_id, (cashTotals.get(cash_id) ?? 0) + value);
+      }
+
+      // 4. Actualizar cada caja afectada
+      for (const [cashId, totalAmount] of cashTotals) {
+        await CashModel.increment(
+          { actual_amount: totalAmount },
+          {
+            where: { id: cashId },
+            transaction: t,
+          }
+        );
+      }
+
+      return newIncomes.map((income) => income.get({ plain: true }));
+    });
   }
 }

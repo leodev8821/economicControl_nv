@@ -14,10 +14,10 @@ const BaseCashSchema = z.object({
       message: "El monto solo puede tener dos decimales",
     }),
 
-  pettyCash_limit: z.coerce
-    .number()
-    .positive("El límite debe ser positivo")
-    .optional(),
+  //pettyCash_limit: z.coerce
+  //  .number()
+  //  .positive("El límite debe ser positivo")
+  //  .optional(),
 });
 
 // ----------------------------------------------------------------------

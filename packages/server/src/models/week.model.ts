@@ -46,12 +46,12 @@ WeekModel.init(
       autoIncrement: true,
     },
     week_start: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATE,
       allowNull: false,
       unique: true,
     },
     week_end: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATE,
       allowNull: false,
       unique: true,
     },

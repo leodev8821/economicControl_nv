@@ -1,40 +1,45 @@
-import { Sequelize } from "sequelize";
-import dotenv from "dotenv";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
+import { Sequelize, Options } from "sequelize";
+import { env } from "./env.ts";
 
-// Interfaces para tipado
-interface SequelizeConfig {
-  host: string;
-  port: number;
-  dialect: "mysql";
-  logging: boolean;
-}
+let sequelizeInstance: Sequelize | null = null;
 
+// Función que devuelve la instancia de Sequelize con las variables de entorno validadas
 export function getSequelizeConfig(): Sequelize {
-  const __dirname: string = dirname(fileURLToPath(import.meta.url));
-  const envPath: string = join(__dirname, "../../.env");
-  dotenv.config({ path: envPath });
+  if (!sequelizeInstance) {
+    const port = env.DB_PORT ?? (env.DB_DIALECT === "mysql" ? 3306 : 5432);
 
-  const MY_DB: string | undefined = process.env.DB_DB;
-  const MY_USER: string | undefined = process.env.DB_USER;
-  const MY_PASSWORD: string | undefined = process.env.DB_PASSWORD;
-  const MY_HOST: string | undefined = process.env.DB_HOST;
-  const MY_PORT: number = parseInt(process.env.DB_PORT || "3306", 10);
+    if (
+      env.DB_PORT &&
+      ((env.DB_DIALECT === "postgres" && env.DB_PORT !== 5432) ||
+        (env.DB_DIALECT === "mysql" && env.DB_PORT !== 3306))
+    ) {
+      console.warn("⚠️ Puerto DB no coincide con el dialect");
+    }
 
-  // Validación de variables de entorno requeridas
-  if (!MY_DB || !MY_USER || !MY_PASSWORD || !MY_HOST) {
-    throw new Error(
-      "Faltan variables de entorno requeridas para la base de datos"
+    const config: Options = {
+      host: env.DB_HOST,
+      port,
+      dialect: env.DB_DIALECT,
+      logging: false,
+      ...(env.DB_DIALECT === "postgres" && env.DB_SSL
+        ? {
+            dialectOptions: {
+              ssl: {
+                require: true,
+                rejectUnauthorized: false,
+              },
+            },
+          }
+        : {}),
+    };
+
+    sequelizeInstance = new Sequelize(
+      env.DB_DB,
+      env.DB_USER,
+      env.DB_PASSWORD,
+      config
     );
   }
 
-  const config: SequelizeConfig = {
-    host: MY_HOST,
-    port: MY_PORT,
-    dialect: "mysql",
-    logging: false,
-  };
-
-  return new Sequelize(MY_DB, MY_USER, MY_PASSWORD, config);
+  return sequelizeInstance;
 }

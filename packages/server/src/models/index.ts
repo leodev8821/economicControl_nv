@@ -1,3 +1,4 @@
+import { getSequelizeConfig } from "../config/sequelize.config.ts";
 import { CashModel as Cash } from "./cash.model.ts";
 import { IncomeModel as Income } from "./income.model.ts";
 import { OutcomeModel as Outcome } from "./outcome.model.ts";
@@ -13,63 +14,65 @@ import { CashDenominationModel as CashDenomination } from "./cash-denomination.m
 // Se añade el alias 'as' para mejorar la inferencia de tipos de TypeScript
 // y la claridad al incluir las relaciones.
 // =================================================================
+export const sequelizeInstance = getSequelizeConfig();
 
 // --- Income <-> Person ---
 Income.belongsTo(Person, {
-  foreignKey: "person_id",
+  foreignKey: { name: "person_id", allowNull: false },
   as: "Person",
+  onDelete: "CASCADE",
 });
 
 Person.hasMany(Income, {
-  foreignKey: "person_id",
+  foreignKey: { name: "person_id", allowNull: false },
   onDelete: "CASCADE",
   as: "Incomes",
 });
 
 // --- Income <-> Week ---
 Income.belongsTo(Week, {
-  foreignKey: "week_id",
+  foreignKey: { name: "week_id", allowNull: false },
   as: "Week",
 });
 
 Week.hasMany(Income, {
-  foreignKey: "week_id",
+  foreignKey: { name: "week_id", allowNull: false },
   onDelete: "CASCADE",
   as: "Incomes",
 });
 
 // --- Income <-> Cash ---
 Income.belongsTo(Cash, {
-  foreignKey: "cash_id",
+  foreignKey: { name: "cash_id", allowNull: false },
   as: "Cash",
 });
 
 Cash.hasMany(Income, {
-  foreignKey: "cash_id",
+  foreignKey: { name: "cash_id", allowNull: false },
   onDelete: "CASCADE",
   as: "Incomes",
 });
 
 // --- Outcome <-> Cash ---
 Outcome.belongsTo(Cash, {
-  foreignKey: "cash_id",
+  foreignKey: { name: "cash_id", allowNull: false },
   as: "Cash",
 });
 
 Cash.hasMany(Outcome, {
-  foreignKey: "cash_id",
+  foreignKey: { name: "cash_id", allowNull: false },
   onDelete: "CASCADE",
   as: "Outcomes",
 });
 
 // --- Outcome <-> Week ---
 Outcome.belongsTo(Week, {
-  foreignKey: "week_id",
+  foreignKey: { name: "week_id", allowNull: false },
   as: "Week",
 });
 
 Week.hasMany(Outcome, {
-  foreignKey: "week_id",
+  foreignKey: { name: "week_id", allowNull: false },
   onDelete: "CASCADE",
   as: "Outcomes",
 });
@@ -91,12 +94,12 @@ Role.hasMany(User, {
 // --- Report <-> Week (One-to-One) ---
 // El modelo Report ya tiene 'unique: true' en week_id
 Report.belongsTo(Week, {
-  foreignKey: "week_id",
+  foreignKey: { name: "week_id", allowNull: false },
   as: "Week",
 });
 
 Week.hasOne(Report, {
-  foreignKey: "week_id",
+  foreignKey: { name: "week_id", allowNull: false },
   onDelete: "CASCADE",
   as: "Report",
 });
