@@ -6,14 +6,14 @@ const connection = getSequelizeConfig();
 // Interfaces para el modelo CashDenomination
 export interface CashDenominationAttributes {
   id: number;
-  value: string;
+  denomination_value: string;
   quantity: number;
 }
 
 // Tipo para criterios de búsqueda simple
 export type CashDenominationSearchData = {
   id?: number;
-  value?: string;
+  denomination_value?: string;
 };
 
 // Opcionalidad para la creación (id es auto-generado, quantity tiene un valor por defecto)
@@ -26,7 +26,7 @@ export class CashDenominationModel
   implements CashDenominationAttributes
 {
   declare id: number;
-  declare value: string;
+  declare denomination_value: string;
   declare quantity: number;
 }
 
@@ -38,9 +38,10 @@ CashDenominationModel.init(
       primaryKey: true,
       autoIncrement: true,
     },
-    value: {
+    denomination_value: {
       type: DataTypes.STRING(100),
       allowNull: false,
+      unique: true,
     },
     quantity: {
       type: DataTypes.DECIMAL(15, 2),

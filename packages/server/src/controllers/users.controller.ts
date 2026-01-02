@@ -67,7 +67,7 @@ export const usersController = {
     const logedUser = userInstance.get({ plain: true });
     const payload: LoginPayload = {
       id: logedUser.id,
-      role: logedUser.role,
+      role: logedUser.role_name,
       username: logedUser.username,
       first_name: logedUser.first_name,
       last_name: logedUser.last_name,

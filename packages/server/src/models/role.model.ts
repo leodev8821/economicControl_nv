@@ -13,12 +13,12 @@ export type RoleType = (typeof ROLE_TYPES)[keyof typeof ROLE_TYPES];
  */
 export interface RoleAttributes {
   id: number;
-  role: RoleType;
+  role_name: RoleType;
 }
 
 export type RoleSearchData = {
   id?: number;
-  role?: string | RoleType;
+  role_name?: string | RoleType;
 };
 
 /**
@@ -35,7 +35,7 @@ export class RoleModel
   implements RoleAttributes
 {
   declare id: number;
-  declare role: RoleType;
+  declare role_name: RoleType;
 }
 
 /** Inicialización del modelo */
@@ -46,7 +46,7 @@ RoleModel.init(
       primaryKey: true,
       autoIncrement: true,
     },
-    role: {
+    role_name: {
       type: DataTypes.ENUM(...Object.values(ROLE_TYPES)),
       allowNull: false,
       unique: true,

@@ -6,7 +6,7 @@ import { z } from "zod";
 const BaseCashDenominationSchema = z.object({
   id: z.number().int().positive().optional(),
 
-  value: z.string().min(1, "El valor no puede estar vacío"),
+  denomination_value: z.string().min(1, "El valor no puede estar vacío"),
 
   quantity: z.coerce
     .number({ message: "La cantidad es obligatoria" })

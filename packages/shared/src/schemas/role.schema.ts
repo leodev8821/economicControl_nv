@@ -17,7 +17,7 @@ export const ROLE_VALUES = Object.values(ROLE_TYPES) as [string, ...string[]];
 const BaseRoleSchema = z.object({
   id: z.number().int().positive().optional(),
 
-  source: z.enum(ROLE_VALUES, {
+  role_name: z.enum(ROLE_VALUES, {
     message: "El tipo de rol es obligatorio",
   }),
 });

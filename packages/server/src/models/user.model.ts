@@ -17,7 +17,7 @@ export type UserRole =
 
 export interface UserAttributes {
   id: number;
-  role: UserRole;
+  role_name: UserRole;
   username: string;
   password: string;
   first_name: string;
@@ -27,7 +27,7 @@ export interface UserAttributes {
 
 export type LoginPayload = {
   id: number;
-  role: UserRole;
+  role_name: UserRole;
   username: string;
   first_name: string;
   last_name: string;
@@ -35,7 +35,7 @@ export type LoginPayload = {
 
 export type UserSearchData = {
   id?: number;
-  role?: UserRole;
+  role_name?: UserRole;
   username?: string | undefined;
   first_name?: string;
   last_name?: string;
@@ -50,7 +50,7 @@ export class UserModel
   implements UserAttributes
 {
   declare id: number;
-  declare role: UserRole;
+  declare role_name: UserRole;
   declare username: string;
   declare password: string;
   declare first_name: string;
@@ -70,14 +70,15 @@ UserModel.init(
       primaryKey: true,
       autoIncrement: true,
     },
-    role: {
-      // Usamos los valores de RoleType definidos en role.model
+    role_name: {
       type: DataTypes.ENUM(...Object.values(ROLE_TYPES)),
-      allowNull: false,
+      allowNull: false, // Es recomendable añadir esto
       references: {
-        model: "roles", // Asumiendo que esta es la tabla
-        key: "role",
+        model: "roles", // Nombre de la tabla destino
+        key: "role_name", // Columna de la tabla destino
       },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
     },
     username: {
       type: DataTypes.STRING,

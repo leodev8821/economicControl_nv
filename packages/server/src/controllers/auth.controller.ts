@@ -85,7 +85,7 @@ export const authController = {
 
       const payloadForTokens = {
         id: user.id,
-        role: user.role,
+        role: user.role_name,
         username: user.username,
         first_name: user.first_name,
         last_name: user.last_name,

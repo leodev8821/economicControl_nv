@@ -20,7 +20,12 @@ export function getSequelizeConfig(): Sequelize {
       host: env.DB_HOST,
       port,
       dialect: env.DB_DIALECT,
-      logging: false,
+      logging: console.log,
+      quoteIdentifiers: true,
+      define: {
+        underscored: true,
+        freezeTableName: true,
+      },
       ...(env.DB_DIALECT === "postgres" && env.DB_SSL
         ? {
             dialectOptions: {

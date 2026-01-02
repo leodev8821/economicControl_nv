@@ -79,14 +79,14 @@ Week.hasMany(Outcome, {
 
 // --- User <-> Role ---
 User.belongsTo(Role, {
-  foreignKey: "role",
-  targetKey: "role",
+  foreignKey: "role_name",
+  targetKey: "role_name",
   as: "Role",
 });
 
 Role.hasMany(User, {
-  foreignKey: "role",
-  sourceKey: "role",
+  foreignKey: "role_name",
+  sourceKey: "role_name",
   onDelete: "CASCADE",
   as: "Users",
 });

@@ -5,7 +5,7 @@ import { ROLE_VALUES } from "./role.schema.ts";
 const BaseUserSchema = z.object({
   id: z.number().int().positive().optional(),
 
-  role: z.enum(ROLE_VALUES, {
+  role_name: z.enum(ROLE_VALUES, {
     message: "El rol es obligatorio",
   }),
 
