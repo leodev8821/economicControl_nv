@@ -82,12 +82,14 @@ User.belongsTo(Role, {
   foreignKey: "role_name",
   targetKey: "role_name",
   as: "Role",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+  constraints: true,
 });
 
 Role.hasMany(User, {
   foreignKey: "role_name",
   sourceKey: "role_name",
-  onDelete: "CASCADE",
   as: "Users",
 });
 

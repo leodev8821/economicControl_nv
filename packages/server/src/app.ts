@@ -3,7 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { Server } from "http";
 import router from "./routes/routes.ts";
-import database from "./config/initDatabases.ts";
+import database from "./seeders/initDatabases.ts";
 import { env } from "./config/env.ts";
 
 const app: Express = express();

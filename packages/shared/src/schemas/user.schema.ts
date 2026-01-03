@@ -17,7 +17,7 @@ const BaseUserSchema = z.object({
   first_name: z.string().min(1, "El nombre es obligatorio").max(50),
   last_name: z.string().min(1, "El apellido es obligatorio").max(50),
 
-  isVisible: z.boolean().default(true).optional(),
+  is_visible: z.boolean().default(true).optional(),
 });
 
 // 2. Validación de Contraseña (Reutilizable)

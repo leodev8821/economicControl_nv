@@ -1,50 +1,46 @@
-import { Sequelize, Options } from "sequelize";
+// packages/server/src/config/sequelize.config.ts
+import { Sequelize, type Options } from "sequelize";
 import { env } from "./env.ts";
 
 let sequelizeInstance: Sequelize | null = null;
 
-// Función que devuelve la instancia de Sequelize con las variables de entorno validadas
+const dbConfig: Options = {
+  username: env.DB_USER,
+  password: env.DB_PASSWORD,
+  database: env.DB_DB,
+  host: env.DB_HOST,
+  port: env.DB_PORT ?? (env.DB_DIALECT === "mysql" ? 3306 : 5432),
+  dialect: env.DB_DIALECT,
+  logging: false,
+  quoteIdentifiers: true,
+  define: {
+    underscored: true,
+    freezeTableName: true,
+  },
+  ...(env.DB_DIALECT === "postgres" && env.DB_SSL
+    ? {
+        dialectOptions: {
+          ssl: { require: true, rejectUnauthorized: false },
+        },
+      }
+    : {}),
+};
+
+// EXPORTACIÓN ÚNICA (ESM)
+export default {
+  development: dbConfig,
+  test: dbConfig,
+  production: dbConfig,
+};
+
 export function getSequelizeConfig(): Sequelize {
   if (!sequelizeInstance) {
-    const port = env.DB_PORT ?? (env.DB_DIALECT === "mysql" ? 3306 : 5432);
-
-    if (
-      env.DB_PORT &&
-      ((env.DB_DIALECT === "postgres" && env.DB_PORT !== 5432) ||
-        (env.DB_DIALECT === "mysql" && env.DB_PORT !== 3306))
-    ) {
-      console.warn("⚠️ Puerto DB no coincide con el dialect");
-    }
-
-    const config: Options = {
-      host: env.DB_HOST,
-      port,
-      dialect: env.DB_DIALECT,
-      logging: console.log,
-      quoteIdentifiers: true,
-      define: {
-        underscored: true,
-        freezeTableName: true,
-      },
-      ...(env.DB_DIALECT === "postgres" && env.DB_SSL
-        ? {
-            dialectOptions: {
-              ssl: {
-                require: true,
-                rejectUnauthorized: false,
-              },
-            },
-          }
-        : {}),
-    };
-
     sequelizeInstance = new Sequelize(
       env.DB_DB,
       env.DB_USER,
       env.DB_PASSWORD,
-      config
+      dbConfig
     );
   }
-
   return sequelizeInstance;
 }

@@ -54,7 +54,7 @@ export const usersController = {
     if (!userInstance) {
       throw new Error("Usuario no encontrado.");
     }
-    if (!userInstance.isVisible) {
+    if (!userInstance.is_visible) {
       throw new Error("El usuario está inactivo.");
     }
 

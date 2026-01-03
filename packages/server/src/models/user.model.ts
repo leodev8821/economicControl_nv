@@ -22,7 +22,7 @@ export interface UserAttributes {
   password: string;
   first_name: string;
   last_name: string;
-  isVisible: boolean;
+  is_visible: boolean;
 }
 
 export type LoginPayload = {
@@ -39,11 +39,11 @@ export type UserSearchData = {
   username?: string | undefined;
   first_name?: string;
   last_name?: string;
-  isVisible?: boolean;
+  is_visible?: boolean;
 };
 
 export interface UserCreationAttributes
-  extends Optional<UserAttributes, "id" | "isVisible"> {}
+  extends Optional<UserAttributes, "id" | "is_visible"> {}
 
 export class UserModel
   extends SequelizeModel<UserAttributes, UserCreationAttributes>
@@ -55,7 +55,7 @@ export class UserModel
   declare password: string;
   declare first_name: string;
   declare last_name: string;
-  declare isVisible: boolean;
+  declare is_visible: boolean;
 
   // Método auxiliar para verificar la contraseña
   public async comparePassword(candidatePassword: string): Promise<boolean> {
@@ -70,7 +70,7 @@ UserModel.init(
       primaryKey: true,
       autoIncrement: true,
     },
-    role_name: {
+    /* role_name: {
       type: DataTypes.ENUM(...Object.values(ROLE_TYPES)),
       allowNull: false, // Es recomendable añadir esto
       references: {
@@ -79,6 +79,10 @@ UserModel.init(
       },
       onUpdate: "CASCADE",
       onDelete: "CASCADE",
+    }, */
+    role_name: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     username: {
       type: DataTypes.STRING,
@@ -97,9 +101,10 @@ UserModel.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    isVisible: {
+    is_visible: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+      field: "is_visible",
     },
   },
   {
@@ -176,7 +181,7 @@ export class UserActions {
 
     const user = await UserModel.findOne({
       where: {
-        isVisible: true,
+        is_visible: true,
         [Op.or]: conditions,
       },
     });

@@ -47,7 +47,8 @@ RoleModel.init(
       autoIncrement: true,
     },
     role_name: {
-      type: DataTypes.ENUM(...Object.values(ROLE_TYPES)),
+      //type: DataTypes.ENUM(...Object.values(ROLE_TYPES)),
+      type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },

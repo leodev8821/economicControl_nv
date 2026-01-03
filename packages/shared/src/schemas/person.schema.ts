@@ -14,7 +14,7 @@ const BasePersonSchema = z.object({
     .min(1, "El DNI no puede estar vacío")
     .max(9, "El DNI no puede tener más de 9 caracteres"),
 
-  isVisible: z.boolean().default(true).optional(),
+  is_visible: z.boolean().default(true).optional(),
 });
 
 // ----------------------------------------------------------------------

@@ -9,7 +9,7 @@ export interface PersonAttributes {
   first_name: string;
   last_name: string;
   dni: string;
-  isVisible: boolean;
+  is_visible: boolean;
 }
 
 export type PersonSearchData = {
@@ -17,12 +17,12 @@ export type PersonSearchData = {
   first_name?: string;
   last_name?: string;
   dni?: string | undefined;
-  isVisible?: boolean;
+  is_visible?: boolean;
 };
 
-/** Campos opcionales al crear (id autoincremental, isVisible tiene un valor por defecto) */
+/** Campos opcionales al crear (id autoincremental, is_visible tiene un valor por defecto) */
 export interface PersonCreationAttributes
-  extends Optional<PersonAttributes, "id" | "isVisible"> {}
+  extends Optional<PersonAttributes, "id" | "is_visible"> {}
 
 /** Clase tipada de Sequelize */
 export class PersonModel
@@ -33,7 +33,7 @@ export class PersonModel
   declare first_name: string;
   declare last_name: string;
   declare dni: string;
-  declare isVisible: boolean;
+  declare is_visible: boolean;
 }
 
 /** Inicialización del modelo */
@@ -57,7 +57,7 @@ PersonModel.init(
       unique: true,
       allowNull: false,
     },
-    isVisible: {
+    is_visible: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },

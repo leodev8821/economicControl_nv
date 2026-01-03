@@ -4,10 +4,11 @@
   "private": true,
   "description": "Configuration root package for Economic Control monorepo",
   "scripts": {
+    "install:all": "pnpm install",
+    "db:setup": "pnpm --filter @economic-control/server run db:setup",
+    "init": "pnpm install:all && pnpm db:setup && pnpm dev",
     "dev": "concurrently \"pnpm --filter @economic-control/server dev\" \"pnpm --filter @economic-control/client dev\"",
     "build": "pnpm -r run build",
-    "lint": "pnpm -r run lint",
-    "test": "pnpm -r run test",
     "clean": "rm -rf node_modules packages/*/node_modules"
   },
   "devDependencies": {
