@@ -1,0 +1,43 @@
+services:
+  mysql-dev:
+    image: mysql:8.0
+    container_name: mysql-dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: leodev-root
+      MYSQL_DATABASE: developmentDB_mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-dev-data:/var/lib/mysql
+
+  postgres-dev:
+    image: postgres:16
+    container_name: postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: leodev
+      POSTGRES_PASSWORD: leodev-root
+      POSTGRES_DB: developmentDB_postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+
+  mongo-dev:
+    image: mongo:6
+    container_name: mongo-dev
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: leodev-root
+      MONGO_INITDB_DATABASE: developmentDB_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-dev-data:/data/db
+
+volumes:
+  mysql-dev-data:
+  postgres-dev-data:
+  mongo-dev-data:

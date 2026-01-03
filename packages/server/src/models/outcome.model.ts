@@ -51,7 +51,7 @@ const OUTCOME_INCLUDE_CONFIG = [
   {
     model: CashModel,
     as: "Cash",
-    attributes: ["id", "name", "actual_amount", "pettyCash_limit"],
+    attributes: ["id", "name", "actual_amount"],
     required: true,
   },
   {

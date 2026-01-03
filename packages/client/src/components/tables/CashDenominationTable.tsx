@@ -30,7 +30,7 @@ export default function CashDenominationTable({
       headerName: "Denominación",
       minWidth: 180, // Aumentado para que el encabezado no se corte
       flex: 1.5,
-      renderCell: (p) => `${p.row.value} €`,
+      renderCell: (p) => `${p.row.denomination_value} €`,
     },
     {
       field: "quantity",
@@ -79,7 +79,7 @@ export default function CashDenominationTable({
       minWidth: 180,
       flex: 1,
       valueGetter: (_, row) =>
-        (parseFloat(row.value) * row.quantity).toFixed(2) + " €",
+        (parseFloat(row.denomination_value) * row.quantity).toFixed(2) + " €",
     },
     {
       field: "actions",

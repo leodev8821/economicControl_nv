@@ -20,10 +20,6 @@ export const getAllCashes = async (): Promise<Cash[]> => {
     const cleanCashes = cashesArray.map((cash) => ({
       ...cash,
       actual_amount: parseFloat(cash.actual_amount.toString()),
-      pettyCash_limit:
-        cash.pettyCash_limit != null
-          ? parseFloat(cash.pettyCash_limit.toString())
-          : undefined,
     }));
     // -------------------------------------------------------------------------
 

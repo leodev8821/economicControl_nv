@@ -47,7 +47,7 @@ export const cashDenominationController = {
         searchCriteria.id = parseInt(id, 10);
       }
       if (value) {
-        searchCriteria.value = value;
+        searchCriteria.denomination_value = value;
       }
 
       const cashDenomination = await CashDenominationActions.getOne(

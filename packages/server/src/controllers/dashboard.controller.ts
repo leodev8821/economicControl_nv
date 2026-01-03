@@ -34,7 +34,7 @@ export const dashboardController = {
 
         const totalIncome = cashIncomes.reduce((sum, income) => {
           const amount = parseFloat(String(income.amount));
-          const source = income.source; // Ej: 'Diezmo', 'Ofrenda'
+          const source = income.source;
 
           // Acumular por source
           incomeBreakdown[source] = (incomeBreakdown[source] || 0) + amount;
@@ -47,7 +47,7 @@ export const dashboardController = {
 
         const totalOutcome = cashOutcomes.reduce((sum, outcome) => {
           const amount = parseFloat(String(outcome.amount));
-          const category = outcome.category; // Ej: 'Fijos', 'Variables'
+          const category = outcome.category;
 
           // Acumular por category
           outcomeBreakdown[category] =

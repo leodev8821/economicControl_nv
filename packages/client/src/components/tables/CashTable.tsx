@@ -43,18 +43,6 @@ export default function CashTable({
       },
     },
     {
-      field: "pettyCash_limit",
-      headerName: "Límite de Caja",
-      type: "number",
-      width: 150,
-      renderCell: (params) => {
-        const limit = params.row.pettyCash_limit
-          ? Number(params.row.pettyCash_limit)
-          : null;
-        return limit === null || isNaN(limit) ? "-" : `${limit.toFixed(2)} €`;
-      },
-    },
-    {
       field: "actions",
       headerName: "Acciones",
       type: "actions",

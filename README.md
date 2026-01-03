@@ -4,7 +4,7 @@ An app to manage income/outcome for Nueva Vida Logroño
 
 # Tech Stack
 
-TypeScript, React, Vite, MySQL, Node.js, Express, Zod, MUI
+TypeScript, React, Vite, MySQL and Postgres, Node.js, Express, Zod, MUI.
 
 # Project Structure
 
@@ -14,9 +14,9 @@ TypeScript, React, Vite, MySQL, Node.js, Express, Zod, MUI
 
 # How to run
 
-1. Install dependencies
-2. Run the server
-3. Run the frontend
+1. Install dependencies: `pnpm install`
+2. Setup databases: `pnpm --filter @economic-control/server run db:setup`
+3. Run server and client: `pnpm dev`
 
 # Environment variables
 

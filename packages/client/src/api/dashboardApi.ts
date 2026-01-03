@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-catch */
 import apiClient from "./axios";
-import type { CashBalance } from "../types/balance.type"; // Asegúrate de importar el nuevo tipo
+import type { CashBalance } from "../types/balance.type";
 import type { ApiResponse } from "../types/apiResponse";
 
 /**
@@ -14,7 +14,7 @@ export const getBalance = async (): Promise<ApiResponse<CashBalance>> => {
       "/balance/get-balance"
     );
 
-    // Axios + Tu estructura ApiResponse: response.data.data es el array
+    // Axios + Estructura ApiResponse: response.data es el array
     return response.data;
   } catch (error) {
     throw error;
