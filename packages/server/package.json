@@ -11,7 +11,10 @@
     "start": "node src/app.ts",
     "dev": "tsx watch --clear-screen=false src/app.ts",
     "dev:debug": "tsx watch --inspect src/app.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "db:migrate:prod": "sequelize-cli db:migrate --env production",
+    "db:seed:prod": "node dist/seeders/initDatabases.js",
+    "start:prod": "node dist/app.js"
   },
   "keywords": [],
   "author": "leodev",

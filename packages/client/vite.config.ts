@@ -11,7 +11,6 @@ const API_PREFIX = "/ec/api/v1"; // Prefijo que usaremos en las llamadas de Axio
 
 // https://vite.dev/config/
 export default defineConfig({
-  //root: __dirname,
   plugins: [react()],
   resolve: {
     alias: {
@@ -33,9 +32,7 @@ export default defineConfig({
       "@conform-to/zod/v4",
       "@tanstack/react-query",
     ],
-    exclude: [
-      // Eliminados: 'sequelize', 'pg', 'pg-hstore', 'mysql2', 'express'
-    ],
+    exclude: [],
   },
 
   // Configuración del proxy para evitar problemas de CORS en desarrollo

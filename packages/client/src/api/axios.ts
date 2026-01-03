@@ -7,16 +7,40 @@ import type {
 } from "axios";
 
 // Usamos el prefijo de la API que definimos en vite.config.ts
-const API_PREFIX = import.meta.env.VITE_API_PREFIX || "/ec/api/v1";
+//const API_PREFIX = import.meta.env.VITE_API_PREFIX || "/ec/api/v1";
+
+const isProd = import.meta.env.PROD;
+
+// 2. Definimos la URL base:
+// Si es PROD: usamos la URL completa del .env.production (ej: https://api.tu-dominio.com/ec/api/v1)
+// Si es DEV: usamos solo el prefijo para que el proxy de Vite lo capture
+// Limpia posibles barras duplicadas o faltantes
+const cleanURL = (url: string) => url.replace(/\/+$/, ""); // Quita barras al final
+const cleanPrefix = (prefix: string) =>
+  prefix.startsWith("/") ? prefix : `/${prefix}`; // Asegura barra al inicio
+
+const BASE_URL = isProd
+  ? `${cleanURL(import.meta.env.VITE_API_URL)}${cleanPrefix(
+      import.meta.env.VITE_API_PREFIX || "/ec/api/v1"
+    )}`
+  : cleanPrefix(import.meta.env.VITE_API_PREFIX || "/ec/api/v1");
 
 const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
+
+/* const apiClient = axios.create({
   baseURL: API_PREFIX,
   headers: {
     "Content-Type": "application/json",
   },
   // Permite que Axios envíe las cookies (incluyendo la HttpOnly Refresh Token)
   withCredentials: true,
-});
+}); */
 
 let isRefreshing = false;
 
