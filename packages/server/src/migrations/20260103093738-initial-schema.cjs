@@ -23,8 +23,8 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
-      week_start: { type: Sequelize.DATE, allowNull: false, unique: true },
-      week_end: { type: Sequelize.DATE, allowNull: false, unique: true },
+      week_start: { type: Sequelize.STRING, allowNull: false, unique: true },
+      week_end: { type: Sequelize.STRING, allowNull: false, unique: true },
     });
 
     // 3. Crear tabla USERS (Depende de Roles)

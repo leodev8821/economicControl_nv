@@ -5,10 +5,11 @@ import {
   User,
   CashDenomination,
   sequelizeInstance,
-} from "../models/index.ts"; //
-import { ROLE_TYPES } from "@economic-control/shared"; //
-import { env } from "../config/env.ts"; //
-import { fileURLToPath } from "url"; // Añadido para compatibilidad ESM
+} from "../models/index.ts";
+import { ROLE_TYPES } from "@economic-control/shared";
+import { env } from "../config/env.ts";
+import { fileURLToPath } from "url"; 
+import { WeekActions } from "../models/week.model.ts";
 
 type RoleType = (typeof ROLE_TYPES)[keyof typeof ROLE_TYPES];
 type UserRole = typeof ROLE_TYPES.ADMINISTRADOR | typeof ROLE_TYPES.SUPER_USER;
@@ -120,6 +121,14 @@ const databaseSeeder: DatabaseSeeder = {
 
           console.log(`✅ Superusuario '${env.SUDO_USERNAME}' creado`);
         }
+ 
+        
+        /* ===========================
+         * Seed super weeks
+         * =========================== */
+        const actualYear = new Date().getFullYear();
+        await WeekActions.generateWeeksForYear(actualYear);
+        console.log(`✅ Semanas del año '${actualYear}' creadas`);
       });
 
       console.log("🎉 Seeding completado correctamente");

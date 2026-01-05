@@ -6,6 +6,7 @@ import {
   Op,
 } from "sequelize";
 import { getSequelizeConfig } from "../config/sequelize.config.ts";
+import formatDate from '../utils/formatDate.ts'
 import { addDays, addWeeks, startOfWeek } from "date-fns";
 
 const connection = getSequelizeConfig();
@@ -46,12 +47,12 @@ WeekModel.init(
       autoIncrement: true,
     },
     week_start: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
     week_end: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
@@ -147,22 +148,22 @@ export class WeekActions {
     }
 
     try {
-      let currentMonday = startOfWeek(new Date(`${year}-01-01`), {
-        weekStartsOn: 1,
+      let currentSunday = startOfWeek(new Date(`${year}-01-01`), {
+        weekStartsOn: 0,
       });
-      if (currentMonday.getFullYear() < year) {
-        currentMonday = addWeeks(currentMonday, 1);
+      if (currentSunday.getFullYear() < year) {
+        currentSunday = addWeeks(currentSunday, 1);
       }
       const lastDay = new Date(`${year}-12-31`);
       const weeksToCreate: WeekCreationAttributes[] = [];
 
-      while (currentMonday <= lastDay) {
-        const currentSunday = addDays(currentMonday, 6);
+      while (currentSunday <= lastDay) {
+        const currentSaturday = addDays(currentSunday, 6);
         weeksToCreate.push({
-          week_start: currentMonday.toISOString().slice(0, 10),
-          week_end: currentSunday.toISOString().slice(0, 10),
+          week_start: formatDate(currentSunday),
+          week_end: formatDate(currentSaturday),
         });
-        currentMonday = addWeeks(currentMonday, 1);
+        currentSunday = addWeeks(currentSunday, 1);
       }
 
       const newWeeks = await WeekModel.bulkCreate(weeksToCreate, {

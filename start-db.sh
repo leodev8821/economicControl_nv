@@ -17,7 +17,7 @@ cd "$DEV_DB_PATH"
 
 # Ejecuta el comando docker compose
 echo "Levantando el servicio de databases..."
-docker compose up -d
+docker-compose up -d
 
 # Verifica si el comando anterior se ejecutó correctamente
 if [ $? -eq 0 ]; then
