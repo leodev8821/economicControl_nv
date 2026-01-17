@@ -40,7 +40,7 @@ export default function CashDenominationTable({
       renderCell: (params) => {
         if (editId === params.row.id) {
           return (
-            <Box display="flex" alignItems="center" gap={1}>
+            <Box display="flex" alignItems="center" gap={1} sx={{ height: '100%', width: 130 }}>
               <TextField
                 size="small"
                 type="number"
@@ -48,7 +48,18 @@ export default function CashDenominationTable({
                 value={tempQty}
                 onChange={(e) => setTempQty(Number(e.target.value))}
                 autoFocus
-                sx={{ width: 90 }}
+                //sx={{ width: 90 }}
+                sx={{
+                  width: 150,
+                  '& .MuiOutlinedInput-root': {
+                    minHeight: 36,
+                  },
+                  '& .MuiInputBase-input': {
+                    fontSize: '1rem',
+                    lineHeight: '1.4',
+                  },
+                }}
+
               />
               <IconButton
                 color="success"
@@ -75,7 +86,7 @@ export default function CashDenominationTable({
     },
     {
       field: "total",
-      headerName: "Total calculado", // Nombre más descriptivo
+      headerName: "Total calculado",
       minWidth: 180,
       flex: 1,
       valueGetter: (_, row) =>
@@ -85,7 +96,7 @@ export default function CashDenominationTable({
       field: "actions",
       headerName: "Acciones",
       type: "actions",
-      width: 120, // Un poco más de espacio para el botón
+      width: 120,
       getActions: (params) => [
         <GridActionsCellItem
           icon={<EditIcon />}
@@ -109,7 +120,6 @@ export default function CashDenominationTable({
         hideFooter
         autoHeight
         disableRowSelectionOnClick
-        // Ajuste de densidad para que no se vea todo tan apretado
         density="standard"
         sx={{
           border: "none",

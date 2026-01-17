@@ -35,7 +35,7 @@ export const CashDenominationPage: React.FC = () => {
   // Cálculo del Gran Total sumando (valor * cantidad) de todos los elementos
   const grandTotal = useMemo(() => {
     return denominations.reduce((acc, curr) => {
-      const val = parseFloat(curr.value) || 0;
+      const val = parseFloat(curr.denomination_value) || 0;
       return acc + val * curr.quantity;
     }, 0);
   }, [denominations]);
