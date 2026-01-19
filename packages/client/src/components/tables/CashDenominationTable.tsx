@@ -28,7 +28,7 @@ export default function CashDenominationTable({
     {
       field: "value",
       headerName: "Denominación",
-      minWidth: 180, // Aumentado para que el encabezado no se corte
+      minWidth: 180,
       flex: 1.5,
       renderCell: (p) => `${p.row.denomination_value} €`,
     },
@@ -40,43 +40,63 @@ export default function CashDenominationTable({
       renderCell: (params) => {
         if (editId === params.row.id) {
           return (
-            <Box display="flex" alignItems="center" gap={1} sx={{ height: '100%', width: 130 }}>
+            <Box
+              onClick={(e) => e.stopPropagation()}
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: 280,
+                zIndex: 9999,
+                bgcolor: "background.paper",
+                boxShadow: 24,
+                borderRadius: 2,
+                p: 1.5,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                border: "1px solid",
+                borderColor: "divider",
+              }}
+            >
               <TextField
                 size="small"
                 type="number"
                 variant="outlined"
+                label="Cantidad"
                 value={tempQty}
                 onChange={(e) => setTempQty(Number(e.target.value))}
                 autoFocus
-                //sx={{ width: 90 }}
+                fullWidth
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    onSave(params.row.id, tempQty);
+                    setEditId(null);
+                  } else if (e.key === "Escape") {
+                    setEditId(null);
+                  }
+                }}
                 sx={{
-                  width: 150,
-                  '& .MuiOutlinedInput-root': {
-                    minHeight: 36,
-                  },
-                  '& .MuiInputBase-input': {
-                    fontSize: '1rem',
-                    lineHeight: '1.4',
+                  "& .MuiOutlinedInput-root": {
+                    fontSize: "1.1rem",
                   },
                 }}
-
               />
+
+              {/* Botones de acción */}
               <IconButton
                 color="success"
-                size="small"
                 onClick={() => {
                   onSave(params.row.id, tempQty);
                   setEditId(null);
                 }}
               >
-                <CheckIcon fontSize="small" />
+                <CheckIcon />
               </IconButton>
-              <IconButton
-                color="error"
-                size="small"
-                onClick={() => setEditId(null)}
-              >
-                <CloseIcon fontSize="small" />
+              <IconButton color="error" onClick={() => setEditId(null)}>
+                <CloseIcon />
               </IconButton>
             </Box>
           );

@@ -24,11 +24,17 @@ export const CashDenominationPage: React.FC = () => {
 
   // Filtrado por rangos de ID según requerimiento
   const bills = useMemo(
-    () => denominations.filter((d) => d.id >= 1 && d.id <= 7),
+    () =>
+      denominations
+        .filter((d) => d.id >= 1 && d.id <= 7)
+        .sort((a, b) => a.id - b.id),
     [denominations]
   );
   const coins = useMemo(
-    () => denominations.filter((d) => d.id >= 8 && d.id <= 15),
+    () =>
+      denominations
+        .filter((d) => d.id >= 8 && d.id <= 15)
+        .sort((a, b) => a.id - b.id),
     [denominations]
   );
 
