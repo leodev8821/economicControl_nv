@@ -24,7 +24,7 @@ import type { Income } from "../types/income.type";
 import { parseWithZod } from "@conform-to/zod/v4";
 
 export const IncomesPage: React.FC = () => {
-  const { data: incomes = [], isLoading } = useReadIncomes();
+  const { data: incomes = [], isLoading, isError, error } = useReadIncomes();
 
   const createMutation = useCreateIncome();
   const deleteMutation = useDeleteIncome();
@@ -93,7 +93,7 @@ export const IncomesPage: React.FC = () => {
   // 1. Renderizado Principal
   return (
     <Box p={3}>
-      {/* Indicador de que una mutación está en curso (opcional) */}
+      {/* Indicador de que una mutación está en curso*/}
       {(deleteMutation.isPending || updateMutation.isPending) && (
         <Typography color="primary">
           Realizando acción en el servidor...
@@ -129,7 +129,7 @@ export const IncomesPage: React.FC = () => {
             onSubmit={handleFormSubmit}
             isLoading={createMutation.isPending || updateMutation.isPending}
             isUpdateMode={!!editingIncome}
-            onCancel={() => setEditingIncome(null)} // Usamos la lógica inline aquí
+            onCancel={() => setEditingIncome(null)}
           />
         ) : (
           <BulkIncomeForm
@@ -143,13 +143,13 @@ export const IncomesPage: React.FC = () => {
         <Box display="flex" flexDirection="column" alignItems="center" py={5}>
           <CircularProgress />
           <Typography variant="h6" mt={2}>
-            Cargando datos...
+            Cargando listado de ingresos...
           </Typography>
         </Box>
       ) : (
         <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
           <Typography variant="h5" sx={{ mb: 2, p: 1 }}>
-            Historial de Movimientos ({incomes.length})
+            Historial de Ingresos ({incomes.length})
           </Typography>
           <IncomeTable
             incomes={incomes}
@@ -157,6 +157,16 @@ export const IncomesPage: React.FC = () => {
             onDelete={handleDeleteIncome}
           />
         </Paper>
+      )}
+
+      {/* Error real */}
+      {isError && !isLoading && (
+        <Box p={3} color="error.main">
+          <Typography variant="h6" gutterBottom>
+            Error al cargar ingresos
+          </Typography>
+          <Typography variant="body2">Mensaje: {error?.message}</Typography>
+        </Box>
       )}
     </Box>
   );

@@ -7,7 +7,7 @@ import type { PieValueType } from "@mui/x-charts";
 
 // Helper para transformar el objeto Record<string, number> al formato del PieChart
 const transformToPieData = (
-  dataObj: Record<string, number>
+  dataObj: Record<string, number>,
 ): PieValueType[] => {
   return Object.entries(dataObj).map(([label, value], index) => ({
     id: index,
@@ -40,7 +40,6 @@ export const DashboardPage: React.FC = () => {
     return (
       <Box p={3}>
         <Typography variant="body1" color="textSecondary">
-          {/* Si existe el mensaje del servidor, lo mostramos. Si no, un default */}
           {apiResponseMessage || "No hay información de cajas disponible."}
         </Typography>
       </Box>
@@ -56,14 +55,12 @@ export const DashboardPage: React.FC = () => {
         Resumen financiero por Caja
       </Typography>
 
-      {/* Iteramos por cada Caja que devuelve el Backend */}
       {balanceData.map((cash) => {
-        // Transformamos los datos para los gráficos de esta caja específica
         const incomePieData = transformToPieData(
-          cash.breakdown.incomes_by_source
+          cash.breakdown.incomes_by_source,
         );
         const outcomePieData = transformToPieData(
-          cash.breakdown.outcomes_by_category
+          cash.breakdown.outcomes_by_category,
         );
 
         return (

@@ -8,6 +8,7 @@
     "db:setup": "pnpm --filter @economic-control/server run db:setup",
     "init": "pnpm install:all && pnpm db:setup && pnpm dev",
     "dev": "concurrently \"pnpm --filter @economic-control/server dev\" \"pnpm --filter @economic-control/client dev\"",
+    "dev2": "concurrently -k -s first -n SERVER,CLIENT -c green,blue \"sh -c 'pnpm --filter @economic-control/server dev || true'\" \"sh -c 'pnpm --filter @economic-control/client dev || true'\"",
     "build": "pnpm -r run build",
     "clean": "rm -rf node_modules packages/*/node_modules"
   },

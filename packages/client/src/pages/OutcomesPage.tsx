@@ -21,7 +21,6 @@ import {
 } from "@mui/material";
 import type { GridRowId } from "@mui/x-data-grid";
 import type { Outcome } from "../types/outcome.type";
-import type { OutcomeUpdateData } from "../api/outcomeApi";
 import { parseWithZod } from "@conform-to/zod/v4";
 
 export const OutcomesPage: React.FC = () => {
