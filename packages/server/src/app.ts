@@ -2,9 +2,9 @@ import express, { Express, json, urlencoded } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { Server } from "http";
-import router from "./routes/routes.ts";
-import database from "./seeders/initDatabases.ts";
-import { env } from "./config/env.ts";
+import router from "./routes/routes.js";
+import database from "./seeders/initDatabases.js";
+import { env } from "./config/env.js";
 
 const app: Express = express();
 let server: Server;
@@ -20,7 +20,7 @@ app.use(
     origin: env.CORS_ORIGIN,
     credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  })
+  }),
 );
 
 app.use(cookieParser());
@@ -51,7 +51,7 @@ const startServer = async (): Promise<void> => {
 
     server = app.listen(env.SERVER_PORT, env.SERVER_HOST, () => {
       console.log(
-        `🚀 Servidor en http://${env.SERVER_HOST}:${env.SERVER_PORT}`
+        `🚀 Servidor en http://${env.SERVER_HOST}:${env.SERVER_PORT}`,
       );
     });
 

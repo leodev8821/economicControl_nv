@@ -20,9 +20,9 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    "paths": {
+    /*"paths": {
       "@economic-control/shared": ["./packages/shared/src/index.ts"],
       "@economic-control/shared/*": ["./packages/shared/src/*"]
-    }
+    }*/
   }
 }

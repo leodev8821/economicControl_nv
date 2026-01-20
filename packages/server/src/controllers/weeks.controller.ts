@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.ts";
+import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
 import {
   WeekActions,
   WeekCreationAttributes,
   WeekAttributes,
   type WeekSearchData,
-} from "../models/week.model.ts";
+} from "../models/week.model.js";
 import {
   WeekCreationSchema,
   WeekCreationRequest,

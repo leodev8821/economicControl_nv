@@ -8,13 +8,12 @@
     "db:migrate": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' sequelize-cli db:migrate",
     "db:seed": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' ts-node src/seeders/initDatabases.ts",
     "db:setup": "pnpm db:migrate && pnpm db:seed",
-    "start": "node src/app.ts",
     "dev": "tsx watch --clear-screen=false src/app.ts",
-    "dev:debug": "tsx watch --inspect src/app.ts",
-    "build": "tsc",
+    "build": "tsc -b",
+    "lint": "eslint src",
+    "start:prod": "node dist/app.js",
     "db:migrate:prod": "sequelize-cli db:migrate --env production",
-    "db:seed:prod": "node dist/seeders/initDatabases.js",
-    "start:prod": "node dist/app.js"
+    "db:seed:prod": "node dist/seeders/initDatabases.js"
   },
   "keywords": [],
   "author": "leodev",

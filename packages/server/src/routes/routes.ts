@@ -1,22 +1,22 @@
 import { Router } from "express";
-import authRouter from "./auth.routes.ts";
+import authRouter from "./auth.routes.js";
 
 // --- MIDDLEWARES ---
 import {
   decodeAccessToken,
   verifyLogin,
-} from "../middlewares/decode.middleware.ts";
+} from "../middlewares/decode.middleware.js";
 
 // --- CONTROLLERS ---
-import { cashesController } from "../controllers/cashes.controller.ts";
-import { dashboardController } from "../controllers/dashboard.controller.ts";
-import { incomesController } from "../controllers/incomes.controller.ts";
-import { outcomesController } from "../controllers/outcomes.controller.ts";
-import { personsController } from "../controllers/persons.controller.ts";
-import { reportsController } from "../controllers/reports.controller.ts";
-import { rolesController } from "../controllers/roles.controller.ts";
-import { weeksController } from "../controllers/weeks.controller.ts";
-import { cashDenominationController } from "../controllers/cash-denomination.controller.ts";
+import { cashesController } from "../controllers/cashes.controller.js";
+import { dashboardController } from "../controllers/dashboard.controller.js";
+import { incomesController } from "../controllers/incomes.controller.js";
+import { outcomesController } from "../controllers/outcomes.controller.js";
+import { personsController } from "../controllers/persons.controller.js";
+import { reportsController } from "../controllers/reports.controller.js";
+import { rolesController } from "../controllers/roles.controller.js";
+import { weeksController } from "../controllers/weeks.controller.js";
+import { cashDenominationController } from "../controllers/cash-denomination.controller.js";
 
 const router: Router = Router();
 

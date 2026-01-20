@@ -5,8 +5,8 @@ import {
   Op,
 } from "sequelize";
 import bcrypt from "bcryptjs";
-import { getSequelizeConfig } from "../config/sequelize.config.ts";
-import { ROLE_TYPES } from "./role.model.ts";
+import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { ROLE_TYPES } from "./role.model.js";
 
 const connection = getSequelizeConfig();
 

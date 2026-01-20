@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.ts";
+import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
 import {
   IncomeActions,
   IncomeCreationAttributes,
   IncomeAttributes,
   type IncomeSearchData,
-} from "../models/income.model.ts";
+} from "../models/income.model.js";
 //import { IncomeCreationSchema, IncomeCreationRequest, IncomeUpdateSchema, IncomeUpdateRequest } from '../schemas/income.schema';
 import {
   IncomeCreationRequest,

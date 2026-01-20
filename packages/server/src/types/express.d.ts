@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { UserRole } from "../models/user.model.ts";
+import { UserRole } from "../models/user.model.js";
 import * as cookieParser from "cookie-parser";
 
 // Sobreescribe el módulo 'express' para añadir tus propiedades personalizadas

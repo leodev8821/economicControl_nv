@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.ts";
-import type { CashDenominationSearchData } from "../models/cash-denomination.model.ts";
+import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
+import type { CashDenominationSearchData } from "../models/cash-denomination.model.js";
 import {
   CashDenominationActions,
   CashDenominationAttributes,
   CashDenominationCreationAttributes,
-} from "../models/cash-denomination.model.ts";
+} from "../models/cash-denomination.model.js";
 import {
   CashDenominationCreationSchema,
   CashDenominationCreationRequest,

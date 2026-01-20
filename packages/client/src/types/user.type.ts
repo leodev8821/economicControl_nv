@@ -1,11 +1,11 @@
 import type { UserCreationRequest } from "@economic-control/shared";
-import type { LoginRequest } from "@economic-control/shared";
+import type { LoginType } from "@economic-control/shared";
 
 export interface User extends Omit<UserCreationRequest, "password"> {
   id: number;
 }
 
-export type LoginCredentials = LoginRequest;
+export type LoginCredentials = LoginType;
 
 /*export interface User {
   id?: number;

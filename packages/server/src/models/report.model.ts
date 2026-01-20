@@ -1,6 +1,6 @@
 import { DataTypes, Model as SequelizeModel, type Optional } from "sequelize";
-import { getSequelizeConfig } from "../config/sequelize.config.ts";
-import { WeekModel } from "./week.model.ts";
+import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { WeekModel } from "./week.model.js";
 
 const connection = getSequelizeConfig();
 

@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { authController } from "../controllers/auth.controller.ts";
-import { usersController } from "../controllers/users.controller.ts";
+import { authController } from "../controllers/auth.controller.js";
+import { usersController } from "../controllers/users.controller.js";
 import {
   decodeAccessToken,
   decodeRefreshToken,
   verifyLogin,
   verifySudoRole,
-} from "../middlewares/decode.middleware.ts";
+} from "../middlewares/decode.middleware.js";
 
 const authRouter: Router = Router();
 

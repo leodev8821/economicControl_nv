@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { tokenUtils } from "../utils/token.utils.ts";
-import { verifyRefreshToken } from "../services/token.service.ts";
+import { tokenUtils } from "../utils/token.utils.js";
+import { verifyRefreshToken } from "../services/token.service.js";
 import dotenv from "dotenv";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -20,7 +20,7 @@ const ALLOWED_ROL = process.env.SUDO_ROLE as string;
 export const decodeAccessToken = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // 1. Obtener de la cabecera
   const authHeader = req.headers.authorization;
@@ -51,7 +51,7 @@ export const decodeAccessToken = (
       !decoded ||
       typeof decoded.id !== "number" ||
       !decoded.username ||
-      !decoded.role
+      !decoded.role_name
     ) {
       return res.status(401).json({
         ok: false,
@@ -63,13 +63,13 @@ export const decodeAccessToken = (
     req.username = decoded.username;
     req.first_name = decoded.first_name;
     req.last_name = decoded.last_name;
-    req.userRole = decoded.role;
+    req.userRole = decoded.role_name;
 
     return next();
   } catch (error) {
     console.error(
       "Error al decodificar/verificar Access Token:",
-      (error as Error).message
+      (error as Error).message,
     );
     return res.status(401).json({
       ok: false,
@@ -85,14 +85,14 @@ export const decodeAccessToken = (
 export const decodeRefreshToken = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // 1. Obtener de la cookie
   const token = req.cookies?.refreshToken;
 
   if (!token || typeof token !== "string" || token.trim() === "") {
     console.error(
-      "decodeRefreshToken: No se encontró el Refresh Token en la cookie."
+      "decodeRefreshToken: No se encontró el Refresh Token en la cookie.",
     );
     return res
       .status(401)
@@ -125,7 +125,7 @@ export const decodeRefreshToken = (
   } catch (error) {
     console.error(
       "Error al decodificar/verificar Refresh Token:",
-      (error as Error).message
+      (error as Error).message,
     );
     return res.status(401).json({
       ok: false,
@@ -141,7 +141,7 @@ export const decodeRefreshToken = (
 export const verifyLogin = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // Verificamos si decodeUser fue exitoso revisando una propiedad clave
   if (!req.username || !req.userRole) {
@@ -160,7 +160,7 @@ export const verifyLogin = (
 export const verifySudoRole = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // Verificamos si el rol decodificado coincide con el rol de superusuario permitido
   if (!req.userRole || req.userRole !== ALLOWED_ROL) {

@@ -1,22 +1,22 @@
 import type { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.ts";
+import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
 import {
   UserActions,
   type UserAttributes,
   type UserCreationAttributes,
   type LoginPayload,
-} from "../models/user.model.ts";
+} from "../models/user.model.js";
 import {
   UserCreationSchema,
   type UserCreationRequest,
   UserUpdateSchema,
   type UserUpdateRequest,
 } from "@economic-control/shared";
-import type { UserSearchData } from "../models/user.model.ts";
+import type { UserSearchData } from "../models/user.model.js";
 import {
   createAccessToken,
   createRefreshToken,
-} from "../services/token.service.ts";
+} from "../services/token.service.js";
 import dotenv from "dotenv";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -41,7 +41,7 @@ export const usersController = {
    */
   loginUser: async (
     login_data: string,
-    password: string
+    password: string,
   ): Promise<LoginResult> => {
     if (!login_data || !password) {
       throw new Error("Faltan datos de inicio de sesión.");
@@ -67,7 +67,7 @@ export const usersController = {
     const logedUser = userInstance.get({ plain: true });
     const payload: LoginPayload = {
       id: logedUser.id,
-      role: logedUser.role_name,
+      role_name: logedUser.role_name,
       username: logedUser.username,
       first_name: logedUser.first_name,
       last_name: logedUser.last_name,
@@ -100,7 +100,7 @@ export const usersController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al obtener las usuarios."
+        "Error al obtener las usuarios.",
       );
     }
   },
@@ -144,7 +144,7 @@ export const usersController = {
   },
 
   getOneVisible: async (
-    identifier: string | number
+    identifier: string | number,
   ): Promise<UserAttributes | null> => {
     return UserActions.getOneByAnyIdentifier(identifier);
   },
@@ -175,7 +175,7 @@ export const usersController = {
         });
       }
 
-      if (userData.role === sudoRole) {
+      if (userData.role_name === sudoRole) {
         return res.status(403).json({
           ok: false,
           message: `No está permitido crear usuarios con el rol '${sudoRole}'.`,
@@ -183,7 +183,7 @@ export const usersController = {
       }
 
       const newUser = await UserActions.create(
-        userData as UserCreationAttributes
+        userData as UserCreationAttributes,
       );
 
       return res.status(201).json({
@@ -235,7 +235,7 @@ export const usersController = {
         });
       }
 
-      if (updateData.role === sudoRole) {
+      if (updateData.role_name === sudoRole) {
         return res.status(403).json({
           ok: false,
           message: `No está permitido crear usuarios con el rol '${sudoRole}'.`,
@@ -251,7 +251,7 @@ export const usersController = {
 
       const updatedUser = await UserActions.update(
         userId,
-        updateData as Partial<UserCreationAttributes>
+        updateData as Partial<UserCreationAttributes>,
       );
 
       if (!updatedUser) {
@@ -276,7 +276,7 @@ export const usersController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al actualizar la usuario."
+        "Error al actualizar la usuario.",
       );
     }
   },
@@ -308,7 +308,7 @@ export const usersController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al eliminar la usuario."
+        "Error al eliminar la usuario.",
       );
     }
   },

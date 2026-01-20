@@ -1,8 +1,8 @@
 // models/outcome.ts
 import { DataTypes, Model, type Optional } from "sequelize";
-import { getSequelizeConfig } from "../config/sequelize.config.ts";
-import { CashModel, CashActions } from "./cash.model.ts";
-import { WeekModel } from "./week.model.ts";
+import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { CashModel, CashActions } from "./cash.model.js";
+import { WeekModel } from "./week.model.js";
 import {
   OUTCOME_CATEGORIES,
   type OutcomeCategories,

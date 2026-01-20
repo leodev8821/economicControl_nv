@@ -1,8 +1,8 @@
 import { DataTypes, Model, type Optional } from "sequelize";
-import { getSequelizeConfig } from "../config/sequelize.config.ts";
-import { PersonModel } from "./person.model.ts";
-import { WeekModel } from "./week.model.ts";
-import { CashModel, CashActions } from "./cash.model.ts";
+import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { PersonModel } from "./person.model.js";
+import { WeekModel } from "./week.model.js";
+import { CashModel, CashActions } from "./cash.model.js";
 import { INCOME_SOURCES, type IncomeSource } from "@economic-control/shared";
 
 const connection = getSequelizeConfig();

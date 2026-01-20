@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import type { Secret } from "jsonwebtoken";
-import { tokenUtils, type TokenSignResult } from "../utils/token.utils.ts";
-import { type LoginPayload } from "../models/user.model.ts";
+import { tokenUtils, type TokenSignResult } from "../utils/token.utils.js";
+import { type LoginPayload } from "../models/user.model.js";
 
 // Leer variables de entorno (token.utils ya llama a dotenv.config)
 const REFRESH_SECRET: Secret = process.env.REFRESH_SECRET || "";

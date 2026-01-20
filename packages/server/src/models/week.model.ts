@@ -5,8 +5,8 @@ import {
   type Optional,
   Op,
 } from "sequelize";
-import { getSequelizeConfig } from "../config/sequelize.config.ts";
-import formatDate from '../utils/formatDate.ts'
+import { getSequelizeConfig } from "../config/sequelize.config.js";
+import formatDate from "../utils/formatDate.js";
 import { addDays, addWeeks, startOfWeek } from "date-fns";
 
 const connection = getSequelizeConfig();
@@ -25,8 +25,10 @@ export type WeekSearchData = {
 };
 
 /** Campos opcionales al crear (id autoincremental) */
-export interface WeekCreationAttributes
-  extends Optional<WeekAttributes, "id"> {}
+export interface WeekCreationAttributes extends Optional<
+  WeekAttributes,
+  "id"
+> {}
 
 /** Clase tipada Sequelize */
 export class WeekModel
@@ -62,7 +64,7 @@ WeekModel.init(
     tableName: "weeks",
     timestamps: false,
     modelName: "Week",
-  }
+  },
 );
 
 export class WeekActions {
@@ -81,7 +83,7 @@ export class WeekActions {
    * @returns promise con un objeto WeekAttributes o null si no se encuentra ningun semana.
    */
   public static async getOne(
-    data: WeekSearchData
+    data: WeekSearchData,
   ): Promise<WeekAttributes | null> {
     const week = await WeekModel.findOne({ where: data });
     return week ? week.get({ plain: true }) : null;
@@ -93,7 +95,7 @@ export class WeekActions {
    * @returns promise con el objeto WeekAttributes creado.
    */
   public static async create(
-    data: WeekCreationAttributes
+    data: WeekCreationAttributes,
   ): Promise<WeekAttributes> {
     return connection.transaction(async (t) => {
       const newWeek = await WeekModel.create(data, { transaction: t });
@@ -124,7 +126,7 @@ export class WeekActions {
    */
   public static async update(
     id: number,
-    data: Partial<WeekCreationAttributes>
+    data: Partial<WeekCreationAttributes>,
   ): Promise<WeekAttributes | null> {
     return connection.transaction(async (t) => {
       const [updatedCount] = await WeekModel.update(data, {
@@ -141,7 +143,7 @@ export class WeekActions {
 
   // Genera semanas para un año específico
   public static async generateWeeksForYear(
-    year: number
+    year: number,
   ): Promise<WeekAttributes[]> {
     if (typeof year !== "number" || year < 1970 || year > 2100) {
       throw new Error("Año inválido. Debe ser un número entre 1970 y 2100.");

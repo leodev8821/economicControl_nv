@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.ts";
-import { IncomeActions } from "../models/income.model.ts";
-import { OutcomeActions } from "../models/outcome.model.ts";
-import { CashActions } from "../models/cash.model.ts";
+import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
+import { IncomeActions } from "../models/income.model.js";
+import { OutcomeActions } from "../models/outcome.model.js";
+import { CashActions } from "../models/cash.model.js";
 
 export const dashboardController = {
   getBalance: async (_req: Request, res: Response) => {

@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.ts";
-import type { OutcomeSearchData } from "../models/outcome.model.ts";
+import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
+import type { OutcomeSearchData } from "../models/outcome.model.js";
 import {
   OutcomeActions,
   OutcomeCreationAttributes,
   OutcomeAttributes,
-} from "../models/outcome.model.ts";
+} from "../models/outcome.model.js";
 import {
   OutcomeCreationSchema,
   OutcomeCreationRequest,

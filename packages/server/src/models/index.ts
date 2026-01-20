@@ -1,13 +1,13 @@
-import { getSequelizeConfig } from "../config/sequelize.config.ts";
-import { CashModel as Cash } from "./cash.model.ts";
-import { IncomeModel as Income } from "./income.model.ts";
-import { OutcomeModel as Outcome } from "./outcome.model.ts";
-import { PersonModel as Person } from "./person.model.ts";
-import { ReportModel as Report } from "./report.model.ts";
-import { RoleModel as Role } from "./role.model.ts";
-import { UserModel as User } from "./user.model.ts";
-import { WeekModel as Week } from "./week.model.ts";
-import { CashDenominationModel as CashDenomination } from "./cash-denomination.model.ts";
+import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { CashModel as Cash } from "./cash.model.js";
+import { IncomeModel as Income } from "./income.model.js";
+import { OutcomeModel as Outcome } from "./outcome.model.js";
+import { PersonModel as Person } from "./person.model.js";
+import { ReportModel as Report } from "./report.model.js";
+import { RoleModel as Role } from "./role.model.js";
+import { UserModel as User } from "./user.model.js";
+import { WeekModel as Week } from "./week.model.js";
+import { CashDenominationModel as CashDenomination } from "./cash-denomination.model.js";
 
 // =================================================================
 // 🔗 DEFINICIÓN DE ASOCIACIONES

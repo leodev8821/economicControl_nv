@@ -2,7 +2,7 @@
 import { DataTypes, Model as SequelizeModel, type Optional } from "sequelize";
 import { ROLE_TYPES } from "@economic-control/shared";
 export { ROLE_TYPES };
-import { getSequelizeConfig } from "../config/sequelize.config.ts";
+import { getSequelizeConfig } from "../config/sequelize.config.js";
 
 const connection = getSequelizeConfig();
 

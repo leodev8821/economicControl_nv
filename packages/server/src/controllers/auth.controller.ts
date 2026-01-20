@@ -1,12 +1,12 @@
 import type { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.ts";
-import { usersController } from "./users.controller.ts";
-import { REFRESH_COOKIE_OPTIONS } from "../config/cookies.config.ts";
+import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
+import { usersController } from "./users.controller.js";
+import { REFRESH_COOKIE_OPTIONS } from "../config/cookies.config.js";
 import {
   createAccessToken,
   createRefreshToken,
   verifyRefreshToken,
-} from "../services/token.service.ts";
+} from "../services/token.service.js";
 
 export const authController = {
   /**
@@ -57,7 +57,7 @@ export const authController = {
         return ControllerErrorHandler(
           res,
           new Error("Falta refresh token"),
-          "No se proporcionó el refresh token."
+          "No se proporcionó el refresh token.",
         );
       }
 
@@ -68,7 +68,7 @@ export const authController = {
         return ControllerErrorHandler(
           res,
           new Error("Payload inválido en refresh token: ID no válido"),
-          "Payload inválido en refresh token."
+          "Payload inválido en refresh token.",
         );
       }
 
@@ -79,22 +79,21 @@ export const authController = {
         return ControllerErrorHandler(
           res,
           new Error("Usuario no encontrado o inactivo"),
-          "El usuario asociado al refresh token no existe o está inactivo."
+          "El usuario asociado al refresh token no existe o está inactivo.",
         );
       }
 
       const payloadForTokens = {
         id: user.id,
-        role: user.role_name,
+        role_name: user.role_name,
         username: user.username,
         first_name: user.first_name,
         last_name: user.last_name,
       };
 
       // Generar nuevos tokens
-      const { token: newAccessToken } = await createAccessToken(
-        payloadForTokens
-      );
+      const { token: newAccessToken } =
+        await createAccessToken(payloadForTokens);
       const newRefreshToken = createRefreshToken(payloadForTokens);
 
       // Enviar la nueva cookie (reemplaza la anterior)

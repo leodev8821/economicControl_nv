@@ -1,6 +1,6 @@
 // packages/server/src/config/sequelize.config.ts
 import { Sequelize, type Options } from "sequelize";
-import { env } from "./env.ts";
+import { env } from "./env.js";
 
 let sequelizeInstance: Sequelize | null = null;
 

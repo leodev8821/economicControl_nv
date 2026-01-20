@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.ts";
-import { RoleActions, RoleAttributes } from "../models/role.model.ts";
+import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
+import { RoleActions, RoleAttributes } from "../models/role.model.js";
 //import { RoleCreationAttributes } from '../models/role.model';
 //import type { RoleSearchData } from '../models/role.model';
 //import { RoleCreationSchema, RoleCreationRequest, RoleUpdateSchema, RoleUpdateRequest } from '../schemas/role.schema';

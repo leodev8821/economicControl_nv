@@ -1,43 +1,30 @@
 {
-  "extends": "../../tsconfig.base.json", // <--- Aquí hereda la base
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    /* Opciones de diseño de archivos */
-    "rootDirs": ["src"],
-    /*"rootDir": "./",*/
+    "composite": true,           // OBLIGATORIO para Project References y Turbo
     "outDir": "./dist",
+    "rootDir": "src",            // Define dónde está tu código fuente
     
-    /* Opciones del entorno */
-    "types": ["node"],
     "moduleResolution": "node16",
     "module": "node16",
+    "allowImportingTsExtensions": false,  // Override base config since we emit JS files
 
-    /* Interop */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
 
-    "allowImportingTsExtensions": true, 
-    "noEmit": true,
-    
-    /* Salidas */
+    "noEmit": false,             // Para que el build genere archivos en /dist
+    "declaration": true,         // Genera tipos para el build
     "sourceMap": true,
-    //"declaration": true,
-    //"declarationMap": true,
     "strict": true,
-    
-    /* Opciones de comprobación de tipos */
-    "noImplicitReturns": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "noUnusedParameters": true,
-
-    /* Opciones adicionales */
-    "isolatedModules": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "isolatedModules": true
   },
   "include": [
     "src/**/*",
     "types/express.d.ts" // Incluir definiciones personalizadas
+  ],
+  "references": [
+    { "path": "../shared" }      // <--- Vincula el servidor con el paquete compartido
   ]
 }
