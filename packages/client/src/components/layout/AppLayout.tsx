@@ -177,7 +177,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <Menu />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Economic Control
+            NV - Economic Control
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           {appBar.actions}
@@ -193,15 +193,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           width: isMobile
             ? 280
             : collapsed
-            ? drawerWidthClose
-            : drawerWidthOpen,
+              ? drawerWidthClose
+              : drawerWidthOpen,
           flexShrink: 0,
           "& .MuiDrawer-paper": {
             width: isMobile
               ? 280
               : collapsed
-              ? drawerWidthClose
-              : drawerWidthOpen,
+                ? drawerWidthClose
+                : drawerWidthOpen,
             boxSizing: "border-box",
             overflowX: "hidden",
             transition: theme.transitions.create("width", {
@@ -215,7 +215,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <Box sx={{ overflow: "auto" }}>
           <List>
             {navigation.map((item: DashboardLayoutProps["navigation"][0]) =>
-              renderNavItem(item)
+              renderNavItem(item),
             )}
           </List>
         </Box>

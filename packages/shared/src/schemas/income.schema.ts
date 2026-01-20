@@ -94,5 +94,37 @@ export const IncomeUpdateSchema = BaseIncomeSchema.partial();
 export type IncomeCreationRequest = z.infer<typeof IncomeCreationSchema>;
 export type IncomeUpdateRequest = z.infer<typeof IncomeUpdateSchema>;
 
+// ----------------------------------------------------------------------
+// 6. ESQUEMA para Carga Masiva (Formulario)
+// ----------------------------------------------------------------------
+
+// 1. Definimos el item del Bulk con la validación de "Diezmo"
+export const BulkIncomeItemSchema = BaseIncomeSchema.omit({
+  week_id: true,
+}).superRefine((data, ctx) => {
+  // Aplicamos la misma regla de negocio que en IncomeCreationSchema
+  if (data.source === "Diezmo" && !data.person_id) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Un diezmo debe estar asociado a una persona.",
+      path: ["person_id"],
+    });
+  }
+});
+
+// 2. El Schema del formulario ahora usará el item refinado
+export const BulkIncomeSchema = z.object({
+  common_week_id: z.coerce
+    .number({ message: "Debe seleccionar una semana" })
+    .int()
+    .positive(),
+  incomes: z
+    .array(BulkIncomeItemSchema)
+    .min(1, "Debe agregar al menos un ingreso"),
+});
+
+export type BulkIncomeItemRequest = z.infer<typeof BulkIncomeItemSchema>;
+export type BulkIncomeRequest = z.infer<typeof BulkIncomeSchema>;
+
 // Para la UI
 export type IncomeType = z.infer<typeof BaseIncomeSchema>;

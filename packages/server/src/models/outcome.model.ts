@@ -29,8 +29,10 @@ export type OutcomeSearchData = {
 };
 
 /** Campos opcionales al crear un Outcome (id auto-incremental) */
-export interface OutcomeCreationAttributes
-  extends Optional<OutcomeAttributes, "id"> {}
+export interface OutcomeCreationAttributes extends Optional<
+  OutcomeAttributes,
+  "id"
+> {}
 
 /** Clase del modelo tipada */
 export class OutcomeModel

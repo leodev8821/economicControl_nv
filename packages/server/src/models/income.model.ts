@@ -28,8 +28,10 @@ export type IncomeSearchData = {
 };
 
 // Opcionalidad para la creación (id es auto-generado)
-export interface IncomeCreationAttributes
-  extends Optional<IncomeAttributes, "id" | "person_id"> {}
+export interface IncomeCreationAttributes extends Optional<
+  IncomeAttributes,
+  "id" | "person_id"
+> {}
 
 // Definición del modelo
 export class IncomeModel

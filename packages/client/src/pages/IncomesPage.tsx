@@ -4,69 +4,88 @@ import {
   useCreateIncome,
   useDeleteIncome,
   useUpdateIncome,
+  useCreateBulkIncome,
 } from "../hooks/useIncome";
 import IncomeTable from "../components/tables/IncomeTable";
 import IncomeForm from "../components/forms/IncomeForm";
-import { Box, Typography, CircularProgress, Paper } from "@mui/material";
+import BulkIncomeForm from "../components/forms/BulkIncomeForm";
+import {
+  Box,
+  Typography,
+  CircularProgress,
+  Paper,
+  Tab,
+  Tabs,
+  Alert,
+} from "@mui/material";
 import type { GridRowId } from "@mui/x-data-grid";
 import type { Income } from "../types/income.type";
-import type { IncomeUpdateData } from "../api/incomeApi";
+import { parseWithZod } from "@conform-to/zod/v4";
 import * as SharedIncomeSchemas from "@economic-control/shared";
 
 export const IncomesPage: React.FC = () => {
-  const { data: incomes = [], isLoading, isError, error } = useReadIncomes();
+  const { data: incomes = [], isLoading } = useReadIncomes();
+
   const createMutation = useCreateIncome();
   const deleteMutation = useDeleteIncome();
   const updateMutation = useUpdateIncome();
+  const createBulkMutation = useCreateBulkIncome();
 
   const [editingIncome, setEditingIncome] = useState<Income | null>(null);
+  const [tabValue, setTabValue] = useState(0); // 0: Individual, 1: Masivo
 
-  const handleCreateIncome = (
-    income: SharedIncomeSchemas.IncomeCreationRequest
-  ) => {
-    createMutation.mutate(income, {
+  // --- Lógica de Bulk ---
+  const handleBulkSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    // Validamos con el schema de Bulk
+    const submission = parseWithZod(formData, {
+      schema: SharedIncomeSchemas.BulkIncomeSchema,
+    });
+
+    if (submission.status !== "success") return;
+
+    const payload = submission.value.incomes.map((item) => ({
+      ...item,
+      week_id: submission.value.common_week_id, // Inyectamos el ID global
+      person_id: item.person_id || null, // Limpieza de datos
+    }));
+
+    createBulkMutation.mutate(payload, {
       onSuccess: () => {
-        // Success logic
+        setTabValue(0); // Volver a la tabla tras éxito
       },
     });
   };
 
-  const handleUpdateIncome = (income: IncomeUpdateData) => {
-    updateMutation.mutate(income, {
-      onSuccess: () => {
-        setEditingIncome(null);
-      },
-    });
-  };
-
+  // --- Lógica Individual ---
   const handleFormSubmit = (
-    data: SharedIncomeSchemas.IncomeCreationRequest
+    data: SharedIncomeSchemas.IncomeCreationRequest,
   ) => {
     if (editingIncome) {
-      handleUpdateIncome({ ...data, id: editingIncome.id });
+      updateMutation.mutate(
+        { ...data, id: editingIncome.id },
+        {
+          onSuccess: () => setEditingIncome(null),
+        },
+      );
     } else {
-      handleCreateIncome(data);
+      createMutation.mutate(data);
     }
   };
 
   const handleStartEdit = (income: Income) => {
     setEditingIncome(income);
+    setTabValue(0); // Forzamos el tab individual al editar
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingIncome(null);
   };
 
   const handleDeleteIncome = (id: GridRowId) => {
     const incomeId = parseInt(id.toString());
-
     if (
-      window.confirm(
-        `¿Está seguro de eliminar el Ingreso con ID ${incomeId}? Esta acción es irreversible.`
-      )
+      window.confirm(`¿Está seguro de eliminar el Ingreso con ID ${incomeId}?`)
     ) {
-      // 💥 Ejecuta la mutación de eliminación
       deleteMutation.mutate(incomeId);
     }
   };
@@ -74,87 +93,57 @@ export const IncomesPage: React.FC = () => {
   // 1. Renderizado Principal
   return (
     <Box p={3}>
-      {/* Indicador de que una mutación está en curso (opcional) */}
-      {(deleteMutation.isPending ||
-        updateMutation.isPending ||
-        createMutation.isPending) && (
-        <Typography color="primary">
-          Realizando acción en el servidor...
-        </Typography>
-      )}
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
+        Gestión de Ingresos
+      </Typography>
 
-      {/* Mensaje de error si la eliminación o actualización falló */}
+      {/* Alertas de Error Consolidadas */}
       {(deleteMutation.isError ||
         updateMutation.isError ||
-        createMutation.isError) && (
-        <Typography color="error.main">
-          Error:{" "}
-          {deleteMutation.error?.message ||
-            updateMutation.error?.message ||
-            createMutation.error?.message}
-        </Typography>
+        createMutation.isError ||
+        createBulkMutation.isError) && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Hubo un problema al procesar la solicitud. Por favor, intente de
+          nuevo.
+        </Alert>
       )}
 
-      <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: "background.paper" }}>
-        <IncomeForm
-          initialValues={editingIncome}
-          onSubmit={handleFormSubmit}
-          isLoading={createMutation.isPending || updateMutation.isPending}
-          isUpdateMode={!!editingIncome}
-          onCancel={handleCancelEdit}
-        />
+      <Paper sx={{ mb: 3 }}>
+        <Tabs value={tabValue} onChange={(_, val) => setTabValue(val)} centered>
+          <Tab label="Registro Individual" />
+          <Tab label="Carga Masiva" />
+        </Tabs>
       </Paper>
 
-      {/* Sección Condicional: Loading / Error / Tabla / Vacío */}
-      {isLoading && (
-        <Box display="flex" justifyContent="center" alignItems="center" py={5}>
+      <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: "background.paper" }}>
+        {tabValue === 0 ? (
+          <IncomeForm
+            initialValues={editingIncome}
+            onSubmit={handleFormSubmit}
+            isLoading={createMutation.isPending || updateMutation.isPending}
+            isUpdateMode={!!editingIncome}
+            onCancel={() => setEditingIncome(null)} // Usamos la lógica inline aquí
+          />
+        ) : (
+          <BulkIncomeForm
+            onSubmit={handleBulkSubmit}
+            isLoading={createBulkMutation.isPending}
+          />
+        )}
+      </Paper>
+
+      {isLoading ? (
+        <Box display="flex" flexDirection="column" alignItems="center" py={5}>
           <CircularProgress />
-          <Typography variant="h6" ml={2}>
-            Cargando listado de ingresos...
+          <Typography variant="h6" mt={2}>
+            Cargando datos...
           </Typography>
         </Box>
-      )}
-
-      {/* Error real */}
-      {isError && !isLoading && (
-        <Box p={3} color="error.main">
-          <Typography variant="h6" gutterBottom>
-            Error al cargar ingresos
+      ) : (
+        <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
+          <Typography variant="h5" sx={{ mb: 2, p: 1 }}>
+            Historial de Movimientos ({incomes.length})
           </Typography>
-          <Typography variant="body2">Mensaje: {error?.message}</Typography>
-        </Box>
-      )}
-
-      {/* Lista vacía */}
-      {!isLoading && !isError && incomes.length === 0 && (
-        <Typography variant="body1">
-          No hay ingresos registrados en este momento.
-        </Typography>
-      )}
-
-      {/* Tabla */}
-      {!isLoading && !isError && incomes.length > 0 && (
-        <Paper
-          elevation={3}
-          sx={{
-            p: 1,
-            borderRadius: 2,
-            width: "100%",
-            maxWidth: "1200px",
-            mx: "auto",
-            bgcolor: "background.paper",
-          }}
-        >
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={3}
-          >
-            <Typography variant="h4">
-              Listado de Ingresos ({incomes.length})
-            </Typography>
-          </Box>
           <IncomeTable
             incomes={incomes}
             onEdit={handleStartEdit}

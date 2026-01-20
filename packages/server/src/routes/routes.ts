@@ -83,6 +83,12 @@ router.post(
   verifyLogin,
   incomesController.createIncome
 );
+router.post(
+  "/incomes/bulk-incomes",
+  decodeAccessToken,
+  verifyLogin,
+  incomesController.createBulkIncomes
+);
 router.put(
   "/incomes/:id",
   decodeAccessToken,

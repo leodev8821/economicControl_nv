@@ -160,9 +160,19 @@ export const incomesController = {
 
       const incomeData: IncomeCreationRequest = validationResult.data;
 
-      const newIncome = await IncomeActions.create(
-        incomeData as unknown as IncomeCreationAttributes
-      );
+      const newIncomeData: IncomeCreationAttributes = {
+        cash_id: incomeData.cash_id,
+        week_id: incomeData.week_id,
+        amount: incomeData.amount,
+        source: incomeData.source,
+        date: new Date(incomeData.date),
+      };
+
+      if (incomeData.person_id !== undefined && incomeData.person_id !== null) {
+        newIncomeData.person_id = incomeData.person_id;
+      }
+
+      const newIncome = await IncomeActions.create(newIncomeData);
 
       return res.status(201).json({
         ok: true,
@@ -171,6 +181,64 @@ export const incomesController = {
       });
     } catch (error) {
       return ControllerErrorHandler(res, error, "Error al crear la ingreso.");
+    }
+  },
+
+  createBulkIncomes: async (req: Request, res: Response) => {
+    try {
+      const data = req.body;
+
+      if (!Array.isArray(data)) {
+        return res.status(400).json({
+          ok: false,
+          message: "Se esperaba un arreglo de ingresos.",
+        });
+      }
+
+      // Validar cada elemento del arreglo
+      const validatedData: IncomeCreationAttributes[] = [];
+      for (const item of data) {
+        const result = IncomeCreationSchema.safeParse(item);
+        if (!result.success) {
+          return res.status(400).json({
+            ok: false,
+            message: "Uno o más ingresos tienen datos inválidos.",
+            errors: result.error.issues,
+          });
+        }
+        const incomeItem = result.data;
+        const newIncomeData: IncomeCreationAttributes = {
+          cash_id: incomeItem.cash_id,
+          week_id: incomeItem.week_id,
+          amount: incomeItem.amount,
+          source: incomeItem.source,
+          date: new Date(incomeItem.date),
+        };
+
+        if (
+          incomeItem.person_id !== undefined &&
+          incomeItem.person_id !== null
+        ) {
+          newIncomeData.person_id = incomeItem.person_id;
+        }
+
+        validatedData.push(newIncomeData);
+      }
+
+      const newIncomes =
+        await IncomeActions.createMultipleIncomes(validatedData);
+
+      return res.status(201).json({
+        ok: true,
+        message: `${newIncomes.length} ingresos creados correctamente.`,
+        data: newIncomes,
+      });
+    } catch (error) {
+      return ControllerErrorHandler(
+        res,
+        error,
+        "Error al crear ingresos masivos."
+      );
     }
   },
 
@@ -205,10 +273,24 @@ export const incomesController = {
         });
       }
 
-      const updatedIncome = await IncomeActions.update(
-        incomeId,
-        updateData as Partial<IncomeCreationAttributes>
-      );
+      const updatePayload: Partial<IncomeCreationAttributes> = {};
+
+      if (updateData.cash_id !== undefined)
+        updatePayload.cash_id = updateData.cash_id;
+      if (updateData.week_id !== undefined)
+        updatePayload.week_id = updateData.week_id;
+      if (updateData.amount !== undefined)
+        updatePayload.amount = updateData.amount;
+      if (updateData.source !== undefined)
+        updatePayload.source = updateData.source;
+      if (updateData.person_id !== undefined && updateData.person_id !== null) {
+        updatePayload.person_id = updateData.person_id;
+      }
+      if (updateData.date !== undefined) {
+        updatePayload.date = new Date(updateData.date);
+      }
+
+      const updatedIncome = await IncomeActions.update(incomeId, updatePayload);
 
       if (!updatedIncome) {
         return res.status(404).json({

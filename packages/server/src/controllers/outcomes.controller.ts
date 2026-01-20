@@ -117,9 +117,10 @@ export const outcomesController = {
 
       const outcomeData: OutcomeCreationRequest = validationResult.data;
 
-      const newOutcome = await OutcomeActions.create(
-        outcomeData as OutcomeCreationAttributes
-      );
+      const newOutcome = await OutcomeActions.create({
+        ...outcomeData,
+        date: new Date(outcomeData.date),
+      });
 
       return res.status(201).json({
         ok: true,
@@ -160,9 +161,25 @@ export const outcomesController = {
         });
       }
 
+      const updatePayload: Partial<OutcomeCreationAttributes> = {};
+
+      if (updateData.cash_id !== undefined)
+        updatePayload.cash_id = updateData.cash_id;
+      if (updateData.week_id !== undefined)
+        updatePayload.week_id = updateData.week_id;
+      if (updateData.amount !== undefined)
+        updatePayload.amount = updateData.amount;
+      if (updateData.description !== undefined)
+        updatePayload.description = updateData.description;
+      if (updateData.category !== undefined)
+        updatePayload.category = updateData.category;
+      if (updateData.date !== undefined) {
+        updatePayload.date = new Date(updateData.date);
+      }
+
       const updatedOutcome = await OutcomeActions.update(
         outcomeId,
-        updateData as Partial<OutcomeCreationAttributes>
+        updatePayload
       );
 
       if (!updatedOutcome) {

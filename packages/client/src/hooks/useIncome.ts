@@ -3,11 +3,12 @@ import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import {
   getAllIncomes,
   createIncome,
+  createBulkIncome,
   updateIncome,
   deleteIncome,
   type IncomeUpdateData,
 } from "../api/incomeApi";
-import type { Income } from "../types/income.type";
+import type { BulkIncomeCreatePayload, Income } from "../types/income.type";
 import type { IncomeCreationRequest } from "@economic-control/shared";
 
 // Definimos una clave única (queryKey) para esta consulta.
@@ -58,6 +59,25 @@ export const useCreateIncome = (): UseMutationResult<
     // Opcional: Manejo de errores global.
     onError: (error: Error) => {
       console.error("Fallo la creación del ingreso:", error);
+    },
+  });
+};
+
+export const useCreateBulkIncome = (): UseMutationResult<
+  Income[],
+  Error,
+  BulkIncomeCreatePayload
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Income[], Error, BulkIncomeCreatePayload>({
+    mutationFn: createBulkIncome,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [INCOMES_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: ["cashes"] });
+    },
+    onError: (error: Error) => {
+      console.error("Fallo la creación masiva de ingresos:", error);
     },
   });
 };
