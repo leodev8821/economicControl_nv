@@ -114,13 +114,13 @@ OutcomeModel.init(
     tableName: "outcomes",
     timestamps: false,
     modelName: "Outcome",
-  }
+  },
 );
 
 /** Función helper de normalización */
 const normalizeOutcomeCategory = (category: string): OutcomeCategories => {
   const found = OUTCOME_CATEGORIES.find(
-    (s) => s.toLowerCase() === category.toLowerCase()
+    (s) => s.toLowerCase() === category.toLowerCase(),
   );
 
   if (!found) {
@@ -148,7 +148,7 @@ export class OutcomeActions {
    * @returns promise con un objeto OutcomeAttributes o null si no se encuentra ningun egreso.
    */
   public static async getOne(
-    data: OutcomeSearchData
+    data: OutcomeSearchData,
   ): Promise<OutcomeAttributes | null> {
     const outcome = await OutcomeModel.findOne({
       where: data,
@@ -163,7 +163,7 @@ export class OutcomeActions {
    * @returns promise con el objeto OutcomeAttributes creado.
    */
   public static async create(
-    data: OutcomeCreationAttributes
+    data: OutcomeCreationAttributes,
   ): Promise<OutcomeAttributes> {
     return await connection.transaction(async (t) => {
       // Validamos la fuente de ingreso
@@ -218,7 +218,7 @@ export class OutcomeActions {
       if (deletedCount > 0) {
         const currentCash = await CashActions.getOne(
           { id: outcomeToDelete.cash_id },
-          t
+          t,
         );
 
         if (currentCash) {
@@ -231,7 +231,7 @@ export class OutcomeActions {
             {
               actual_amount: newAmount,
             },
-            t
+            t,
           );
         }
       }
@@ -248,7 +248,7 @@ export class OutcomeActions {
    */
   public static async update(
     id: number,
-    data: Partial<OutcomeCreationAttributes>
+    data: Partial<OutcomeCreationAttributes>,
   ): Promise<OutcomeAttributes | null> {
     return connection.transaction(async (t) => {
       // 1. Obtener registro original
@@ -281,7 +281,7 @@ export class OutcomeActions {
           await CashActions.update(
             oldCashId,
             { actual_amount: oldCashNewAmount },
-            t
+            t,
           );
         }
 
@@ -297,7 +297,7 @@ export class OutcomeActions {
           await CashActions.update(
             targetCashId,
             { actual_amount: newCashNewAmount },
-            t
+            t,
           );
         }
       }
@@ -319,7 +319,7 @@ export class OutcomeActions {
    * Obtiene todos los egresos asociados a una caja (cash_id).
    */
   public static async getOutcomesByCashId(
-    cashId: number
+    cashId: number,
   ): Promise<OutcomeAttributes[]> {
     const outcomes = await OutcomeModel.findAll({
       where: { cash_id: cashId },
@@ -332,7 +332,7 @@ export class OutcomeActions {
    * Obtiene todos los egresos para una fecha específica.
    */
   public static async getOutcomesByDate(
-    date: string
+    date: string,
   ): Promise<OutcomeAttributes[]> {
     const outcomes = await OutcomeModel.findAll({
       where: { date },
@@ -345,12 +345,58 @@ export class OutcomeActions {
    * Obtiene todos los egresos para un ID de semana específico.
    */
   public static async getOutcomesByWeekId(
-    weekId: number
+    weekId: number,
   ): Promise<OutcomeAttributes[]> {
     const outcomes = await OutcomeModel.findAll({
       where: { week_id: weekId },
       include: OUTCOME_INCLUDE_CONFIG,
     });
     return outcomes.map((outcome) => outcome.get({ plain: true }));
+  }
+
+  /**
+   * Crea múltiples egresos en una sola transacción y actualiza los saldos de caja.
+   * @param dataList Arreglo de datos de egresos a crear.
+   * @returns Promise con el array de egresos creados.
+   */
+  public static async createMultipleOutcomes(
+    dataList: OutcomeCreationAttributes[],
+  ): Promise<OutcomeAttributes[]> {
+    return connection.transaction(async (t) => {
+      // 1. Validar categorias de egreso para todos
+      const normalizedData = dataList.map((item) => ({
+        ...item,
+        category: normalizeOutcomeCategory(item.category),
+      }));
+
+      // 2. Inserción masiva en la tabla outcomes
+      const newOutcomes = await OutcomeModel.bulkCreate(normalizedData, {
+        transaction: t,
+        validate: true,
+      });
+
+      // 3. Agrupar montos por cash_id para minimizar updates a la base de datos
+      const cashTotals = new Map<number, number>();
+
+      for (const { cash_id, amount } of dataList) {
+        const value = Number(amount);
+        if (!Number.isFinite(value)) continue;
+
+        cashTotals.set(cash_id, (cashTotals.get(cash_id) ?? 0) + value);
+      }
+
+      // 4. Actualizar cada caja afectada
+      for (const [cashId, totalAmount] of cashTotals) {
+        await CashModel.increment(
+          { actual_amount: totalAmount },
+          {
+            where: { id: cashId },
+            transaction: t,
+          },
+        );
+      }
+
+      return newOutcomes.map((outcome) => outcome.get({ plain: true }));
+    });
   }
 }

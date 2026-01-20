@@ -31,7 +31,7 @@ export const outcomesController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al obtener las egresos."
+        "Error al obtener las egresos.",
       );
     }
   },
@@ -97,7 +97,7 @@ export const outcomesController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al obtener los egresos por caja."
+        "Error al obtener los egresos por caja.",
       );
     }
   },
@@ -132,6 +132,60 @@ export const outcomesController = {
     }
   },
 
+  // Crea múltiples egresos
+  createBulkOutcomes: async (req: Request, res: Response) => {
+    try {
+      const data = req.body;
+
+      if (!Array.isArray(data)) {
+        return res.status(400).json({
+          ok: false,
+          message: "Se esperaba un arreglo de egresos.",
+        });
+      }
+
+      // Validar cada elemento del arreglo
+      const validatedData: OutcomeCreationAttributes[] = [];
+      for (const item of data) {
+        const result = OutcomeCreationSchema.safeParse(item);
+        if (!result.success) {
+          return res.status(400).json({
+            ok: false,
+            message: "Uno o más egresos tienen datos inválidos.",
+            errors: result.error.issues,
+          });
+        }
+        const outcomeItem = result.data;
+        const newOutcomeData: OutcomeCreationAttributes = {
+          cash_id: outcomeItem.cash_id,
+          week_id: outcomeItem.week_id,
+          amount: outcomeItem.amount,
+          description: outcomeItem.description,
+          category: outcomeItem.category,
+          date: new Date(outcomeItem.date),
+        };
+
+        validatedData.push(newOutcomeData);
+      }
+
+      const newOutcomes =
+        await OutcomeActions.createMultipleOutcomes(validatedData);
+
+      return res.status(201).json({
+        ok: true,
+        message: `${newOutcomes.length} egresos creados correctamente.`,
+        data: newOutcomes,
+      });
+    } catch (error) {
+      return ControllerErrorHandler(
+        res,
+        error,
+        "Error al crear egresos masivos.",
+      );
+    }
+  },
+
+  // Actualiza una egreso existente
   updateOutcome: async (req: Request, res: Response) => {
     try {
       const outcomeId = parseInt(req.params.id || "0", 10);
@@ -179,7 +233,7 @@ export const outcomesController = {
 
       const updatedOutcome = await OutcomeActions.update(
         outcomeId,
-        updatePayload
+        updatePayload,
       );
 
       if (!updatedOutcome) {
@@ -198,7 +252,7 @@ export const outcomesController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al actualizar la egreso."
+        "Error al actualizar la egreso.",
       );
     }
   },

@@ -34,31 +34,31 @@ router.get(
   "/cashes/:id",
   decodeAccessToken,
   verifyLogin,
-  cashesController.oneCash
+  cashesController.oneCash,
 );
 router.get(
   "/cashes/name/:name",
   decodeAccessToken,
   verifyLogin,
-  cashesController.oneCash
+  cashesController.oneCash,
 );
 router.post(
   "/cashes/new-cash",
   decodeAccessToken,
   verifyLogin,
-  cashesController.createCash
+  cashesController.createCash,
 );
 router.put(
   "/cashes/:id",
   decodeAccessToken,
   verifyLogin,
-  cashesController.updateCash
+  cashesController.updateCash,
 );
 router.delete(
   "/cashes/:id",
   decodeAccessToken,
   verifyLogin,
-  cashesController.deleteCash
+  cashesController.deleteCash,
 );
 
 // =================================================================
@@ -69,49 +69,49 @@ router.get(
   "/incomes",
   decodeAccessToken,
   verifyLogin,
-  incomesController.allIncomes
+  incomesController.allIncomes,
 );
 router.get(
   "/incomes/:id",
   decodeAccessToken,
   verifyLogin,
-  incomesController.oneIncome
+  incomesController.oneIncome,
 );
 router.post(
   "/incomes/new-income",
   decodeAccessToken,
   verifyLogin,
-  incomesController.createIncome
+  incomesController.createIncome,
 );
 router.post(
   "/incomes/bulk-incomes",
   decodeAccessToken,
   verifyLogin,
-  incomesController.createBulkIncomes
+  incomesController.createBulkIncomes,
 );
 router.put(
   "/incomes/:id",
   decodeAccessToken,
   verifyLogin,
-  incomesController.updateIncome
+  incomesController.updateIncome,
 );
 router.delete(
   "/incomes/:id",
   decodeAccessToken,
   verifyLogin,
-  incomesController.deleteIncome
+  incomesController.deleteIncome,
 );
 router.get(
   "/incomes/tithe/:dni",
   decodeAccessToken,
   verifyLogin,
-  incomesController.titheByPerson
+  incomesController.titheByPerson,
 );
 router.get(
   "/incomes/date/:date",
   decodeAccessToken,
   verifyLogin,
-  incomesController.getIncomesByDate
+  incomesController.getIncomesByDate,
 );
 
 // =================================================================
@@ -121,37 +121,43 @@ router.get(
   "/outcomes",
   decodeAccessToken,
   verifyLogin,
-  outcomesController.allOutcomes
+  outcomesController.allOutcomes,
 );
 router.get(
   "/outcomes/:id",
   decodeAccessToken,
   verifyLogin,
-  outcomesController.oneOutcome
+  outcomesController.oneOutcome,
 );
 router.post(
   "/outcomes/new-outcome",
   decodeAccessToken,
   verifyLogin,
-  outcomesController.createOutcome
+  outcomesController.createOutcome,
+);
+router.post(
+  "/outcomes/bulk-outcomes",
+  decodeAccessToken,
+  verifyLogin,
+  outcomesController.createBulkOutcomes,
 );
 router.put(
   "/outcomes/:id",
   decodeAccessToken,
   verifyLogin,
-  outcomesController.updateOutcome
+  outcomesController.updateOutcome,
 );
 router.delete(
   "/outcomes/:id",
   decodeAccessToken,
   verifyLogin,
-  outcomesController.deleteOutcome
+  outcomesController.deleteOutcome,
 );
 router.get(
   "/outcomes/cash/:cash_id",
   decodeAccessToken,
   verifyLogin,
-  outcomesController.outcomesByCash
+  outcomesController.outcomesByCash,
 );
 
 // =================================================================
@@ -162,51 +168,51 @@ router.get(
   "/persons",
   decodeAccessToken,
   verifyLogin,
-  personsController.allPersons
+  personsController.allPersons,
 );
 router.get(
   "/persons/:id",
   decodeAccessToken,
   verifyLogin,
-  personsController.onePerson
+  personsController.onePerson,
 );
 router.get(
   "/persons/dni/:dni",
   decodeAccessToken,
   verifyLogin,
-  personsController.onePerson
+  personsController.onePerson,
 );
 router.post(
   "/persons/new-person",
   decodeAccessToken,
   verifyLogin,
-  personsController.createPerson
+  personsController.createPerson,
 );
 // Se puede actualizar por id o dni
 router.put(
   "/persons/:id",
   decodeAccessToken,
   verifyLogin,
-  personsController.updatePerson
+  personsController.updatePerson,
 );
 router.put(
   "/persons/dni/:dni",
   decodeAccessToken,
   verifyLogin,
-  personsController.updatePerson
+  personsController.updatePerson,
 );
 // Se puede eliminar por id o dni
 router.delete(
   "/persons/:id",
   decodeAccessToken,
   verifyLogin,
-  personsController.deletePerson
+  personsController.deletePerson,
 );
 router.delete(
   "/persons/dni/:dni",
   decodeAccessToken,
   verifyLogin,
-  personsController.deletePerson
+  personsController.deletePerson,
 );
 
 // =================================================================
@@ -216,37 +222,37 @@ router.get(
   "/reports",
   decodeAccessToken,
   verifyLogin,
-  reportsController.allReports
+  reportsController.allReports,
 );
 router.get(
   "/reports/:id",
   decodeAccessToken,
   verifyLogin,
-  reportsController.oneReport
+  reportsController.oneReport,
 );
 router.get(
   "/reports/week/:week_id",
   decodeAccessToken,
   verifyLogin,
-  reportsController.oneReport
+  reportsController.oneReport,
 );
 router.post(
   "/create-report",
   decodeAccessToken,
   verifyLogin,
-  reportsController.createReport
+  reportsController.createReport,
 );
 router.put(
   "/reports/:id",
   decodeAccessToken,
   verifyLogin,
-  reportsController.updateReport
+  reportsController.updateReport,
 );
 router.delete(
   "/reports/:id",
   decodeAccessToken,
   verifyLogin,
-  reportsController.deleteReport
+  reportsController.deleteReport,
 );
 
 // =================================================================
@@ -256,7 +262,7 @@ router.get(
   "/balance/get-balance",
   decodeAccessToken,
   verifyLogin,
-  dashboardController.getBalance
+  dashboardController.getBalance,
 );
 
 // =================================================================
@@ -271,31 +277,31 @@ router.get(
   "/cash-denominations",
   decodeAccessToken,
   verifyLogin,
-  cashDenominationController.allCashDenominations
+  cashDenominationController.allCashDenominations,
 );
 router.get(
   "/cash-denominations/:id",
   decodeAccessToken,
   verifyLogin,
-  cashDenominationController.oneCashDenomination
+  cashDenominationController.oneCashDenomination,
 );
 router.post(
   "/cash-denominations/new-cash-denomination",
   decodeAccessToken,
   verifyLogin,
-  cashDenominationController.createCashDenomination
+  cashDenominationController.createCashDenomination,
 );
 router.put(
   "/cash-denominations/:id",
   decodeAccessToken,
   verifyLogin,
-  cashDenominationController.updateCashDenomination
+  cashDenominationController.updateCashDenomination,
 );
 router.delete(
   "/cash-denominations/:id",
   decodeAccessToken,
   verifyLogin,
-  cashDenominationController.deleteCashDenomination
+  cashDenominationController.deleteCashDenomination,
 );
 
 // =================================================================
@@ -306,19 +312,19 @@ router.get(
   "/weeks/:weekId",
   decodeAccessToken,
   verifyLogin,
-  weeksController.oneWeek
+  weeksController.oneWeek,
 );
 router.post(
   "/weeks/gen",
   decodeAccessToken,
   verifyLogin,
-  weeksController.generateWeeks
+  weeksController.generateWeeks,
 );
 router.get(
   "/weeks/year/:year",
   decodeAccessToken,
   verifyLogin,
-  weeksController.getWeeksByYear
+  weeksController.getWeeksByYear,
 );
 
 export default router;

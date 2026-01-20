@@ -32,7 +32,7 @@ export const incomesController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al obtener las ingresos."
+        "Error al obtener las ingresos.",
       );
     }
   },
@@ -103,7 +103,7 @@ export const incomesController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al obtener los ingresos de diezmo."
+        "Error al obtener los ingresos de diezmo.",
       );
     }
   },
@@ -139,7 +139,7 @@ export const incomesController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al obtener los ingresos por fecha."
+        "Error al obtener los ingresos por fecha.",
       );
     }
   },
@@ -184,6 +184,7 @@ export const incomesController = {
     }
   },
 
+  // Crea múltiples ingresos
   createBulkIncomes: async (req: Request, res: Response) => {
     try {
       const data = req.body;
@@ -237,7 +238,7 @@ export const incomesController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al crear ingresos masivos."
+        "Error al crear ingresos masivos.",
       );
     }
   },
@@ -308,7 +309,7 @@ export const incomesController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al actualizar la ingreso."
+        "Error al actualizar la ingreso.",
       );
     }
   },
@@ -340,7 +341,7 @@ export const incomesController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al eliminar la ingreso."
+        "Error al eliminar la ingreso.",
       );
     }
   },

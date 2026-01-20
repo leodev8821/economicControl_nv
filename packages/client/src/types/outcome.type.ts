@@ -15,20 +15,6 @@ export interface Outcome extends OutcomeCreationRequest {
 
 export type OutcomeAttributes = Outcome;
 
-/*export const OUTCOME_CATEGORY = ["Fijos", "Variables", "Otro"] as const;
-export type OutcomeCategory = (typeof OUTCOME_CATEGORY)[number];
+export type BulkOutcomeResponse = Outcome[];
 
-export interface OutcomeAttributes {
-  id: number;
-  cash_id: number;
-  week_id: number;
-  date: string;
-  amount: number;
-  description: string;
-  category: OutcomeCategory;
-}
-
-export interface Outcome extends OutcomeAttributes {
-  Cash: Cash;
-  Week: Week;
-}*/
+export type BulkOutcomeCreatePayload = OutcomeCreationRequest[];

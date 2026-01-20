@@ -63,6 +63,10 @@ export const useCreateIncome = (): UseMutationResult<
   });
 };
 
+/**
+ * Hook personalizado para crear varios ingresos a la vez.
+ * @returns El resultado de la mutación (mutate, isLoading, isError, etc.).
+ */
 export const useCreateBulkIncome = (): UseMutationResult<
   Income[],
   Error,

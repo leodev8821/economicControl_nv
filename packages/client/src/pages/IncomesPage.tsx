@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import {
-  useReadIncomes,
   useCreateIncome,
-  useDeleteIncome,
+  useReadIncomes,
   useUpdateIncome,
+  useDeleteIncome,
   useCreateBulkIncome,
 } from "../hooks/useIncome";
 import IncomeTable from "../components/tables/IncomeTable";
 import IncomeForm from "../components/forms/IncomeForm";
 import BulkIncomeForm from "../components/forms/BulkIncomeForm";
+import * as SharedIncomeSchemas from "@economic-control/shared";
 import {
   Box,
   Typography,
@@ -21,7 +22,6 @@ import {
 import type { GridRowId } from "@mui/x-data-grid";
 import type { Income } from "../types/income.type";
 import { parseWithZod } from "@conform-to/zod/v4";
-import * as SharedIncomeSchemas from "@economic-control/shared";
 
 export const IncomesPage: React.FC = () => {
   const { data: incomes = [], isLoading } = useReadIncomes();
@@ -93,6 +93,13 @@ export const IncomesPage: React.FC = () => {
   // 1. Renderizado Principal
   return (
     <Box p={3}>
+      {/* Indicador de que una mutación está en curso (opcional) */}
+      {(deleteMutation.isPending || updateMutation.isPending) && (
+        <Typography color="primary">
+          Realizando acción en el servidor...
+        </Typography>
+      )}
+
       <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
         Gestión de Ingresos
       </Typography>

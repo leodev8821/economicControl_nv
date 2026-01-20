@@ -11,7 +11,6 @@ export type IncomeUpdateData = IncomeUpdateRequest & { id: number };
 
 /**
  * Helper interno para normalizar el monto de los ingresos.
- * Como Senior, evitamos repetir la lógica de parseFloat en cada función.
  */
 const normalizeIncome = (income: any): Income => ({
   ...income,

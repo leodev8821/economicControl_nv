@@ -2,12 +2,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import {
   createOutcome,
+  createBulkOutcome,
   getAllOutcomes,
   updateOutcome,
   deleteOutcome,
   type OutcomeUpdateData,
 } from "../api/outcomeApi";
-import type { Outcome } from "../types/outcome.type";
+import type { Outcome, BulkOutcomeCreatePayload } from "../types/outcome.type";
 import type { OutcomeCreationRequest } from "@economic-control/shared";
 
 // Definimos una clave única (queryKey) para esta consulta.
@@ -58,6 +59,29 @@ export const useCreateOutcome = (): UseMutationResult<
     // Opcional: Manejo de errores global.
     onError: (error: Error) => {
       console.error("Fallo la creación del ingreso:", error);
+    },
+  });
+};
+
+/**
+ * Hook personalizado para crear varios egresos a la vez.
+ * @returns El resultado de la mutación (mutate, isLoading, isError, etc.).
+ */
+export const useCreateBulkOutcome = (): UseMutationResult<
+  Outcome[],
+  Error,
+  BulkOutcomeCreatePayload
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Outcome[], Error, BulkOutcomeCreatePayload>({
+    mutationFn: createBulkOutcome,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [OUTCOMES_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: ["cashes"] });
+    },
+    onError: (error: Error) => {
+      console.error("Fallo la creación masiva de ingresos:", error);
     },
   });
 };

@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-catch */
 import apiClient from "./axios";
-import type { Outcome } from "../types/outcome.type";
+import type { Outcome, BulkOutcomeCreatePayload } from "../types/outcome.type";
 import type { ApiResponse, ApiResponseData } from "../types/apiResponse";
 import type {
   OutcomeCreationRequest,
@@ -8,6 +8,17 @@ import type {
 } from "@economic-control/shared";
 
 export type OutcomeUpdateData = OutcomeUpdateRequest & { id: number };
+
+/**
+ * Helper interno para normalizar el monto de los egresos.
+ */
+const normalizeOutcome = (outcome: any): Outcome => ({
+  ...outcome,
+  amount:
+    typeof outcome.amount === "string"
+      ? parseFloat(outcome.amount)
+      : outcome.amount,
+});
 
 /**
  * Función que realiza la petición GET al backend para obtener todos los ingresos.
@@ -20,13 +31,7 @@ export const getAllOutcomes = async (): Promise<Outcome[]> => {
     const response = await apiClient.get<ApiResponse<Outcome>>("/outcomes");
 
     // Obtenemos el array de egresos y aseguramos que cada egreso tenga el formato correcto
-    return response.data.data.map((outcome) => ({
-      ...outcome,
-      amount:
-        typeof outcome.amount === "string"
-          ? parseFloat(outcome.amount)
-          : outcome.amount,
-    }));
+    return response.data.data.map(normalizeOutcome);
   } catch (error) {
     // Dejamos que React Query maneje el error en el componente, solo re-lanzamos.
     throw error;
@@ -40,30 +45,42 @@ export const getAllOutcomes = async (): Promise<Outcome[]> => {
  * @returns Promesa que resuelve en el objeto Outcome creado.
  */
 export const createOutcome = async (
-  data: OutcomeCreationRequest
+  data: OutcomeCreationRequest,
 ): Promise<Outcome> => {
   try {
     // El backend espera la data en el cuerpo (body) de la petición
     // Usamos el tipo IncomeFormData que ya fue validado.
     const response = await apiClient.post<ApiResponseData<Outcome>>(
       "/outcomes/new-outcome",
-      data
+      data,
     );
 
-    // El controlador devuelve un 201 si es exitoso, con la data del nuevo egreso.
-    const outcome = response.data.data;
-
-    // Aseguramos que el amount sea número
-    return {
-      ...outcome,
-      amount:
-        typeof outcome.amount === "string"
-          ? parseFloat(outcome.amount)
-          : outcome.amount,
-    };
+    return normalizeOutcome(response.data.data);
   } catch (error) {
     // Si la API devuelve un error 400 o 500, Axios lo capturará aquí.
     // Lo relanzamos para que React Query o el componente lo manejen.
+    throw error;
+  }
+};
+
+/**
+ * Función que realiza la petición POST al backend para crear varios egresos.
+ * Ruta: POST /ec/api/v1/outcomes/bulk-outcomes
+ * @param data Los datos de los egresos validados por Zod.
+ * @returns Promesa que resuelve en el array de egresos creados.
+ */
+export const createBulkOutcome = async (
+  data: BulkOutcomeCreatePayload,
+): Promise<Outcome[]> => {
+  try {
+    const response = await apiClient.post<ApiResponseData<Outcome[]>>(
+      "/outcomes/bulk-outcomes",
+      data,
+    );
+
+    const outcomes = response.data.data;
+    return outcomes.map(normalizeOutcome);
+  } catch (error) {
     throw error;
   }
 };
@@ -75,26 +92,17 @@ export const createOutcome = async (
  * @returns Promesa que resuelve en el objeto Outcome actualizado.
  */
 export const updateOutcome = async (
-  data: OutcomeUpdateData
+  data: OutcomeUpdateData,
 ): Promise<Outcome> => {
   try {
     const { id, ...updatePayload } = data;
     // La ruta incluye el ID. El cuerpo (body) solo lleva los campos a actualizar.
     const response = await apiClient.put<ApiResponseData<Outcome>>(
       `/outcomes/${id}`,
-      updatePayload
+      updatePayload,
     );
 
-    const outcome = response.data.data;
-
-    // Aseguramos que el amount sea número
-    return {
-      ...outcome,
-      amount:
-        typeof outcome.amount === "string"
-          ? parseFloat(outcome.amount)
-          : outcome.amount,
-    };
+    return normalizeOutcome(response.data.data);
   } catch (error) {
     throw error;
   }
@@ -110,7 +118,7 @@ export const deleteOutcome = async (id: number): Promise<Outcome> => {
   try {
     // La ruta incluye el ID
     const response = await apiClient.delete<ApiResponseData<Outcome>>(
-      `/outcomes/${id}`
+      `/outcomes/${id}`,
     );
 
     // El backend devuelve el objeto Outcome eliminado o al menos el ID.
