@@ -1,47 +1,55 @@
-# 1. Etapa de base
-FROM node:20-slim AS base
+# --- ETAPA 1: Base ---
+FROM node:22-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-RUN pnpm add -g turbo
 
-# 2. Etapa de "Pruning" (Limpieza)
+# --- ETAPA 2: Pruning (Podado) ---
 FROM base AS pruner
 WORKDIR /app
+RUN pnpm add -g turbo@2.7.5
 COPY . .
-# Extrae solo lo necesario para el servidor
 RUN turbo prune @economic-control/server --docker
 
-# 3. Etapa de Instalación y Build
+# --- ETAPA 3: Builder ---
 FROM base AS builder
 WORKDIR /app
-# Copia los archivos podados (json y lockfiles)
 COPY --from=pruner /app/out/json/ .
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+
+# Instalamos todo para poder compilar
 RUN pnpm install --frozen-lockfile
 
-# Copia el código fuente y compila
 COPY --from=pruner /app/out/full/ .
-RUN pnpm turbo build --filter=@economic-control/server
+RUN pnpm add -g turbo@2.7.5
+RUN turbo build --filter=@economic-control/server
 
-# 4. Etapa de Producción (Imagen final ligera)
+# Limpiamos devDependencies para que no pasen al runner (Opcional pero recomendado)
+RUN pnpm install --prod --frozen-lockfile
+
+# --- ETAPA 4: Runner (Imagen Final) ---
 FROM base AS runner
 WORKDIR /app
 
-# Crear usuario sin privilegios
+# Usuarios de seguridad
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 expressjs
-USER expressjs
 
-# Copiar solo los artefactos necesarios
-COPY --from=builder /app/packages/server/dist ./dist
-COPY --from=builder /app/packages/server/package.json ./package.json
-COPY --from=builder /app/packages/shared/package.json ../shared/package.json
-# Nota: Necesitarás copiar las node_modules de producción
+# Copiamos las dependencias instaladas del monorepo
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages/server/node_modules ./packages/server/node_modules
+COPY --from=builder /app/package.json .
 
-# Exponer el puerto (ajustar según tu env)
+# Copiamos el servidor y el paquete compartido
+COPY --from=builder /app/packages/server/package.json ./packages/server/package.json
+COPY --from=builder /app/packages/server/dist ./packages/server/dist
+COPY --from=builder /app/packages/server/node_modules ./packages/server/node_modules
+COPY --from=builder /app/packages/shared ./packages/shared
+
+USER expressjs
 EXPOSE 3000
 
-CMD ["node", "dist/app.js"]
+# Nos movemos a la carpeta del server para ejecutar los comandos de pnpm
+WORKDIR /app/packages/server
+
+# Al usar start:prod, pnpm ejecutará db:deploy (migraciones + seed) y luego la app
+CMD ["pnpm", "run", "start:prod"]

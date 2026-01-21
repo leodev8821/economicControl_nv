@@ -1,15 +1,17 @@
 services:
-  mysql-dev:
-    image: mysql:8.0
-    container_name: mysql-dev
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: leodev-root
-      MYSQL_DATABASE: developmentDB_mysql
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: economic-server
     ports:
-      - "3306:3306"
-    volumes:
-      - mysql-dev-data:/var/lib/mysql
+      - "3000:3000"
+    env_file:
+      - ./.env
+    restart: always
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
 
   postgres-dev:
     image: postgres:16
@@ -23,21 +25,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres-dev-data:/var/lib/postgresql/data
-
-  mongo-dev:
-    image: mongo:6
-    container_name: mongo-dev
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: leodev-root
-      MONGO_INITDB_DATABASE: developmentDB_mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-dev-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leodev -d developmentDB_postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  mysql-dev-data:
   postgres-dev-data:
-  mongo-dev-data:

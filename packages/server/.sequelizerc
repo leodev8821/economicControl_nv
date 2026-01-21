@@ -1,8 +1,12 @@
-const path = require('path');
+// packages/server/.sequelizerc
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-module.exports = {
-  'config': path.resolve('src', 'config', 'sequelize.config.ts'),
-  'models-path': path.resolve('src', 'models'),
-  'seeders-path': path.resolve('src', 'seeders'),
-  'migrations-path': path.resolve('src', 'migrations')
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default {
+  'config': path.resolve(__dirname, 'dist', 'config', 'sequelize.config.js'),
+  'models-path': path.resolve(__dirname, 'dist', 'models'),
+  'seeders-path': path.resolve(__dirname, 'dist', 'seeders'),
+  'migrations-path': path.resolve(__dirname, 'src', 'migrations')
 };
