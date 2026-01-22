@@ -4,14 +4,18 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: economic-server
-    ports:
-      - "3000:3000"
+    # ELIMINADO: ports: - "3000:3000" (Ya no exponemos directo a internet)
+    expose:
+      - "3000" # Informativo: le dice a la red interna que escucha aquí
     env_file:
       - ./.env
     restart: always
     depends_on:
       postgres-dev:
         condition: service_healthy
+    networks:
+      - web_network       # Para hablar con Nginx Proxy Manager
+      - backend_internal  # Para hablar con la Base de Datos
 
   postgres-dev:
     image: postgres:16
@@ -21,8 +25,7 @@ services:
       POSTGRES_USER: leodev
       POSTGRES_PASSWORD: leodev-root
       POSTGRES_DB: developmentDB_postgres
-    ports:
-      - "5432:5432"
+    # ELIMINADO: ports: - "5432:5432" (Seguridad: Solo acceso interno)
     volumes:
       - postgres-dev-data:/var/lib/postgresql/data
     healthcheck:
@@ -30,6 +33,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - backend_internal # La DB solo necesita hablar con el backend
 
 volumes:
   postgres-dev-data:
+
+networks:
+  web_network:
+    external: true # Esta es la red que creamos antes con el Proxy
+  backend_internal:
+    driver: bridge # Red privada para tus servicios

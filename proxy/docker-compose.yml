@@ -1,0 +1,18 @@
+services:
+  nginx-proxy:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - '80:80'   # Tráfico HTTP público
+      - '443:443' # Tráfico HTTPS público
+      - '81:81'   # Panel de administración (puedes cerrarlo luego)
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    networks:
+      - web_network
+
+networks:
+  web_network:
+    external: true
