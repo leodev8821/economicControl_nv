@@ -13,6 +13,7 @@
     }
   },
   "scripts": {
+    "clean": "rm -rf node_modules dist .turbo",
     "build": "tsc",
     "lint": "eslint src"
   },
