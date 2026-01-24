@@ -24,8 +24,14 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     steps:
+      - name: Debug Secrets
+        run: |
+          echo "Verificando si los secretos existen..."
+          if [ -z "${{ secrets.SERVER_HOST }}" ]; then echo "❌ SERVER_HOST no encontrado"; else echo "✅ SERVER_HOST detectado"; fi
+          if [ -z "${{ secrets.SERVER_USER }}" ]; then echo "❌ SERVER_USER no encontrado"; else echo "✅ SERVER_USER detectado"; fi
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then echo "❌ SSH_PRIVATE_KEY no encontrado"; else echo "✅ SSH_PRIVATE_KEY detectado"; fi
+
       - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
