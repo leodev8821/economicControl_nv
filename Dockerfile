@@ -14,6 +14,8 @@ RUN turbo prune @economic-control/server --docker
 # --- ETAPA 3: Builder ---
 FROM base AS builder
 WORKDIR /app
+
+# Copia los archivos de configuración
 COPY --from=pruner /app/out/json/ .
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
@@ -21,8 +23,13 @@ COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 RUN pnpm install --frozen-lockfile
 
 COPY --from=pruner /app/out/full/ .
-RUN pnpm add -g turbo@2.7.5
-RUN turbo build --filter=@economic-control/server
+COPY tsconfig.base.json ./ 
+
+RUN pnpm install --frozen-lockfile
+
+# Usamos --force para ignorar la caché de Turbo
+RUN pnpm turbo run build --filter=@economic-control/shared --force
+RUN pnpm turbo run build --filter=@economic-control/server --force
 
 # Limpiamos devDependencies para que no pasen al runner (Opcional pero recomendado)
 RUN pnpm install --prod --frozen-lockfile

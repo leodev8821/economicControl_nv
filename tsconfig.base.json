@@ -6,23 +6,16 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    /* Resolución de Módulos */
+    "moduleResolution": "NodeNext", // Cambiado de 'bundler' para mejor compatibilidad con Node/Docker
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-
+    "noEmit": false, // CAMBIO CRÍTICO: Debe ser false para que Shared y Server generen archivos
+    
     /* Linting & Strictness */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-
-    /*"paths": {
-      "@economic-control/shared": ["./packages/shared/src/index.ts"],
-      "@economic-control/shared/*": ["./packages/shared/src/*"]
-    }*/
+    "noFallthroughCasesInSwitch": true
   }
 }

@@ -1,12 +1,29 @@
 services:
+  # --- SERVICIO 1: FRONTEND (WEB) ---
+  web-client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+      args:
+        - VITE_API_URL=https://leodev-services.ddns.net
+        - VITE_API_PREFIX=/ec/api/v1
+    container_name: economic-client
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      - web_network
+    depends_on:
+      - api
+
+  # --- SERVICIO 2: BACKEND (API) ---
   api:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: economic-server
-    # ELIMINADO: ports: - "3000:3000" (Ya no exponemos directo a internet)
     expose:
-      - "3000" # Informativo: le dice a la red interna que escucha aquí
+      - "3000"
     env_file:
       - ./.env
     restart: always
@@ -14,9 +31,10 @@ services:
       postgres-dev:
         condition: service_healthy
     networks:
-      - web_network       # Para hablar con Nginx Proxy Manager
-      - backend_internal  # Para hablar con la Base de Datos
+      - web_network
+      - backend_internal
 
+  # --- SERVICIO 3: BASE DE DATOS ---
   postgres-dev:
     image: postgres:16
     container_name: postgres-dev
@@ -25,7 +43,6 @@ services:
       POSTGRES_USER: leodev
       POSTGRES_PASSWORD: leodev-root
       POSTGRES_DB: developmentDB_postgres
-    # ELIMINADO: ports: - "5432:5432" (Seguridad: Solo acceso interno)
     volumes:
       - postgres-dev-data:/var/lib/postgresql/data
     healthcheck:
@@ -34,13 +51,13 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - backend_internal # La DB solo necesita hablar con el backend
+      - backend_internal
 
 volumes:
   postgres-dev-data:
 
 networks:
   web_network:
-    external: true # Esta es la red que creamos antes con el Proxy
+    external: true
   backend_internal:
-    driver: bridge # Red privada para tus servicios
+    driver: bridge

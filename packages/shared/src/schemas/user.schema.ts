@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ROLE_VALUES } from "./role.schema";
+import { ROLE_VALUES } from "./role.schema.js";
 
 // 1. Base Schema (Datos del usuario SIN contraseña)
 const BaseUserSchema = z.object({
