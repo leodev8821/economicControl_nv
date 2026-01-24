@@ -32,7 +32,7 @@ RUN pnpm turbo run build --filter=@economic-control/shared --force
 RUN pnpm turbo run build --filter=@economic-control/server --force
 
 # Limpiamos devDependencies para que no pasen al runner (Opcional pero recomendado)
-RUN pnpm install --prod --frozen-lockfile
+RUN CI=true pnpm install --prod --frozen-lockfile
 
 # --- ETAPA 4: Runner (Imagen Final) ---
 FROM base AS runner
