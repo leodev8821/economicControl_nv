@@ -55,8 +55,6 @@ COPY --from=builder /app/packages/shared ./packages/shared
 USER expressjs
 EXPOSE 3000
 
-# Nos movemos a la carpeta del server para ejecutar los comandos de pnpm
 WORKDIR /app/packages/server
 
-# Al usar start:prod, pnpm ejecutará db:deploy (migraciones + seed) y luego la app
-CMD ["pnpm", "run", "start:prod"]
+CMD ["node", "dist/app.js"]
