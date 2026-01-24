@@ -1,20 +1,18 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,           // OBLIGATORIO para Project References y Turbo
+    "composite": true,           
     "outDir": "./dist",
-    "rootDir": "src",            // Define dónde está tu código fuente
-    
-    "moduleResolution": "node16",
-    "module": "node16",
-    "allowImportingTsExtensions": false,  // Override base config since we emit JS files
+    "rootDir": "src",            
+    "module": "NodeNext",
+    "allowImportingTsExtensions": false,  
 
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
 
-    "noEmit": false,             // Para que el build genere archivos en /dist
-    "declaration": true,         // Genera tipos para el build
+    "noEmit": false,             
+    "declaration": true,         
     "sourceMap": true,
     "strict": true,
     "skipLibCheck": true,
@@ -22,9 +20,9 @@
   },
   "include": [
     "src/**/*",
-    "types/express.d.ts" // Incluir definiciones personalizadas
+    "types/express.d.ts" 
   ],
   "references": [
-    { "path": "../shared" }      // <--- Vincula el servidor con el paquete compartido
+    { "path": "../shared" }      
   ]
 }

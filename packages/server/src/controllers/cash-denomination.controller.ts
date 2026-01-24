@@ -32,7 +32,7 @@ export const cashDenominationController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al obtener las monedas."
+        "Error al obtener las monedas.",
       );
     }
   },
@@ -44,15 +44,14 @@ export const cashDenominationController = {
       const searchCriteria: CashDenominationSearchData = {};
 
       if (id) {
-        searchCriteria.id = parseInt(id, 10);
+        searchCriteria.id = parseInt(id as string, 10);
       }
       if (value) {
-        searchCriteria.denomination_value = value;
+        searchCriteria.denomination_value = value as string;
       }
 
-      const cashDenomination = await CashDenominationActions.getOne(
-        searchCriteria
-      );
+      const cashDenomination =
+        await CashDenominationActions.getOne(searchCriteria);
 
       if (!cashDenomination) {
         return res.status(404).json({
@@ -75,7 +74,7 @@ export const cashDenominationController = {
   createCashDenomination: async (req: Request, res: Response) => {
     try {
       const validationResult = CashDenominationCreationSchema.safeParse(
-        req.body
+        req.body,
       );
 
       if (!validationResult.success) {
@@ -90,7 +89,7 @@ export const cashDenominationController = {
         validationResult.data;
 
       const newCashDenomination = await CashDenominationActions.create(
-        cashDenominationData as CashDenominationCreationAttributes
+        cashDenominationData as CashDenominationCreationAttributes,
       );
 
       return res.status(201).json({
@@ -105,7 +104,7 @@ export const cashDenominationController = {
 
   updateCashDenomination: async (req: Request, res: Response) => {
     try {
-      const cashDenominationId = parseInt(req.params.id || "0", 10);
+      const cashDenominationId = parseInt((req.params.id as string) || "0", 10);
 
       if (!cashDenominationId) {
         return res
@@ -134,7 +133,7 @@ export const cashDenominationController = {
 
       const updatedCashDenomination = await CashDenominationActions.update(
         cashDenominationId,
-        updateData as Partial<CashDenominationCreationAttributes>
+        updateData as Partial<CashDenominationCreationAttributes>,
       );
 
       if (!updatedCashDenomination) {
@@ -153,14 +152,14 @@ export const cashDenominationController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al actualizar la moneda."
+        "Error al actualizar la moneda.",
       );
     }
   },
 
   deleteCashDenomination: async (req: Request, res: Response) => {
     try {
-      const cashDenominationId = parseInt(req.params.id || "0", 10);
+      const cashDenominationId = parseInt((req.params.id as string) || "0", 10);
 
       if (!cashDenominationId) {
         return res

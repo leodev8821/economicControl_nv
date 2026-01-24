@@ -43,13 +43,13 @@ export const outcomesController = {
       const searchCriteria: OutcomeSearchData = {};
 
       if (id) {
-        searchCriteria.id = parseInt(id, 10);
+        searchCriteria.id = parseInt(id as string, 10);
       }
       if (cash_id) {
-        searchCriteria.cash_id = parseInt(cash_id, 10);
+        searchCriteria.cash_id = parseInt(cash_id as string, 10);
       }
       if (category) {
-        searchCriteria.category = category;
+        searchCriteria.category = category as string;
       }
 
       const outcome = await OutcomeActions.getOne(searchCriteria);
@@ -77,7 +77,7 @@ export const outcomesController = {
       if (!cash_id) {
         throw new Error("Falta el ID de la caja en los parámetros de la URL.");
       }
-      const numericCashId = parseInt(cash_id, 10);
+      const numericCashId = parseInt(cash_id as string, 10);
 
       const outcomes = await OutcomeActions.getOutcomesByCashId(numericCashId);
 
@@ -188,7 +188,7 @@ export const outcomesController = {
   // Actualiza una egreso existente
   updateOutcome: async (req: Request, res: Response) => {
     try {
-      const outcomeId = parseInt(req.params.id || "0", 10);
+      const outcomeId = parseInt((req.params.id as string) || "0", 10);
 
       if (!outcomeId) {
         return res
@@ -259,7 +259,7 @@ export const outcomesController = {
 
   deleteOutcome: async (req: Request, res: Response) => {
     try {
-      const outcomeId = parseInt(req.params.id || "0", 10);
+      const outcomeId = parseInt((req.params.id as string) || "0", 10);
 
       if (!outcomeId) {
         return res

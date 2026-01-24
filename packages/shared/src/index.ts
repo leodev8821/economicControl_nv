@@ -1,3 +1,4 @@
+export const SHARED_VERSION = "0.0.1";
 export * from "./schemas/env.schema.js";
 export * from "./schemas/income.schema.js";
 export * from "./schemas/cash.schema.js";

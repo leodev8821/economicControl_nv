@@ -112,16 +112,16 @@ export const usersController = {
       const searchCriteria: UserSearchData = {};
 
       if (id) {
-        searchCriteria.id = parseInt(id, 10);
+        searchCriteria.id = parseInt(id as string, 10);
       }
       if (username) {
-        searchCriteria.username = username;
+        searchCriteria.username = username as string;
       }
       if (first_name) {
-        searchCriteria.first_name = first_name;
+        searchCriteria.first_name = first_name as string;
       }
       if (last_name) {
-        searchCriteria.last_name = last_name;
+        searchCriteria.last_name = last_name as string;
       }
 
       const user = await UserActions.getOne(searchCriteria);
@@ -204,7 +204,7 @@ export const usersController = {
 
   updateUser: async (req: Request, res: Response) => {
     try {
-      const userId = parseInt(req.params.id || "0", 10);
+      const userId = parseInt((req.params.id as string) || "0", 10);
 
       if (!userId) {
         return res
@@ -283,7 +283,7 @@ export const usersController = {
 
   deleteUser: async (req: Request, res: Response) => {
     try {
-      const userId = parseInt(req.params.id || "0", 10);
+      const userId = parseInt((req.params.id as string) || "0", 10);
 
       if (!userId) {
         return res

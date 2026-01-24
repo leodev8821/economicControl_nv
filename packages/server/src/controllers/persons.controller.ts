@@ -32,7 +32,7 @@ export const personsController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al obtener las personas."
+        "Error al obtener las personas.",
       );
     }
   },
@@ -44,16 +44,16 @@ export const personsController = {
       const searchCriteria: PersonSearchData = {};
 
       if (id) {
-        searchCriteria.id = parseInt(id, 10);
+        searchCriteria.id = parseInt(id as string, 10);
       }
       if (first_name) {
-        searchCriteria.first_name = first_name;
+        searchCriteria.first_name = first_name as string;
       }
       if (last_name) {
-        searchCriteria.last_name = last_name;
+        searchCriteria.last_name = last_name as string;
       }
       if (dni) {
-        searchCriteria.dni = dni;
+        searchCriteria.dni = dni as string;
       }
 
       const person = await PersonActions.getOne(searchCriteria);
@@ -101,7 +101,7 @@ export const personsController = {
       }
 
       const newPerson = await PersonActions.create(
-        personData as PersonCreationAttributes
+        personData as PersonCreationAttributes,
       );
 
       return res.status(201).json({
@@ -122,7 +122,7 @@ export const personsController = {
 
   updatePerson: async (req: Request, res: Response) => {
     try {
-      const personId = parseInt(req.params.id || "0", 10);
+      const personId = parseInt((req.params.id as string) || "0", 10);
 
       if (!personId) {
         return res
@@ -162,7 +162,7 @@ export const personsController = {
 
       const updatedPerson = await PersonActions.update(
         personId,
-        updateData as Partial<PersonCreationAttributes>
+        updateData as Partial<PersonCreationAttributes>,
       );
 
       if (!updatedPerson) {
@@ -187,14 +187,14 @@ export const personsController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al actualizar la persona."
+        "Error al actualizar la persona.",
       );
     }
   },
 
   deletePerson: async (req: Request, res: Response) => {
     try {
-      const personId = parseInt(req.params.id || "0", 10);
+      const personId = parseInt((req.params.id as string) || "0", 10);
 
       if (!personId) {
         return res
@@ -219,7 +219,7 @@ export const personsController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al eliminar la persona."
+        "Error al eliminar la persona.",
       );
     }
   },

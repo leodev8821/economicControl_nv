@@ -32,10 +32,10 @@ export const rolesController = {
             const searchCriteria: RoleSearchData = {};
 
             if (id) {
-                searchCriteria.id = parseInt(id, 10);
+                searchCriteria.id = parseInt(id as string, 10);
             }
             if (role) {
-                searchCriteria.role = role;
+                searchCriteria.role = role as string;
             }
             
             const roleObtained = await RoleActions.getOne(searchCriteria);
@@ -84,7 +84,7 @@ export const rolesController = {
 
     updateRol: async (req: Request, res: Response) => {
         try {
-            const roleId = parseInt(req.params.id || '0', 10);
+            const roleId = parseInt((req.params.id as string) || '0', 10);
 
             if (!roleId) {
                 return res.status(400).json({ ok: false, message: 'ID de rol inválido' });
@@ -124,7 +124,7 @@ export const rolesController = {
 
     deleteRol: async (req: Request, res: Response) => {
         try {
-            const roleId = parseInt(req.params.id || '0', 10);
+            const roleId = parseInt((req.params.id as string) || '0', 10);
 
             if (!roleId) {
                 return res.status(400).json({ ok: false, message: 'ID de rol inválido' });

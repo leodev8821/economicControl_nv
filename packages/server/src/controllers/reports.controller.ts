@@ -33,7 +33,7 @@ export const reportsController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al obtener las reportes."
+        "Error al obtener las reportes.",
       );
     }
   },
@@ -107,11 +107,11 @@ export const reportsController = {
 
       const incomeTotal: number = incomesResult.reduce(
         (sum, income) => sum + income.amount,
-        0
+        0,
       );
       const outcomeTotal: number = outcomesResult.reduce(
         (sum, outcome) => sum + outcome.amount,
-        0
+        0,
       );
       const balance: number = incomeTotal - outcomeTotal;
 
@@ -134,7 +134,7 @@ export const reportsController = {
 
       // Esto creará un nuevo registro si no existe, o actualizará el existente si week_id ya está registrado.
       const report = await ReportActions.upsert(
-        reportData as ReportCreationAttributes
+        reportData as ReportCreationAttributes,
       );
 
       return res.status(200).json({
@@ -149,7 +149,7 @@ export const reportsController = {
 
   updateReport: async (req: Request, res: Response) => {
     try {
-      const reportId = parseInt(req.params.id || "0", 10);
+      const reportId = parseInt((req.params.id as string) || "0", 10);
 
       if (!reportId) {
         return res
@@ -178,7 +178,7 @@ export const reportsController = {
 
       const updatedReport = await ReportActions.update(
         reportId,
-        updateData as Partial<ReportCreationAttributes>
+        updateData as Partial<ReportCreationAttributes>,
       );
 
       if (!updatedReport) {
@@ -197,14 +197,14 @@ export const reportsController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al actualizar la reporte."
+        "Error al actualizar la reporte.",
       );
     }
   },
 
   deleteReport: async (req: Request, res: Response) => {
     try {
-      const reportId = parseInt(req.params.id || "0", 10);
+      const reportId = parseInt((req.params.id as string) || "0", 10);
 
       if (!reportId) {
         return res
@@ -229,7 +229,7 @@ export const reportsController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al eliminar la reporte."
+        "Error al eliminar la reporte.",
       );
     }
   },

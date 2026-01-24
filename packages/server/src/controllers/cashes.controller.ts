@@ -39,10 +39,10 @@ export const cashesController = {
       const searchCriteria: CashSearchData = {};
 
       if (id) {
-        searchCriteria.id = parseInt(id, 10);
+        searchCriteria.id = parseInt(id as string, 10);
       }
       if (name) {
-        searchCriteria.name = name;
+        searchCriteria.name = name as string;
       }
 
       const cash = await CashActions.getOne(searchCriteria);
@@ -79,7 +79,7 @@ export const cashesController = {
       const cashData: CashCreationRequest = validationResult.data;
 
       const newCash = await CashActions.create(
-        cashData as CashCreationAttributes
+        cashData as CashCreationAttributes,
       );
 
       return res.status(201).json({
@@ -94,7 +94,7 @@ export const cashesController = {
 
   updateCash: async (req: Request, res: Response) => {
     try {
-      const cashId = parseInt(req.params.id || "0", 10);
+      const cashId = parseInt((req.params.id as string) || "0", 10);
 
       if (!cashId) {
         return res
@@ -123,7 +123,7 @@ export const cashesController = {
 
       const updatedCash = await CashActions.update(
         cashId,
-        updateData as Partial<CashCreationAttributes>
+        updateData as Partial<CashCreationAttributes>,
       );
 
       if (!updatedCash) {
@@ -144,7 +144,7 @@ export const cashesController = {
 
   deleteCash: async (req: Request, res: Response) => {
     try {
-      const cashId = parseInt(req.params.id || "0", 10);
+      const cashId = parseInt((req.params.id as string) || "0", 10);
 
       if (!cashId) {
         return res

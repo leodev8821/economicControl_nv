@@ -31,7 +31,7 @@ export const weeksController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al obtener las semanas."
+        "Error al obtener las semanas.",
       );
     }
   },
@@ -43,13 +43,13 @@ export const weeksController = {
       const searchCriteria: WeekSearchData = {};
 
       if (id) {
-        searchCriteria.id = parseInt(id, 10);
+        searchCriteria.id = parseInt(id as string, 10);
       }
       if (week_start) {
-        searchCriteria.week_start = week_start;
+        searchCriteria.week_start = week_start as string;
       }
       if (week_end) {
-        searchCriteria.week_end = week_end;
+        searchCriteria.week_end = week_end as string;
       }
 
       const week = await WeekActions.getOne(searchCriteria);
@@ -87,7 +87,7 @@ export const weeksController = {
       const weekData: WeekCreationRequest = validationResult.data;
 
       const newWeek = await WeekActions.create(
-        weekData as WeekCreationAttributes
+        weekData as WeekCreationAttributes,
       );
 
       return res.status(201).json({
@@ -119,7 +119,7 @@ export const weeksController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al generar las semanas del año."
+        "Error al generar las semanas del año.",
       );
     }
   },
@@ -128,11 +128,11 @@ export const weeksController = {
     try {
       const { year } = req.params;
 
-      if (!year || year.trim() === "") {
+      if (!year || (year as string).trim() === "") {
         throw new Error("Falta el parámetro de año en la URL.");
       }
 
-      const yearInt = parseInt(year, 10);
+      const yearInt = parseInt(year as string, 10);
 
       const weeks = await WeekActions.getByYear(yearInt);
 
@@ -145,14 +145,14 @@ export const weeksController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al obtener las semanas por año."
+        "Error al obtener las semanas por año.",
       );
     }
   },
 
   updateWeek: async (req: Request, res: Response) => {
     try {
-      const weekId = parseInt(req.params.id || "0", 10);
+      const weekId = parseInt((req.params.id as string) || "0", 10);
 
       if (!weekId) {
         return res
@@ -181,7 +181,7 @@ export const weeksController = {
 
       const updatedWeek = await WeekActions.update(
         weekId,
-        updateData as Partial<WeekCreationAttributes>
+        updateData as Partial<WeekCreationAttributes>,
       );
 
       if (!updatedWeek) {
@@ -200,14 +200,14 @@ export const weeksController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al actualizar la semana."
+        "Error al actualizar la semana.",
       );
     }
   },
 
   deleteWeek: async (req: Request, res: Response) => {
     try {
-      const weekId = parseInt(req.params.id || "0", 10);
+      const weekId = parseInt((req.params.id as string) || "0", 10);
 
       if (!weekId) {
         return res

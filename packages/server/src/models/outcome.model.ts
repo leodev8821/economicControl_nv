@@ -120,7 +120,7 @@ OutcomeModel.init(
 /** Función helper de normalización */
 const normalizeOutcomeCategory = (category: string): OutcomeCategories => {
   const found = OUTCOME_CATEGORIES.find(
-    (s) => s.toLowerCase() === category.toLowerCase(),
+    (s: string) => s.toLowerCase() === category.toLowerCase(),
   );
 
   if (!found) {

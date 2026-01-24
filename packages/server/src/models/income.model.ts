@@ -123,13 +123,13 @@ IncomeModel.init(
     tableName: "incomes",
     timestamps: false,
     modelName: "Income",
-  }
+  },
 );
 
 /** Función helper de normalización */
 const normalizeIncomeSource = (source: string): IncomeSource => {
   const found = INCOME_SOURCES.find(
-    (s) => s.toLowerCase() === source.toLowerCase()
+    (s: string) => s.toLowerCase() === source.toLowerCase(),
   );
 
   if (!found) {
@@ -157,7 +157,7 @@ export class IncomeActions {
    * @returns promise con un objeto IncomeAttributes o null si no se encuentra ningun ingreso.
    */
   public static async getOne(
-    data: IncomeSearchData
+    data: IncomeSearchData,
   ): Promise<IncomeAttributes | null> {
     const income = await IncomeModel.findOne({
       where: data,
@@ -172,7 +172,7 @@ export class IncomeActions {
    * @returns promise con el objeto IncomeAttributes creado.
    */
   public static async create(
-    data: IncomeCreationAttributes
+    data: IncomeCreationAttributes,
   ): Promise<IncomeAttributes> {
     // Validamos la fuente de ingreso
     if (!INCOME_SOURCES.includes(data.source)) {
@@ -245,7 +245,7 @@ export class IncomeActions {
    */
   public static async update(
     id: number,
-    data: Partial<IncomeCreationAttributes>
+    data: Partial<IncomeCreationAttributes>,
   ): Promise<IncomeAttributes | null> {
     //Iniciar la transacción de Sequelize
     return connection.transaction(async (t) => {
@@ -285,7 +285,7 @@ export class IncomeActions {
           await CashActions.update(
             oldCashId,
             { actual_amount: oldCashNewAmount },
-            t
+            t,
           );
           oldCash = await CashActions.getOne({ id: oldCashId }, t); // Refrescar el objeto oldCash
         }
@@ -305,7 +305,7 @@ export class IncomeActions {
           await CashActions.update(
             targetCashId,
             { actual_amount: newCashNewAmount },
-            t
+            t,
           );
         }
       }
@@ -330,7 +330,7 @@ export class IncomeActions {
    * Obtiene ingresos de tipo 'Diezmo' para una persona por su DNI.
    */
   public static async getTitheIncomesByDni(
-    dni: string
+    dni: string,
   ): Promise<IncomeAttributes[]> {
     const person = await PersonModel.findOne({
       where: { dni },
@@ -351,7 +351,7 @@ export class IncomeActions {
    * Obtiene todos los ingresos para una fecha específica.
    */
   public static async getIncomesByDate(
-    date: string
+    date: string,
   ): Promise<IncomeAttributes[]> {
     const incomes = await IncomeModel.findAll({
       where: { date },
@@ -364,7 +364,7 @@ export class IncomeActions {
    * Obtiene todos los ingresos para un ID de semana específico.
    */
   public static async getIncomesByWeekId(
-    weekId: number
+    weekId: number,
   ): Promise<IncomeAttributes[]> {
     const incomes = await IncomeModel.findAll({
       where: { week_id: weekId },
@@ -379,7 +379,7 @@ export class IncomeActions {
    * @returns Promise con el array de ingresos creados.
    */
   public static async createMultipleIncomes(
-    dataList: IncomeCreationAttributes[]
+    dataList: IncomeCreationAttributes[],
   ): Promise<IncomeAttributes[]> {
     return connection.transaction(async (t) => {
       // 1. Validar fuentes de ingreso para todos
@@ -411,7 +411,7 @@ export class IncomeActions {
           {
             where: { id: cashId },
             transaction: t,
-          }
+          },
         );
       }
 

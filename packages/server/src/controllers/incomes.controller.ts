@@ -6,7 +6,6 @@ import {
   IncomeAttributes,
   type IncomeSearchData,
 } from "../models/income.model.js";
-//import { IncomeCreationSchema, IncomeCreationRequest, IncomeUpdateSchema, IncomeUpdateRequest } from '../schemas/income.schema';
 import {
   IncomeCreationRequest,
   IncomeUpdateRequest,
@@ -44,13 +43,13 @@ export const incomesController = {
       const searchCriteria: IncomeSearchData = {};
 
       if (id) {
-        searchCriteria.id = parseInt(id, 10);
+        searchCriteria.id = parseInt(id as string, 10);
       }
       if (person_id) {
-        searchCriteria.person_id = parseInt(person_id, 10);
+        searchCriteria.person_id = parseInt(person_id as string, 10);
       }
       if (source) {
-        searchCriteria.source = source;
+        searchCriteria.source = source as string;
       }
 
       const income = await IncomeActions.getOne(searchCriteria);
@@ -85,7 +84,7 @@ export const incomesController = {
       }
 
       // El servicio se encarga de validar el DNI
-      const incomes = await IncomeActions.getTitheIncomesByDni(dni);
+      const incomes = await IncomeActions.getTitheIncomesByDni(dni as string);
 
       if (incomes.length === 0) {
         return res.status(404).json({
@@ -121,7 +120,7 @@ export const incomesController = {
       }
 
       // El servicio se encarga de validar el formato de fecha
-      const incomes = await IncomeActions.getIncomesByDate(date);
+      const incomes = await IncomeActions.getIncomesByDate(date as string);
 
       if (incomes.length === 0) {
         return res.status(404).json({
@@ -245,7 +244,7 @@ export const incomesController = {
 
   updateIncome: async (req: Request, res: Response) => {
     try {
-      const incomeId = parseInt(req.params.id || "0", 10);
+      const incomeId = parseInt((req.params.id as string) || "0", 10);
 
       if (!incomeId) {
         return res
@@ -316,7 +315,7 @@ export const incomesController = {
 
   deleteIncome: async (req: Request, res: Response) => {
     try {
-      const incomeId = parseInt(req.params.id || "0", 10);
+      const incomeId = parseInt((req.params.id as string) || "0", 10);
 
       if (!incomeId) {
         return res
