@@ -8,7 +8,7 @@ import {
 } from "../models/index.js";
 import { ROLE_TYPES } from "@economic-control/shared";
 import { env } from "../config/env.js";
-import { fileURLToPath } from "url"; 
+import { fileURLToPath } from "url";
 import { WeekActions } from "../models/week.model.js";
 
 type RoleType = (typeof ROLE_TYPES)[keyof typeof ROLE_TYPES];
@@ -38,6 +38,9 @@ const databaseSeeder: DatabaseSeeder = {
        * =========================== */
       await sequelizeInstance.authenticate(); //
       console.log("✅ Conexión establecida para seeding");
+
+      await sequelizeInstance.sync();
+      console.log("✅ Tablas sincronizadas/creadas");
 
       /* ===========================
        * Transaction
@@ -103,7 +106,7 @@ const databaseSeeder: DatabaseSeeder = {
         if (!existsSuperUser) {
           if (!Object.values(ROLE_TYPES).includes(env.SUDO_ROLE as RoleType)) {
             throw new Error(
-              `El rol '${env.SUDO_ROLE}' definido en .env no existe en ROLE_TYPES`
+              `El rol '${env.SUDO_ROLE}' definido en .env no existe en ROLE_TYPES`,
             );
           } //
 
@@ -116,13 +119,12 @@ const databaseSeeder: DatabaseSeeder = {
               last_name: env.SUDO_LASTNAME,
               is_visible: env.SUDO_IS_VISIBLE,
             },
-            { transaction }
+            { transaction },
           ); //
 
           console.log(`✅ Superusuario '${env.SUDO_USERNAME}' creado`);
         }
- 
-        
+
         /* ===========================
          * Seed super weeks
          * =========================== */
