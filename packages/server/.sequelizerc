@@ -8,5 +8,5 @@ export default {
   'config': path.resolve(__dirname, 'dist', 'config', 'sequelize.config.js'),
   'models-path': path.resolve(__dirname, 'dist', 'models'),
   'seeders-path': path.resolve(__dirname, 'dist', 'seeders'),
-  'migrations-path': path.resolve(__dirname, 'src', 'migrations')
+  'migrations-path': path.resolve(__dirname, 'dist', 'migrations')
 };
