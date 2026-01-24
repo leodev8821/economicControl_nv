@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "clean": "rm -rf node_modules dist .turbo",
+    "clean": "rm -rf dist .turbo node_modules",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

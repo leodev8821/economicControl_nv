@@ -9,7 +9,7 @@
     "init": "pnpm install:all && pnpm db:setup && pnpm dev",
     "dev": "turbo dev",
     "build": "turbo build",
-    "clean": "rm -rf node_modules dist .turbo",
+    "clean": "turbo clean && rm -rf node_modules .turbo",
     "lint": "turbo lint",
     "lint:fix": "turbo lint -- --fix"
   },
