@@ -9,6 +9,9 @@ import { env } from "./config/env.js";
 const app: Express = express();
 let server: Server;
 
+// Indica a Express que confia en el proxy (como Nginx)
+app.set("trust proxy", 1);
+
 /* ===========================
  * Middlewares
  * =========================== */

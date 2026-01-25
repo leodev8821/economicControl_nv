@@ -21,7 +21,7 @@ const cleanPrefix = (prefix: string) =>
 
 const BASE_URL = isProd
   ? `${cleanURL(import.meta.env.VITE_API_URL)}${cleanPrefix(
-      import.meta.env.VITE_API_PREFIX || "/ec/api/v1"
+      import.meta.env.VITE_API_PREFIX || "/ec/api/v1",
     )}`
   : cleanPrefix(import.meta.env.VITE_API_PREFIX || "/ec/api/v1");
 
@@ -33,18 +33,8 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
-/* const apiClient = axios.create({
-  baseURL: API_PREFIX,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  // Permite que Axios envíe las cookies (incluyendo la HttpOnly Refresh Token)
-  withCredentials: true,
-}); */
-
 let isRefreshing = false;
 
-// Tipado de la cola: resolve recibe token (string | null), reject recibe cualquier motivo
 type QueueEntry = {
   resolve: (token: string | null) => void;
   reject: (reason?: unknown) => void;
@@ -112,7 +102,7 @@ apiClient.interceptors.response.use(
         try {
           // USO EXPLÍCITO DE LA RUTA COMPLETA PARA EL REFRESH (ENDPOINT)
           const refreshResponse = await apiClient.post<{ token: string }>(
-            `/auth/refresh-token`
+            `/auth/refresh-token`,
           );
           const newAccessToken: string | undefined =
             refreshResponse.data?.token;
@@ -127,7 +117,7 @@ apiClient.interceptors.response.use(
               typeof window.dispatchEvent === "function"
             ) {
               window.dispatchEvent(
-                new CustomEvent("authTokenRenewed", { detail: newAccessToken })
+                new CustomEvent("authTokenRenewed", { detail: newAccessToken }),
               );
             }
 
@@ -162,7 +152,7 @@ apiClient.interceptors.response.use(
       });
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 // Interceptor de Peticiones: Añade el Access Token de la memoria
@@ -192,7 +182,7 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

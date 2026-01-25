@@ -8,31 +8,29 @@ import type { LoginCredentials, LoginResponse } from "../types/user.type";
  * @returns Promesa que resuelve en un objeto LoginResponse (token y message).
  */
 export const login = async (
-  credentials: LoginCredentials
+  credentials: LoginCredentials,
 ): Promise<LoginResponse> => {
   try {
     // POST /ec/api/v1/auth/login
     const response = await apiClient.post<LoginResponse>(
       "/auth/login",
-      credentials
+      credentials,
     );
 
-    // 1. Eliminar el prefijo "Bearer " que devuelve el backend
     let tokenValue = response.data.token;
     if (tokenValue.startsWith("Bearer ")) {
-      tokenValue = tokenValue.substring(7); // Elimina los primeros 7 caracteres ("Bearer ")
+      tokenValue = tokenValue.substring(7);
     }
 
     return {
       ...response.data,
-      token: tokenValue, // El token ahora es solo el valor JWT
+      token: tokenValue,
     };
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
-      // Manejar 401/403: Mensaje de error personalizado del backend
       const backendMessage = error.response.data.message;
       throw new Error(
-        backendMessage || "Credenciales inválidas o error desconocido."
+        backendMessage || "Credenciales inválidas o error desconocido.",
       );
     }
     throw new Error("Error de conexión con el servidor.");
