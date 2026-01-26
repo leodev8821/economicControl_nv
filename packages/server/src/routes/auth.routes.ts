@@ -14,11 +14,12 @@ const authRouter: Router = Router();
 // 🔑 LOGIN / LOGOUT / REFRESH
 // =================================================================
 authRouter.post("/login", authController.loginUser);
-authRouter.post(
+/* authRouter.post(
   "/refresh-token",
   decodeRefreshToken,
   authController.refreshToken
-);
+); */
+authRouter.post("/refresh-token", authController.refreshToken);
 authRouter.post("/logout", authController.logoutUser);
 
 // Rutas Protegidas (requieren Access Token en el header 'Authorization: Bearer <token>')
@@ -41,31 +42,31 @@ authRouter.get(
   "/users",
   decodeAccessToken,
   verifySudoRole,
-  usersController.allUsers
+  usersController.allUsers,
 );
 authRouter.get(
   "/users/:id",
   decodeAccessToken,
   verifySudoRole,
-  usersController.oneUser
+  usersController.oneUser,
 );
 authRouter.post(
   "/users/new-user",
   decodeAccessToken,
   verifySudoRole,
-  usersController.createUser
+  usersController.createUser,
 );
 authRouter.put(
   "/users/:id",
   decodeAccessToken,
   verifySudoRole,
-  usersController.updateUser
+  usersController.updateUser,
 );
 authRouter.delete(
   "/users/:id",
   decodeAccessToken,
   verifySudoRole,
-  usersController.deleteUser
+  usersController.deleteUser,
 );
 
 export default authRouter;
