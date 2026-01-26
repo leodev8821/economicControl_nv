@@ -87,12 +87,14 @@ export const decodeRefreshToken = (
   res: Response,
   next: NextFunction,
 ) => {
+  // LOGS CRÍTICOS PARA VER EN DOCKER
+  console.error("--- DEBUG MIDDLEWARE REFRESH ---");
   // 1. Obtener de la cookie
   const token = req.cookies?.refreshToken;
 
   if (!token || typeof token !== "string" || token.trim() === "") {
     console.error(
-      "decodeRefreshToken: No se encontró el Refresh Token en la cookie.",
+      "❌ decodeRefreshToken: No se encontró el Refresh Token en la cookie.",
     );
     return res
       .status(401)
@@ -105,15 +107,18 @@ export const decodeRefreshToken = (
 
     if (
       !decoded ||
+      !decoded.id ||
       typeof decoded.id !== "number" ||
       !decoded.username ||
       !decoded.role
     ) {
       return res.status(401).json({
         ok: false,
-        message: "No autorizado. Refresh Token inválido o payload incompleto.",
+        message: "No autorizado. Payload incompleto.",
       });
     }
+
+    req.userPayload = decoded;
 
     // ✅ Asignación de propiedades para la generación del nuevo Access Token
     req.username = decoded.username;
@@ -123,10 +128,7 @@ export const decodeRefreshToken = (
 
     return next();
   } catch (error) {
-    console.error(
-      "Error al decodificar/verificar Refresh Token:",
-      (error as Error).message,
-    );
+    console.error("❌ JWT Refresh Error:", (error as Error).message);
     return res.status(401).json({
       ok: false,
       message: "No autorizado. Refresh Token inválido o expirado.",

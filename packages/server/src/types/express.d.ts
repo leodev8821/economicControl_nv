@@ -7,6 +7,7 @@ declare global {
   namespace Express {
     interface Request {
       cookies: cookieParser.CookieJar | { [key: string]: string };
+      userPayload?: any;
       id?: number;
       username?: string;
       first_name?: string;

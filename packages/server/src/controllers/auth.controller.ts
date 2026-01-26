@@ -51,7 +51,9 @@ export const authController = {
    */
   refreshToken: async (req: Request, res: Response) => {
     try {
-      const refreshToken = req.cookies?.refreshToken as string | undefined;
+      console.error("!!! LLEGUE AL CONTROLLER !!!");
+      console.error("COOKIES:", JSON.stringify(req.cookies));
+      /* const refreshToken = req.cookies?.refreshToken as string | undefined;
 
       if (!refreshToken || refreshToken.trim() === "") {
         return ControllerErrorHandler(
@@ -59,9 +61,18 @@ export const authController = {
           new Error("Falta refresh token"),
           "No se proporcionó el refresh token.",
         );
+      } */
+
+      const payload = req.userPayload;
+
+      if (!payload) {
+        return ControllerErrorHandler(
+          res,
+          new Error("Falta payload"),
+          "No se proporcionó el payload.",
+        );
       }
 
-      const payload = verifyRefreshToken(refreshToken!) as any;
       const userId = Number(payload.id);
 
       if (isNaN(userId) || !userId) {
@@ -112,9 +123,9 @@ export const authController = {
       });
       // LOG PARA DEPURAR: Si entra aquí, el JWT falló
       console.error("DEBUG: Refresh Token Error:", err.message);
-      return res.status(401).json({
+      return res.status(500).json({
         ok: false,
-        message: "Refresh token inválido o expirado. Inicie sesión nuevamente.",
+        message: "Error al renovar la sesión.",
       });
     }
   },
