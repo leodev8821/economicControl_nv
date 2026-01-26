@@ -1,10 +1,10 @@
-import "dotenv/config";
 import { envSchema } from "@economic-control/shared";
 import z from "zod";
 
 // Log para debug (quitar en prod final)
 if (process.env.NODE_ENV !== "production") {
   console.log("🔍 Cargando variables de entorno...");
+  import("dotenv").then((dotenv) => dotenv.config());
 }
 
 const parsed = envSchema.safeParse(process.env);
