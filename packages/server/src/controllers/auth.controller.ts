@@ -5,7 +5,7 @@ import { REFRESH_COOKIE_OPTIONS } from "../config/cookies.config.js";
 import {
   createAccessToken,
   createRefreshToken,
-  verifyRefreshToken,
+  //verifyRefreshToken,
 } from "../services/token.service.js";
 
 export const authController = {
