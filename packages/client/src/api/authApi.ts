@@ -17,6 +17,8 @@ export const login = async (
       credentials,
     );
 
+    console.error("Response:", credentials);
+
     let tokenValue = response.data.token;
     if (tokenValue.startsWith("Bearer ")) {
       tokenValue = tokenValue.substring(7);
