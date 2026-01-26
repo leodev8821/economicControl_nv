@@ -104,9 +104,14 @@ export const authController = {
         message: "Tokens renovados correctamente",
         token: newAccessToken,
       });
-    } catch (err) {
+    } catch (err: any) {
       // En caso de token inválido/expirado -> borrar cookie
-      res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
+      res.clearCookie("refreshToken", {
+        ...REFRESH_COOKIE_OPTIONS,
+        maxAge: 0,
+      });
+      // LOG PARA DEPURAR: Si entra aquí, el JWT falló
+      console.error("DEBUG: Refresh Token Error:", err.message);
       return res.status(401).json({
         ok: false,
         message: "Refresh token inválido o expirado. Inicie sesión nuevamente.",

@@ -29,7 +29,7 @@ app.use(
 app.use(cookieParser());
 
 // --- MIDDLEWARE DE DEBUG (Bórralo cuando funcione) ---
-/* app.use((req, res, next) => {
+app.use((req, res, next) => {
   if (req.path.includes("refresh-token")) {
     console.log("--- DEBUG REFRESH TOKEN ---");
     console.log("1. Protocolo detectado por Express:", req.protocol);
@@ -43,7 +43,7 @@ app.use(cookieParser());
     console.log("---------------------------");
   }
   next();
-}); */
+});
 
 /* ===========================
  * Healthcheck

@@ -12,7 +12,7 @@ import type {
 const isProd = import.meta.env.PROD;
 
 // 2. Definimos la URL base:
-// Si es PROD: usamos la URL completa del .env.production (ej: https://api.tu-dominio.com/ec/api/v1)
+// Si es PROD: usamos la URL completa del .env.production
 // Si es DEV: usamos solo el prefijo para que el proxy de Vite lo capture
 // Limpia posibles barras duplicadas o faltantes
 const cleanURL = (url: string) => url.replace(/\/+$/, ""); // Quita barras al final
@@ -24,6 +24,11 @@ const BASE_URL = isProd
       import.meta.env.VITE_API_PREFIX || "/ec/api/v1",
     )}`
   : cleanPrefix(import.meta.env.VITE_API_PREFIX || "/ec/api/v1");
+
+const refreshInstance = axios.create({
+  baseURL: BASE_URL,
+  withCredentials: true,
+});
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -101,7 +106,7 @@ apiClient.interceptors.response.use(
       return new Promise(async (resolve, reject) => {
         try {
           // USO EXPLÍCITO DE LA RUTA COMPLETA PARA EL REFRESH (ENDPOINT)
-          const refreshResponse = await apiClient.post<{ token: string }>(
+          const refreshResponse = await refreshInstance.post<{ token: string }>(
             `/auth/refresh-token`,
           );
           const newAccessToken: string | undefined =
