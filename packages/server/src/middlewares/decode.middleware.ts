@@ -119,6 +119,7 @@ export const decodeRefreshToken = (
     }
 
     req.userPayload = decoded;
+    console.log("userPayload:", req.userPayload);
 
     // ✅ Asignación de propiedades para la generación del nuevo Access Token
     req.username = decoded.username;
