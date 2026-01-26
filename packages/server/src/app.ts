@@ -10,7 +10,7 @@ const app: Express = express();
 let server: Server;
 
 // Indica a Express que confia en el proxy (como Nginx)
-app.set("trust proxy", 1);
+app.set("trust proxy", true);
 
 /* ===========================
  * Middlewares
@@ -27,6 +27,23 @@ app.use(
 );
 
 app.use(cookieParser());
+
+// --- MIDDLEWARE DE DEBUG (Bórralo cuando funcione) ---
+/* app.use((req, res, next) => {
+  if (req.path.includes("refresh-token")) {
+    console.log("--- DEBUG REFRESH TOKEN ---");
+    console.log("1. Protocolo detectado por Express:", req.protocol);
+    console.log("2. Es conexión segura (req.secure):", req.secure);
+    console.log("3. IPs (req.ips):", req.ips);
+    console.log(
+      "4. X-Forwarded-Proto header:",
+      req.headers["x-forwarded-proto"],
+    );
+    console.log("5. Cookies recibidas (parseadas):", req.cookies);
+    console.log("---------------------------");
+  }
+  next();
+}); */
 
 /* ===========================
  * Healthcheck
