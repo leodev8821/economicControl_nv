@@ -6,8 +6,28 @@ on:
 
 jobs:
   deploy:
-    # Esta es la clave: le dice a GitHub que use TU servidor
     runs-on: self-hosted
+    env:
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      SERVER_PORT: ${{ secrets.SERVER_PORT }}
+      DB_DB: ${{ secrets.DB_DB }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_DIALECT: ${{ secrets.DB_DIALECT }}
+      SUDO_ROLE: ${{ secrets.SUDO_ROLE }}
+      SUDO_USERNAME: ${{ secrets.SUDO_USERNAME }}
+      SUDO_PASSWORD: ${{ secrets.SUDO_PASSWORD }}
+      SUDO_FIRSTNAME: ${{ secrets.SUDO_FIRSTNAME }}
+      SUDO_LASTNAME: ${{ secrets.SUDO_LASTNAME }}
+      SUDO_IS_VISIBLE: ${{ secrets.SUDO_IS_VISIBLE }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
+      ACCESS_TOKEN_EXPIRATION: ${{ secrets.ACCESS_TOKEN_EXPIRATION }}
+      REFRESH_TOKEN_EXPIRATION: ${{ secrets.REFRESH_TOKEN_EXPIRATION }}
+      NODE_ENV: ${{ secrets.NODE_ENV }}
+      CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
 
     steps:
       - name: Checkout code
