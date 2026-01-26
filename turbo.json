@@ -3,7 +3,29 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".tsbuildinfo"]
+      "outputs": ["dist/**", ".tsbuildinfo"],
+      "env": [
+        "SERVER_HOST",
+        "SERVER_PORT",
+        "DB_DB",
+        "DB_USER",
+        "DB_PASSWORD",
+        "DB_HOST",
+        "DB_PORT",
+        "DB_DIALECT",
+        "SUDO_ROLE",
+        "SUDO_USERNAME",
+        "SUDO_PASSWORD",
+        "SUDO_FIRSTNAME",
+        "SUDO_LASTNAME",
+        "SUDO_IS_VISIBLE",
+        "SECRET_KEY",
+        "REFRESH_SECRET",
+        "ACCESS_TOKEN_EXPIRATION",
+        "REFRESH_TOKEN_EXPIRATION",
+        "NODE_ENV",
+        "CORS_ORIGIN"
+      ]
     },
     "clean": {
       "cache": false
