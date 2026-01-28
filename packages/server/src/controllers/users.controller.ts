@@ -4,7 +4,6 @@ import {
   UserActions,
   type UserAttributes,
   type UserCreationAttributes,
-  type LoginPayload,
 } from "../models/user.model.js";
 import {
   UserCreationSchema,
@@ -13,10 +12,6 @@ import {
   type UserUpdateRequest,
 } from "@economic-control/shared";
 import type { UserSearchData } from "../models/user.model.js";
-import {
-  createAccessToken,
-  createRefreshToken,
-} from "../services/token.service.js";
 import dotenv from "dotenv";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -33,56 +28,6 @@ dotenv.config({ path: envPath });
 const sudoRole = process.env.SUDO_ROLE || "SuperUser"; // Valor por defecto seguro
 
 export const usersController = {
-  /**
-   * Función para iniciar sesión del usuario.
-   * @param login_data Nombre de usuario
-   * @param password Contraseña
-   * @returns Access Token en el body y Refresh Token en la cookie HttpOnly.
-   */
-  loginUser: async (
-    login_data: string,
-    password: string,
-  ): Promise<LoginResult> => {
-    if (!login_data || !password) {
-      throw new Error("Faltan datos de inicio de sesión.");
-    }
-
-    const userInstance = await UserActions.getOneInstance({
-      username: login_data,
-    });
-
-    if (!userInstance) {
-      throw new Error("Usuario no encontrado.");
-    }
-    if (!userInstance.is_visible) {
-      throw new Error("El usuario está inactivo.");
-    }
-
-    const isPasswordValid = await userInstance.comparePassword(password);
-
-    if (!isPasswordValid) {
-      throw new Error("Contraseña incorrecta.");
-    }
-
-    const logedUser = userInstance.get({ plain: true });
-    const payload: LoginPayload = {
-      id: logedUser.id,
-      role_name: logedUser.role_name,
-      username: logedUser.username,
-      first_name: logedUser.first_name,
-      last_name: logedUser.last_name,
-    };
-
-    const accessTokenResult = await createAccessToken(payload);
-    const refreshToken = createRefreshToken(payload);
-
-    // Devuelve ambos tokens Separados por '|'
-    return {
-      message: accessTokenResult.message,
-      token: accessTokenResult.token + "|" + refreshToken,
-    };
-  },
-
   // Obtiene todas las usuarios
   allUsers: async (_req: Request, res: Response) => {
     try {

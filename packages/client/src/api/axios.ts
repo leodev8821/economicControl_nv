@@ -6,9 +6,6 @@ import type {
   AxiosRequestConfig,
 } from "axios";
 
-// Usamos el prefijo de la API que definimos en vite.config.ts
-//const API_PREFIX = import.meta.env.VITE_API_PREFIX || "/ec/api/v1";
-
 const isProd = import.meta.env.PROD;
 
 // 2. Definimos la URL base:
@@ -70,11 +67,17 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
+    const isAuthEndpoint =
+      originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/refresh-token") ||
+      originalRequest.url?.includes("/auth/logout");
+
     // Si la respuesta es un 401 Y no estamos ya intentando renovar
     if (
       error.response?.status === 401 &&
       originalRequest &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      !isAuthEndpoint
     ) {
       if (isRefreshing) {
         // Si ya hay una renovación en curso, ponemos la petición en cola
@@ -127,6 +130,7 @@ apiClient.interceptors.response.use(
             }
 
             // 3. Procesar la cola y reintentar la petición original (incluida en la cola)
+            isRefreshing = false;
             processQueue(null, newAccessToken ?? null);
 
             // 4. Configurar la petición original para que use el nuevo token y resolver
@@ -151,8 +155,6 @@ apiClient.interceptors.response.use(
             window.dispatchEvent(new CustomEvent("authLogout"));
           }
           reject(refreshError);
-        } finally {
-          isRefreshing = false;
         }
       });
     }
@@ -190,4 +192,5 @@ apiClient.interceptors.request.use(
   },
 );
 
+export { refreshInstance };
 export default apiClient;

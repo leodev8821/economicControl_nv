@@ -1,11 +1,8 @@
 import { Router } from "express";
-import authRouter from "./auth.routes.js";
+import authRouter from "../auth/auth.routes.js";
 
 // --- MIDDLEWARES ---
-import {
-  decodeAccessToken,
-  verifyLogin,
-} from "../middlewares/decode.middleware.js";
+import { decodeAccessToken, requireRole } from "../auth/auth.middleware.js";
 
 // --- CONTROLLERS ---
 import { cashesController } from "../controllers/cashes.controller.js";
@@ -17,6 +14,7 @@ import { reportsController } from "../controllers/reports.controller.js";
 import { rolesController } from "../controllers/roles.controller.js";
 import { weeksController } from "../controllers/weeks.controller.js";
 import { cashDenominationController } from "../controllers/cash-denomination.controller.js";
+import { usersController } from "../controllers/users.controller.js";
 
 const router: Router = Router();
 
@@ -26,305 +24,143 @@ const router: Router = Router();
 router.use("/auth", authRouter);
 
 // =================================================================
+// 🔐 MIDDLEWARES
+// =================================================================
+router.use(decodeAccessToken);
+
+// =================================================================
+// 👨‍💻 USERS (ADMIN)
+// =================================================================
+router.get(
+  "/users",
+  requireRole("SuperUser", "Administrador"),
+  usersController.allUsers,
+);
+router.get(
+  "/users/:id",
+  requireRole("SuperUser", "Administrador"),
+  usersController.oneUser,
+);
+router.post(
+  "/users",
+  requireRole("SuperUser", "Administrador"),
+  usersController.createUser,
+);
+router.put(
+  "/users/:id",
+  requireRole("SuperUser", "Administrador"),
+  usersController.updateUser,
+);
+router.delete(
+  "/users/:id",
+  requireRole("SuperUser", "Administrador"),
+  usersController.deleteUser,
+);
+
+// =================================================================
+// 👤 ROLES (ADMIN)
+// =================================================================
+router.get(
+  "/roles",
+  requireRole("SuperUser", "Administrador"),
+  rolesController.allRoles,
+);
+
+// =================================================================
 // 💰 CAJAS (CASHES)
 // Se usa :id/:name para permitir buscar por ambos en la URL
 // =================================================================
-router.get("/cashes", decodeAccessToken, verifyLogin, cashesController.allCash);
-router.get(
-  "/cashes/:id",
-  decodeAccessToken,
-  verifyLogin,
-  cashesController.oneCash,
-);
-router.get(
-  "/cashes/name/:name",
-  decodeAccessToken,
-  verifyLogin,
-  cashesController.oneCash,
-);
-router.post(
-  "/cashes/new-cash",
-  decodeAccessToken,
-  verifyLogin,
-  cashesController.createCash,
-);
-router.put(
-  "/cashes/:id",
-  decodeAccessToken,
-  verifyLogin,
-  cashesController.updateCash,
-);
-router.delete(
-  "/cashes/:id",
-  decodeAccessToken,
-  verifyLogin,
-  cashesController.deleteCash,
-);
+router.get("/cashes", cashesController.allCash);
+router.get("/cashes/:id", cashesController.oneCash);
+router.get("/cashes/name/:name", cashesController.oneCash);
+router.post("/cashes/new-cash", cashesController.createCash);
+router.put("/cashes/:id", cashesController.updateCash);
+router.delete("/cashes/:id", cashesController.deleteCash);
 
 // =================================================================
 // 💵 INGRESOS (INCOMES)
 // El controller de incomes usa exports individuales (allIncomes, oneIncome, etc.)
 // =================================================================
-router.get(
-  "/incomes",
-  decodeAccessToken,
-  verifyLogin,
-  incomesController.allIncomes,
-);
-router.get(
-  "/incomes/:id",
-  decodeAccessToken,
-  verifyLogin,
-  incomesController.oneIncome,
-);
-router.post(
-  "/incomes/new-income",
-  decodeAccessToken,
-  verifyLogin,
-  incomesController.createIncome,
-);
-router.post(
-  "/incomes/bulk-incomes",
-  decodeAccessToken,
-  verifyLogin,
-  incomesController.createBulkIncomes,
-);
-router.put(
-  "/incomes/:id",
-  decodeAccessToken,
-  verifyLogin,
-  incomesController.updateIncome,
-);
-router.delete(
-  "/incomes/:id",
-  decodeAccessToken,
-  verifyLogin,
-  incomesController.deleteIncome,
-);
-router.get(
-  "/incomes/tithe/:dni",
-  decodeAccessToken,
-  verifyLogin,
-  incomesController.titheByPerson,
-);
-router.get(
-  "/incomes/date/:date",
-  decodeAccessToken,
-  verifyLogin,
-  incomesController.getIncomesByDate,
-);
+router.get("/incomes", incomesController.allIncomes);
+router.get("/incomes/:id", incomesController.oneIncome);
+router.post("/incomes/new-income", incomesController.createIncome);
+router.post("/incomes/bulk-incomes", incomesController.createBulkIncomes);
+router.put("/incomes/:id", incomesController.updateIncome);
+router.delete("/incomes/:id", incomesController.deleteIncome);
+router.get("/incomes/tithe/:dni", incomesController.titheByPerson);
+router.get("/incomes/date/:date", incomesController.getIncomesByDate);
 
 // =================================================================
 // 💳 GASTOS (OUTCOMES)
 // =================================================================
-router.get(
-  "/outcomes",
-  decodeAccessToken,
-  verifyLogin,
-  outcomesController.allOutcomes,
-);
-router.get(
-  "/outcomes/:id",
-  decodeAccessToken,
-  verifyLogin,
-  outcomesController.oneOutcome,
-);
-router.post(
-  "/outcomes/new-outcome",
-  decodeAccessToken,
-  verifyLogin,
-  outcomesController.createOutcome,
-);
-router.post(
-  "/outcomes/bulk-outcomes",
-  decodeAccessToken,
-  verifyLogin,
-  outcomesController.createBulkOutcomes,
-);
-router.put(
-  "/outcomes/:id",
-  decodeAccessToken,
-  verifyLogin,
-  outcomesController.updateOutcome,
-);
-router.delete(
-  "/outcomes/:id",
-  decodeAccessToken,
-  verifyLogin,
-  outcomesController.deleteOutcome,
-);
-router.get(
-  "/outcomes/cash/:cash_id",
-  decodeAccessToken,
-  verifyLogin,
-  outcomesController.outcomesByCash,
-);
+router.get("/outcomes", outcomesController.allOutcomes);
+router.get("/outcomes/:id", outcomesController.oneOutcome);
+router.post("/outcomes/new-outcome", outcomesController.createOutcome);
+router.post("/outcomes/bulk-outcomes", outcomesController.createBulkOutcomes);
+router.put("/outcomes/:id", outcomesController.updateOutcome);
+router.delete("/outcomes/:id", outcomesController.deleteOutcome);
+router.get("/outcomes/cash/:cash_id", outcomesController.outcomesByCash);
 
 // =================================================================
 // 🧑 PERSONAS (PERSONS)
 // Se usa :id/:dni para buscar por ambos
 // =================================================================
-router.get(
-  "/persons",
-  decodeAccessToken,
-  verifyLogin,
-  personsController.allPersons,
-);
-router.get(
-  "/persons/:id",
-  decodeAccessToken,
-  verifyLogin,
-  personsController.onePerson,
-);
-router.get(
-  "/persons/dni/:dni",
-  decodeAccessToken,
-  verifyLogin,
-  personsController.onePerson,
-);
-router.post(
-  "/persons/new-person",
-  decodeAccessToken,
-  verifyLogin,
-  personsController.createPerson,
-);
+router.get("/persons", personsController.allPersons);
+router.get("/persons/:id", personsController.onePerson);
+router.get("/persons/dni/:dni", personsController.onePerson);
+router.post("/persons/new-person", personsController.createPerson);
 // Se puede actualizar por id o dni
-router.put(
-  "/persons/:id",
-  decodeAccessToken,
-  verifyLogin,
-  personsController.updatePerson,
-);
-router.put(
-  "/persons/dni/:dni",
-  decodeAccessToken,
-  verifyLogin,
-  personsController.updatePerson,
-);
+router.put("/persons/:id", personsController.updatePerson);
+router.put("/persons/dni/:dni", personsController.updatePerson);
 // Se puede eliminar por id o dni
-router.delete(
-  "/persons/:id",
-  decodeAccessToken,
-  verifyLogin,
-  personsController.deletePerson,
-);
-router.delete(
-  "/persons/dni/:dni",
-  decodeAccessToken,
-  verifyLogin,
-  personsController.deletePerson,
-);
+router.delete("/persons/:id", personsController.deletePerson);
+router.delete("/persons/dni/:dni", personsController.deletePerson);
 
 // =================================================================
 // 📄 REPORTES (REPORTS)
 // =================================================================
-router.get(
-  "/reports",
-  decodeAccessToken,
-  verifyLogin,
-  reportsController.allReports,
-);
-router.get(
-  "/reports/:id",
-  decodeAccessToken,
-  verifyLogin,
-  reportsController.oneReport,
-);
-router.get(
-  "/reports/week/:week_id",
-  decodeAccessToken,
-  verifyLogin,
-  reportsController.oneReport,
-);
-router.post(
-  "/create-report",
-  decodeAccessToken,
-  verifyLogin,
-  reportsController.createReport,
-);
-router.put(
-  "/reports/:id",
-  decodeAccessToken,
-  verifyLogin,
-  reportsController.updateReport,
-);
-router.delete(
-  "/reports/:id",
-  decodeAccessToken,
-  verifyLogin,
-  reportsController.deleteReport,
-);
+router.get("/reports", reportsController.allReports);
+router.get("/reports/:id", reportsController.oneReport);
+router.get("/reports/week/:week_id", reportsController.oneReport);
+router.post("/create-report", reportsController.createReport);
+router.put("/reports/:id", reportsController.updateReport);
+router.delete("/reports/:id", reportsController.deleteReport);
 
 // =================================================================
 // 📄 BALANCE
 // =================================================================
-router.get(
-  "/balance/get-balance",
-  decodeAccessToken,
-  verifyLogin,
-  dashboardController.getBalance,
-);
-
-// =================================================================
-// 👤 ROLES (ROLES)
-// =================================================================
-router.get("/roles", decodeAccessToken, verifyLogin, rolesController.allRoles);
+router.get("/balance/get-balance", dashboardController.getBalance);
 
 // =================================================================
 // 💰 MONEDAS (CASH DENOMINATIONS)
 // =================================================================
 router.get(
   "/cash-denominations",
-  decodeAccessToken,
-  verifyLogin,
   cashDenominationController.allCashDenominations,
 );
 router.get(
   "/cash-denominations/:id",
-  decodeAccessToken,
-  verifyLogin,
   cashDenominationController.oneCashDenomination,
 );
 router.post(
   "/cash-denominations/new-cash-denomination",
-  decodeAccessToken,
-  verifyLogin,
   cashDenominationController.createCashDenomination,
 );
 router.put(
   "/cash-denominations/:id",
-  decodeAccessToken,
-  verifyLogin,
   cashDenominationController.updateCashDenomination,
 );
 router.delete(
   "/cash-denominations/:id",
-  decodeAccessToken,
-  verifyLogin,
   cashDenominationController.deleteCashDenomination,
 );
 
 // =================================================================
 // 📅 SEMANAS (WEEKS)
 // =================================================================
-router.get("/weeks", decodeAccessToken, verifyLogin, weeksController.allWeeks);
-router.get(
-  "/weeks/:weekId",
-  decodeAccessToken,
-  verifyLogin,
-  weeksController.oneWeek,
-);
-router.post(
-  "/weeks/gen",
-  decodeAccessToken,
-  verifyLogin,
-  weeksController.generateWeeks,
-);
-router.get(
-  "/weeks/year/:year",
-  decodeAccessToken,
-  verifyLogin,
-  weeksController.getWeeksByYear,
-);
+router.get("/weeks", weeksController.allWeeks);
+router.get("/weeks/:weekId", weeksController.oneWeek);
+router.post("/weeks/gen", weeksController.generateWeeks);
+router.get("/weeks/year/:year", weeksController.getWeeksByYear);
 
 export default router;

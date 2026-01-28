@@ -17,16 +17,14 @@ export const login = async (
       credentials,
     );
 
-    console.error("Response:", credentials);
-
-    let tokenValue = response.data.token;
+    /* let tokenValue = response.data.token;
     if (tokenValue.startsWith("Bearer ")) {
       tokenValue = tokenValue.substring(7);
-    }
+    } */
 
     return {
       ...response.data,
-      token: tokenValue,
+      //token: tokenValue,
     };
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
