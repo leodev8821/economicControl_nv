@@ -9,10 +9,20 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Función helper para obtener el usuario inicial desde localStorage
+const getInitialUser = (): User | null => {
+  const saved = localStorage.getItem("authUser");
+  if (!saved) return null;
+  try {
+    return JSON.parse(saved);
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  // Estado para el Access Token (en memoria)
+  const [user, setUser] = useState<User | null>(getInitialUser);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // El token que se expone es el Access Token de la memoria

@@ -49,7 +49,7 @@ export const DashboardPage: React.FC = () => {
   return (
     <Box className="dashboard-container" sx={{ p: 3 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Bienvenido, {user?.first_name}
+        Bienvenido, {user?.username}
       </Typography>
       <Typography variant="subtitle1" gutterBottom color="textSecondary">
         Resumen financiero por Caja
