@@ -236,7 +236,7 @@ export const usersController = {
           .json({ ok: false, message: "ID de usuario inválido" });
       }
 
-      const deleted = await UserActions.delete({ id: userId });
+      const deleted = await UserActions.delete(userId);
 
       if (!deleted) {
         return res.status(404).json({

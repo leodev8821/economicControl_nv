@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { REFRESH_COOKIE_OPTIONS } from "./auth.cookies.js";
+import { UserActions } from "../models/user.model.js";
 import * as authService from "./auth.service.js";
 
 export const authController = {
@@ -11,7 +12,14 @@ export const authController = {
   loginUser: async (req: Request, res: Response) => {
     const { login_data, password } = req.body;
 
-    const user = await req.app.locals.users.login(login_data, password);
+    const user = await UserActions.login(login_data, password);
+
+    if (!user) {
+      return res.status(401).json({
+        ok: false,
+        message: "Credenciales inválidas",
+      });
+    }
 
     const { accessToken, refreshToken } = await authService.login({
       id: user.id,

@@ -42,8 +42,10 @@ export type UserSearchData = {
   is_visible?: boolean;
 };
 
-export interface UserCreationAttributes
-  extends Optional<UserAttributes, "id" | "is_visible"> {}
+export interface UserCreationAttributes extends Optional<
+  UserAttributes,
+  "id" | "is_visible"
+> {}
 
 export class UserModel
   extends SequelizeModel<UserAttributes, UserCreationAttributes>
@@ -70,16 +72,6 @@ UserModel.init(
       primaryKey: true,
       autoIncrement: true,
     },
-    /* role_name: {
-      type: DataTypes.ENUM(...Object.values(ROLE_TYPES)),
-      allowNull: false, // Es recomendable añadir esto
-      references: {
-        model: "roles", // Nombre de la tabla destino
-        key: "role_name", // Columna de la tabla destino
-      },
-      onUpdate: "CASCADE",
-      onDelete: "CASCADE",
-    }, */
     role_name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -112,12 +104,25 @@ UserModel.init(
     tableName: "users",
     timestamps: false,
     modelName: "User",
+
+    defaultScope: {
+      attributes: { exclude: ["password"] },
+    },
+
+    scopes: {
+      withPassword: {
+        attributes: { include: ["password"] },
+      },
+
+      visible: {
+        where: { is_visible: true },
+      },
+    },
+
     hooks: {
-      // Hook para hashear la contraseña antes de guardar/validar
-      beforeValidate: async (user: UserModel) => {
+      beforeSave: async (user: UserModel) => {
         if (user.changed("password")) {
           const pass: string = user.password ?? "";
-          // Evitar hashear si ya parece hasheada
           if (
             pass &&
             !pass.startsWith("$2a$") &&
@@ -130,17 +135,46 @@ UserModel.init(
         }
       },
     },
-  }
+  },
 );
 
 export class UserActions {
+  /**
+   * Inicia sesión en el sistema.
+   * @param login_data username del usuario.
+   * @param password contraseña del usuario.
+   * @returns promise con un objeto UserAttributes o null si no se encuentra ningun usuario.
+   */
+  public static async login(
+    login_data: string,
+    password: string,
+  ): Promise<UserAttributes | null> {
+    const user = await UserModel.scope(["withPassword", "visible"]).findOne({
+      where: {
+        username: login_data,
+      },
+    });
+
+    if (!user) return null;
+
+    const valid = await user.comparePassword(password);
+
+    if (!valid) return null;
+
+    const { password: _, ...userWithoutPassword } = user.get({
+      plain: true,
+    });
+
+    return userWithoutPassword as UserAttributes;
+  }
+
   /**
    * Obtiene todas las usuarios de la base de datos.
    * @returns promise con un array de objetos UserAttributes.
    */
   public static async getAll(): Promise<UserAttributes[]> {
-    const users = await UserModel.findAll();
-    return users.map((user) => user.get({ plain: true }));
+    const users = await UserModel.scope("visible").findAll();
+    return users.map((u) => u.get({ plain: true }));
   }
 
   /**
@@ -149,9 +183,12 @@ export class UserActions {
    * @returns promise con un objeto UserAttributes o null si no se encuentra ningun usuario.
    */
   public static async getOne(
-    data: UserSearchData
+    data: UserSearchData,
   ): Promise<UserAttributes | null> {
-    const user = await UserModel.findOne({ where: data });
+    const user = await UserModel.scope("visible").findOne({
+      where: data,
+    });
+
     return user ? user.get({ plain: true }) : null;
   }
 
@@ -161,29 +198,15 @@ export class UserActions {
    * @returns promise con un objeto UserAttributes o null.
    */
   public static async getOneByAnyIdentifier(
-    identifier: string | number
+    identifier: string | number,
   ): Promise<UserAttributes | null> {
-    const searchValue =
-      typeof identifier === "string" ? identifier.trim() : identifier;
+    const conditions =
+      typeof identifier === "number"
+        ? [{ id: identifier }]
+        : [{ username: identifier.trim() }];
 
-    const conditions: any[] = [];
-
-    if (typeof searchValue === "number") {
-      conditions.push({ id: searchValue });
-    }
-    if (typeof searchValue === "string") {
-      conditions.push({ username: searchValue });
-    }
-
-    if (conditions.length === 0) {
-      return null;
-    }
-
-    const user = await UserModel.findOne({
-      where: {
-        is_visible: true,
-        [Op.or]: conditions,
-      },
+    const user = await UserModel.scope("visible").findOne({
+      where: { [Op.or]: conditions },
     });
 
     return user ? user.get({ plain: true }) : null;
@@ -195,10 +218,9 @@ export class UserActions {
    * @returns Instancia de UserModel o null si no se encuentra ninguna.
    */
   public static async getOneInstance(
-    data: UserSearchData
+    data: UserSearchData,
   ): Promise<UserModel | null> {
-    const user = await UserModel.findOne({ where: data, raw: false });
-    return user ? user : null;
+    return UserModel.findOne({ where: data });
   }
 
   /**
@@ -207,10 +229,10 @@ export class UserActions {
    * @returns promise con el objeto UserAttributes creado.
    */
   public static async create(
-    data: UserCreationAttributes
+    data: UserCreationAttributes,
   ): Promise<UserAttributes> {
-    const newUser = await UserModel.create(data);
-    return newUser.get({ plain: true });
+    const user = await UserModel.create(data);
+    return user.get({ plain: true });
   }
 
   /**
@@ -218,9 +240,13 @@ export class UserActions {
    * @param data criterios de búsqueda para la usuario a eliminar.
    * @returns promise con un booleano que indica si la eliminación fue exitosa.
    */
-  public static async delete(data: UserSearchData): Promise<boolean> {
-    const deletedCount = await UserModel.destroy({ where: data });
-    return deletedCount > 0;
+  public static async delete(id: number): Promise<boolean> {
+    const [count] = await UserModel.update(
+      { is_visible: false },
+      { where: { id } },
+    );
+
+    return count > 0;
   }
 
   /**
@@ -231,13 +257,12 @@ export class UserActions {
    */
   public static async update(
     id: number,
-    data: Partial<UserCreationAttributes>
+    data: Partial<UserCreationAttributes>,
   ): Promise<UserAttributes | null> {
-    const [updatedCount] = await UserModel.update(data, { where: { id } });
-    if (updatedCount === 0) {
-      return null;
-    }
-    const updatedUser = await UserModel.findByPk(id);
-    return updatedUser ? updatedUser.get({ plain: true }) : null;
+    const [count] = await UserModel.update(data, { where: { id } });
+    if (!count) return null;
+
+    const updated = await UserModel.findByPk(id);
+    return updated ? updated.get({ plain: true }) : null;
   }
 }

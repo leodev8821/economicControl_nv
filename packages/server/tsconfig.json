@@ -16,7 +16,13 @@
     "sourceMap": true,
     "strict": true,
     "skipLibCheck": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+
+    // Para que funcione el path mapping
+    "baseUrl": ".",
+    "paths": {
+      "@economic-control/shared": ["../shared/src/index.ts"]
+    }
   },
   "include": [
     "src/**/*",
