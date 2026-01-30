@@ -5,13 +5,3 @@ export interface Person extends PersonCreationRequest {
 }
 
 export type PersonAttributes = Person;
-
-/*export interface PersonAttributes {
-  id: number;
-  first_name: string;
-  last_name: string;
-  dni: string;
-  isVisible: boolean;
-}
-
-export type Person = PersonAttributes;*/

@@ -19,6 +19,7 @@ import {
   Login,
   Menu,
   FindInPage,
+  PeopleAlt,
 } from "@mui/icons-material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -234,6 +235,12 @@ const AppLayout = () => {
   const { user, logout } = useAuth();
   const isAuthenticated = useMemo(() => !!user, [user]);
 
+  const isAdmin = useMemo(
+    () =>
+      user?.role_name === "Administrador" || user?.role_name === "SuperUser",
+    [user],
+  );
+
   type NavItem = {
     kind?: "header" | "divider" | "item";
     title?: string;
@@ -244,7 +251,7 @@ const AppLayout = () => {
 
   const navigation: NavItem[] = useMemo(() => {
     if (isAuthenticated) {
-      return [
+      const baseNav: NavItem[] = [
         { kind: "header", title: "General" },
         { segment: "/dashboard", title: "Dashboard", icon: <Home /> },
         { kind: "header", title: "Operaciones" },
@@ -257,13 +264,24 @@ const AppLayout = () => {
         { segment: "/personas", title: "Personas", icon: <People /> },
         { kind: "divider" },
       ];
+
+      if (isAdmin) {
+        baseNav.push(
+          { kind: "divider" },
+          { kind: "header", title: "Administración" },
+          { segment: "/users", title: "Usuarios", icon: <PeopleAlt /> },
+        );
+      }
+
+      baseNav.push({ kind: "divider" });
+      return baseNav;
     } else {
       return [
         { kind: "header", title: "Acceso" },
         { segment: "/login", title: "Iniciar Sesión", icon: <Login /> },
       ];
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isAdmin]);
 
   return (
     <AppTheme>

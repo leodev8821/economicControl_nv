@@ -18,7 +18,7 @@ authRouter.get("/profile", decodeAccessToken, (req, res) => {
   res.json({
     id: req.id,
     username: req.username,
-    role: req.userRole,
+    role_name: req.userRole,
   });
 });
 

@@ -12,6 +12,7 @@ import { IncomesPage } from "./pages/IncomesPage";
 import { OutcomesPage } from "./pages/OutcomesPage";
 import { PersonsPage } from "./pages/PersonsPage";
 import { CashDenominationPage } from "./pages/CashDenominationPage";
+import { UserPage } from "./pages/UsersPage";
 import SignIn from "./pages/SignIn";
 
 function App() {
@@ -37,8 +38,7 @@ function App() {
             <Route path="/ingresos" element={<IncomesPage />} />
             <Route path="/egresos" element={<OutcomesPage />} />
             <Route path="/arqueo" element={<CashDenominationPage />} />
-            {/* Ejemplo de otra ruta protegida: */}
-            {/* <Route path="/usuarios" element={<UsersManagementPage />} /> */}
+            <Route path="/users" element={<UserPage />} />
           </Route>
         </Route>
 

@@ -5,20 +5,18 @@ export interface User extends Omit<UserCreationRequest, "password"> {
   id: number;
 }
 
+export type UserAttributes = User;
+
 export type LoginCredentials = LoginType;
 
 /*export interface User {
   id?: number;
-  role: "ADMINISTRADOR" | "SUPER_USER";
+  role_name: "ADMINISTRADOR" | "SUPER_USER";
   username: string;
+  password: string;
   first_name: string;
   last_name: string;
-  isVisible?: boolean;
-}*/
-
-/*export interface LoginCredentials {
-  login_data: string;
-  password: string;
+  is_visible?: boolean;
 }*/
 
 export interface LoginResponse {

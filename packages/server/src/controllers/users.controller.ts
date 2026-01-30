@@ -173,7 +173,7 @@ export const usersController = {
         username: updateData.username,
       });
 
-      if (existingUser) {
+      if (existingUser && existingUser.id !== userId) {
         return res.status(409).json({
           ok: false,
           message: "El nombre de usuario ya está en uso.",

@@ -28,23 +28,6 @@ app.use(
 
 app.use(cookieParser());
 
-// --- MIDDLEWARE DE DEBUG (Bórralo cuando funcione) ---
-app.use((req, _res, next) => {
-  if (req.path.includes("refresh-token")) {
-    console.log("--- DEBUG REFRESH TOKEN ---");
-    console.log("1. Protocolo detectado por Express:", req.protocol);
-    console.log("2. Es conexión segura (req.secure):", req.secure);
-    console.log("3. IPs (req.ips):", req.ips);
-    console.log(
-      "4. X-Forwarded-Proto header:",
-      req.headers["x-forwarded-proto"],
-    );
-    console.log("5. Cookies recibidas (parseadas):", req.cookies);
-    console.log("---------------------------");
-  }
-  next();
-});
-
 /* ===========================
  * Healthcheck
  * =========================== */
