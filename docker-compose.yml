@@ -44,7 +44,7 @@ services:
       POSTGRES_PASSWORD: leodev-root
       POSTGRES_DB: developmentDB_postgres
     volumes:
-      - postgres-dev-data:/var/lib/postgresql/data
+      - /mnt/ssd-docker/postgres/data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U leodev -d developmentDB_postgres"]
       interval: 5s
@@ -52,9 +52,6 @@ services:
       retries: 5
     networks:
       - backend_internal
-
-volumes:
-  postgres-dev-data:
 
 networks:
   web_network:
