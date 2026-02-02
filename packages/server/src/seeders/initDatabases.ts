@@ -5,11 +5,11 @@ import {
   User,
   CashDenomination,
   sequelizeInstance,
-} from "../models/index.js";
+} from "../models/finance-app/index.js";
 import { ROLE_TYPES } from "@economic-control/shared";
 import { env } from "../config/env.js";
 import { fileURLToPath } from "url";
-import { WeekActions } from "../models/week.model.js";
+import { WeekActions } from "../models/finance-app/week.model.js";
 
 type RoleType = (typeof ROLE_TYPES)[keyof typeof ROLE_TYPES];
 type UserRole = typeof ROLE_TYPES.ADMINISTRADOR | typeof ROLE_TYPES.SUPER_USER;

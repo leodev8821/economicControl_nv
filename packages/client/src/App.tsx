@@ -38,7 +38,7 @@ function App() {
             <Route path="/ingresos" element={<IncomesPage />} />
             <Route path="/egresos" element={<OutcomesPage />} />
             <Route path="/arqueo" element={<CashDenominationPage />} />
-            <Route path="/users" element={<UserPage />} />
+            <Route path="/usuarios" element={<UserPage />} />
           </Route>
         </Route>
 

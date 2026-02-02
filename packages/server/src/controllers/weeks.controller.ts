@@ -5,7 +5,7 @@ import {
   WeekCreationAttributes,
   WeekAttributes,
   type WeekSearchData,
-} from "../models/week.model.js";
+} from "../models/finance-app/week.model.js";
 import {
   WeekCreationSchema,
   WeekCreationRequest,

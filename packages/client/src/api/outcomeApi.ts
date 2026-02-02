@@ -4,10 +4,10 @@ import type { Outcome, BulkOutcomeCreatePayload } from "../types/outcome.type";
 import type { ApiResponse, ApiResponseData } from "../types/apiResponse";
 import type {
   OutcomeCreationRequest,
-  OutcomeUpdateRequest,
+  ConsolidationUpdateRequest,
 } from "@economic-control/shared";
 
-export type OutcomeUpdateData = OutcomeUpdateRequest & { id: number };
+export type OutcomeUpdateData = ConsolidationUpdateRequest & { id: number };
 
 /**
  * Helper interno para normalizar el monto de los egresos.

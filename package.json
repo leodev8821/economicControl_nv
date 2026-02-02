@@ -1,12 +1,12 @@
 {
   "name": "economic-control-root",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "Configuration root package for Economic Control monorepo",
   "scripts": {
     "install:all": "pnpm install",
     "db:setup": "turbo db:setup",
-    "init": "pnpm install:all && pnpm db:setup && pnpm dev",
+    "init": "pnpm install && pnpm build && pnpm db:setup && pnpm dev",
     "dev": "turbo dev",
     "build": "turbo build",
     "clean": "turbo clean && rm -rf node_modules .turbo packages/**/node_modules",

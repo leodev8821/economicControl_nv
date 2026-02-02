@@ -1,4 +1,4 @@
-import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import { CashModel as Cash } from "./cash.model.js";
 import { IncomeModel as Income } from "./income.model.js";
 import { OutcomeModel as Outcome } from "./outcome.model.js";

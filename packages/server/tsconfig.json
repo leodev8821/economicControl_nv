@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
     "composite": true,           
     "outDir": "./dist",
     "rootDir": "src",            
@@ -18,7 +20,6 @@
     "skipLibCheck": true,
     "isolatedModules": true,
 
-    // Para que funcione el path mapping
     "baseUrl": ".",
     "paths": {
       "@economic-control/shared": ["../shared/src/index.ts"]

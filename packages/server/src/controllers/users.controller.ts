@@ -4,14 +4,14 @@ import {
   UserActions,
   type UserAttributes,
   type UserCreationAttributes,
-} from "../models/user.model.js";
+} from "../models/finance-app/user.model.js";
 import {
   UserCreationSchema,
   type UserCreationRequest,
   UserUpdateSchema,
   type UserUpdateRequest,
 } from "@economic-control/shared";
-import type { UserSearchData } from "../models/user.model.js";
+import type { UserSearchData } from "../models/finance-app/user.model.js";
 import dotenv from "dotenv";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";

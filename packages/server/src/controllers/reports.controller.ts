@@ -1,19 +1,19 @@
 import { Request, Response } from "express";
 import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
-import type { ReportSearchData } from "../models/report.model.js";
+import type { ReportSearchData } from "../models/finance-app/report.model.js";
 import {
   ReportActions,
   ReportCreationAttributes,
   ReportAttributes,
-} from "../models/report.model.js";
+} from "../models/finance-app/report.model.js";
 import {
   ReportCreationSchema,
   ReportCreationRequest,
   ReportUpdateSchema,
   ReportUpdateRequest,
 } from "@economic-control/shared";
-import { IncomeActions } from "../models/income.model.js";
-import { OutcomeActions } from "../models/outcome.model.js";
+import { IncomeActions } from "../models/finance-app/income.model.js";
+import { OutcomeActions } from "../models/finance-app/outcome.model.js";
 
 export const reportsController = {
   // Obtiene todas las reportes

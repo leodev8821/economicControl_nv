@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { type JwtPayload } from "./auth.types.js";
 import { tokenUtils } from "../utils/token.utils.js";
-import { UserRole } from "../models/user.model.js";
+import { UserRole } from "../models/finance-app/user.model.js";
 
 const REFRESH_SECRET = process.env.REFRESH_SECRET as string;
 

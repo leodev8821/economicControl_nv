@@ -1,5 +1,5 @@
 import { DataTypes, Model, type Optional, type Transaction } from "sequelize";
-import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { getSequelizeConfig } from "../../config/sequelize.config.js";
 
 const connection = getSequelizeConfig();
 
@@ -17,8 +17,10 @@ export type CashDenominationSearchData = {
 };
 
 // Opcionalidad para la creación (id es auto-generado, quantity tiene un valor por defecto)
-export interface CashDenominationCreationAttributes
-  extends Optional<CashDenominationAttributes, "id"> {}
+export interface CashDenominationCreationAttributes extends Optional<
+  CashDenominationAttributes,
+  "id"
+> {}
 
 // Definición del modelo con tipado
 export class CashDenominationModel
@@ -54,7 +56,7 @@ CashDenominationModel.init(
     tableName: "cash_denominations",
     timestamps: false,
     modelName: "CashDenomination",
-  }
+  },
 );
 
 export class CashDenominationActions {
@@ -65,7 +67,7 @@ export class CashDenominationActions {
   public static async getAll(): Promise<CashDenominationAttributes[]> {
     const cash_denominations = await CashDenominationModel.findAll();
     return cash_denominations.map((cash_denomination) =>
-      cash_denomination.get({ plain: true })
+      cash_denomination.get({ plain: true }),
     );
   }
 
@@ -77,7 +79,7 @@ export class CashDenominationActions {
    */
   public static async getOne(
     data: CashDenominationSearchData,
-    t?: Transaction
+    t?: Transaction,
   ): Promise<CashDenominationAttributes | null> {
     const cash_denomination = await CashDenominationModel.findOne({
       where: data,
@@ -92,7 +94,7 @@ export class CashDenominationActions {
    * @returns promise con el objeto CashDenominationAttributes creado.
    */
   public static async create(
-    data: CashDenominationCreationAttributes
+    data: CashDenominationCreationAttributes,
   ): Promise<CashDenominationAttributes> {
     return connection.transaction(async (t) => {
       const newCashDenomination = await CashDenominationModel.create(data, {
@@ -108,7 +110,7 @@ export class CashDenominationActions {
    * @returns promise con un booleano que indica si la eliminación fue exitosa.
    */
   public static async delete(
-    data: CashDenominationSearchData
+    data: CashDenominationSearchData,
   ): Promise<boolean> {
     const deletedCount = await CashDenominationModel.destroy({ where: data });
     return deletedCount > 0;
@@ -124,7 +126,7 @@ export class CashDenominationActions {
   public static async update(
     id: number,
     data: Partial<CashDenominationCreationAttributes>,
-    t?: Transaction
+    t?: Transaction,
   ): Promise<CashDenominationAttributes | null> {
     const transaction = t ?? null;
 

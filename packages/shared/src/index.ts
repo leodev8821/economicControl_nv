@@ -10,3 +10,5 @@ export * from "./schemas/user.schema.js";
 export * from "./schemas/week.schema.js";
 export * from "./schemas/auth.schema.js";
 export * from "./schemas/cash-denomination.schema.js";
+export * from "./schemas/consolidation.schema.js";
+export * from "./schemas/registro-persona.schema.js";

@@ -1,5 +1,5 @@
 import { DataTypes, Model as SequelizeModel, type Optional } from "sequelize";
-import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import { WeekModel } from "./week.model.js";
 
 const connection = getSequelizeConfig();
@@ -19,8 +19,10 @@ export type ReportSearchData = {
 };
 
 /** Campos opcionales al crear (id autoincremental) */
-export interface ReportCreationAttributes
-  extends Optional<ReportAttributes, "id"> {}
+export interface ReportCreationAttributes extends Optional<
+  ReportAttributes,
+  "id"
+> {}
 
 /** Clase tipada de Sequelize */
 export class ReportModel
@@ -82,7 +84,7 @@ ReportModel.init(
     tableName: "reports",
     timestamps: false,
     modelName: "Report",
-  }
+  },
 );
 
 export class ReportActions {
@@ -103,7 +105,7 @@ export class ReportActions {
    * @returns promise con un objeto ReportAttributes o null si no se encuentra ningun reporte.
    */
   public static async getOne(
-    data: ReportSearchData
+    data: ReportSearchData,
   ): Promise<ReportAttributes | null> {
     const report = await ReportModel.findOne({
       where: data,
@@ -118,7 +120,7 @@ export class ReportActions {
    * @returns promise con el objeto ReportAttributes creado.
    */
   public static async create(
-    data: ReportCreationAttributes
+    data: ReportCreationAttributes,
   ): Promise<ReportAttributes> {
     return connection.transaction(async (t) => {
       // Verificar si ya existe un reporte para la semana dada
@@ -128,7 +130,7 @@ export class ReportActions {
       });
       if (existingReport) {
         throw new Error(
-          `Ya existe un reporte para la semana con ID ${data.week_id}`
+          `Ya existe un reporte para la semana con ID ${data.week_id}`,
         );
       }
 
@@ -155,7 +157,7 @@ export class ReportActions {
    */
   public static async update(
     id: number,
-    data: Partial<ReportCreationAttributes>
+    data: Partial<ReportCreationAttributes>,
   ): Promise<ReportAttributes | null> {
     return connection.transaction(async (t) => {
       const [updatedCount] = await ReportModel.update(data, {
@@ -176,7 +178,7 @@ export class ReportActions {
    * @returns El reporte actualizado o creado.
    */
   public static async upsert(
-    data: ReportCreationAttributes
+    data: ReportCreationAttributes,
   ): Promise<ReportAttributes> {
     const [report] = await ReportModel.upsert(data);
     return report.get({ plain: true });

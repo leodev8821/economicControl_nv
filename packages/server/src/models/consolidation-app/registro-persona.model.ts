@@ -1,43 +1,55 @@
 import { DataTypes, Model as SequelizeModel, type Optional } from "sequelize";
-import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { getSequelizeConfig } from "../../config/sequelize.config.js";
+import { STATUS, type StatusType } from "@economic-control/shared";
 
 const connection = getSequelizeConfig();
 
 /** Tipos del modelo */
-export interface PersonAttributes {
+export interface RegisterAttributes {
   id: number;
   first_name: string;
   last_name: string;
-  dni: string;
+  phone: string;
+  gender: string;
+  birth_date: string;
+  status: StatusType;
   is_visible: boolean;
 }
 
-export type PersonSearchData = {
+export type RegisterSearchData = {
   id?: number;
   first_name?: string;
   last_name?: string;
-  dni?: string | undefined;
+  phone?: string;
+  gender?: string;
+  birth_date?: string;
+  status?: StatusType;
   is_visible?: boolean;
 };
 
 /** Campos opcionales al crear (id autoincremental, is_visible tiene un valor por defecto) */
-export interface PersonCreationAttributes
-  extends Optional<PersonAttributes, "id" | "is_visible"> {}
+export interface RegisterCreationAttributes extends Optional<
+  RegisterAttributes,
+  "id" | "is_visible"
+> {}
 
 /** Clase tipada de Sequelize */
-export class PersonModel
-  extends SequelizeModel<PersonAttributes, PersonCreationAttributes>
-  implements PersonAttributes
+export class RegisterModel
+  extends SequelizeModel<RegisterAttributes, RegisterCreationAttributes>
+  implements RegisterAttributes
 {
   declare id: number;
   declare first_name: string;
   declare last_name: string;
-  declare dni: string;
+  declare phone: string;
+  declare gender: string;
+  declare birth_date: string;
+  declare status: StatusType;
   declare is_visible: boolean;
 }
 
 /** Inicialización del modelo */
-PersonModel.init(
+RegisterModel.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -52,9 +64,21 @@ PersonModel.init(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    dni: {
-      type: DataTypes.STRING(9),
+    phone: {
+      type: DataTypes.STRING(15),
       unique: true,
+      allowNull: false,
+    },
+    gender: {
+      type: DataTypes.STRING(1),
+      allowNull: false,
+    },
+    birth_date: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    status: {
+      type: DataTypes.ENUM(...STATUS),
       allowNull: false,
     },
     is_visible: {
@@ -64,19 +88,24 @@ PersonModel.init(
   },
   {
     sequelize: connection,
-    tableName: "persons",
+    tableName: "register-persons",
     timestamps: false,
-    modelName: "Person",
-  }
+    modelName: "RegisterPerson",
+    scopes: {
+      visible: {
+        where: { is_visible: true },
+      },
+    },
+  },
 );
 
-export class PersonActions {
+export class RegisterActions {
   /**
    * Obtiene todas las personas de la base de datos.
    * @returns promise con un array de objetos PersonAttributes.
    */
-  public static async getAll(): Promise<PersonAttributes[]> {
-    const persons = await PersonModel.findAll();
+  public static async getAll(): Promise<RegisterAttributes[]> {
+    const persons = await RegisterModel.findAll();
     return persons.map((person) => person.get({ plain: true }));
   }
 
@@ -86,9 +115,11 @@ export class PersonActions {
    * @returns promise con un objeto PersonAttributes o null si no se encuentra ningun persona.
    */
   public static async getOne(
-    data: PersonSearchData
-  ): Promise<PersonAttributes | null> {
-    const person = await PersonModel.findOne({ where: data });
+    data: RegisterSearchData,
+  ): Promise<RegisterAttributes | null> {
+    const person = await RegisterModel.scope("visible").findOne({
+      where: data,
+    });
     return person ? person.get({ plain: true }) : null;
   }
 
@@ -98,10 +129,10 @@ export class PersonActions {
    * @returns promise con el objeto PersonAttributes creado.
    */
   public static async create(
-    data: PersonCreationAttributes
-  ): Promise<PersonAttributes> {
+    data: RegisterCreationAttributes,
+  ): Promise<RegisterAttributes> {
     return await connection.transaction(async (t) => {
-      const newPerson = await PersonModel.create(data, { transaction: t });
+      const newPerson = await RegisterModel.create(data, { transaction: t });
       return newPerson.get({ plain: true });
     });
   }
@@ -111,14 +142,12 @@ export class PersonActions {
    * @param data criterios de búsqueda para la persona a eliminar.
    * @returns promise con un booleano que indica si la eliminación fue exitosa.
    */
-  public static async delete(data: PersonSearchData): Promise<boolean> {
-    return await connection.transaction(async (t) => {
-      const deletedCount = await PersonModel.destroy({
-        where: data,
-        transaction: t,
-      });
-      return deletedCount > 0;
-    });
+  public static async delete(id: number): Promise<boolean> {
+    const [count] = await RegisterModel.update(
+      { is_visible: false },
+      { where: { id } },
+    );
+    return count > 0;
   }
 
   /**
@@ -129,17 +158,18 @@ export class PersonActions {
    */
   public static async update(
     id: number,
-    data: Partial<PersonCreationAttributes>
-  ): Promise<PersonAttributes | null> {
+    data: Partial<RegisterCreationAttributes>,
+  ): Promise<RegisterAttributes | null> {
     return await connection.transaction(async (t) => {
-      const [updatedCount] = await PersonModel.update(data, {
+      const [count] = await RegisterModel.update(data, {
         where: { id },
         transaction: t,
       });
-      if (updatedCount === 0) {
-        return null;
-      }
-      const updatedPerson = await PersonModel.findByPk(id, { transaction: t });
+      if (!count) return null;
+
+      const updatedPerson = await RegisterModel.findByPk(id, {
+        transaction: t,
+      });
       return updatedPerson ? updatedPerson.get({ plain: true }) : null;
     });
   }

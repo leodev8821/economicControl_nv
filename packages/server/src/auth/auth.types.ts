@@ -1,4 +1,4 @@
-import { UserRole } from "../models/user.model.js";
+import { UserRole } from "../models/finance-app/user.model.js";
 
 export interface JwtPayload {
   id: number;

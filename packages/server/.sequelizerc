@@ -1,12 +1,13 @@
 // packages/server/.sequelizerc
-import path from 'path';
-import { fileURLToPath } from 'url';
+const path = require('path');
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-export default {
+module.exports = {
+  // USAMOS DIST para la configuración (donde los .js sí existen físicamente)
   'config': path.resolve(__dirname, 'dist', 'config', 'sequelize.config.js'),
-  'models-path': path.resolve(__dirname, 'dist', 'models'),
-  'seeders-path': path.resolve(__dirname, 'dist', 'seeders'),
-  'migrations-path': path.resolve(__dirname, 'dist', 'migrations')
+  
+  // USAMOS SRC para las migraciones (porque son .cjs y no se mueven a dist)
+  'migrations-path': path.resolve(__dirname, 'src', 'migrations'),
+  
+  'seeders-path': path.resolve(__dirname, 'src', 'seeders'),
+  'models-path': path.resolve(__dirname, 'dist', 'models')
 };

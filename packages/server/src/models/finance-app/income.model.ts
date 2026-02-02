@@ -1,5 +1,5 @@
 import { DataTypes, Model, type Optional } from "sequelize";
-import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import { PersonModel } from "./person.model.js";
 import { WeekModel } from "./week.model.js";
 import { CashModel, CashActions } from "./cash.model.js";

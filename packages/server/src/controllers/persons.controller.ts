@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
-import type { PersonSearchData } from "../models/person.model.js";
+import type { PersonSearchData } from "../models/finance-app/person.model.js";
 import {
   PersonActions,
   PersonCreationAttributes,
   PersonAttributes,
-} from "../models/person.model.js";
+} from "../models/finance-app/person.model.js";
 import {
   PersonCreationSchema,
   PersonCreationRequest,

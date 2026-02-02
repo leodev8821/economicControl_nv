@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import type { LoginPayload } from "../models/user.model.js";
+import type { LoginPayload } from "../models/finance-app/user.model.js";
 
 // Obtener la ruta absoluta del directorio del proyecto
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -16,7 +16,7 @@ const SECRET_KEY = process.env.SECRET_KEY as string;
 
 if (!SECRET_KEY) {
   console.error(
-    "⚠️ Error de configuración: La variable de entorno no está definida."
+    "⚠️ Error de configuración: La variable de entorno no está definida.",
   );
   throw new Error("SECRET_KEY no está definida.");
 }
@@ -40,8 +40,8 @@ export const tokenUtils = {
           reject(
             new Error(
               "Error al generar el token: " +
-                (err.message || "Error desconocido")
-            )
+                (err.message || "Error desconocido"),
+            ),
           );
         } else {
           resolve({

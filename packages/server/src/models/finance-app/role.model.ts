@@ -2,7 +2,7 @@
 import { DataTypes, Model as SequelizeModel, type Optional } from "sequelize";
 import { ROLE_TYPES } from "@economic-control/shared";
 export { ROLE_TYPES };
-import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { getSequelizeConfig } from "../../config/sequelize.config.js";
 
 const connection = getSequelizeConfig();
 
@@ -24,8 +24,10 @@ export type RoleSearchData = {
 /**
  * Atributos para creación de Role (id es opcional porque es autoincremental).
  */
-export interface RoleCreationAttributes
-  extends Optional<RoleAttributes, "id"> {}
+export interface RoleCreationAttributes extends Optional<
+  RoleAttributes,
+  "id"
+> {}
 
 /**
  * Clase Role que extiende de Sequelize.Model
@@ -58,7 +60,7 @@ RoleModel.init(
     tableName: "roles",
     timestamps: false,
     modelName: "Role",
-  }
+  },
 );
 
 export class RoleActions {
@@ -77,7 +79,7 @@ export class RoleActions {
    * @returns promise con un objeto RoleAttributes o null si no se encuentra ningun rol.
    */
   public static async getOne(
-    data: RoleSearchData
+    data: RoleSearchData,
   ): Promise<RoleAttributes | null> {
     const role = await RoleModel.findOne({ where: data });
     return role ? role.get({ plain: true }) : null;
@@ -89,7 +91,7 @@ export class RoleActions {
    * @returns promise con el objeto RoleAttributes creado.
    */
   public static async create(
-    data: RoleCreationAttributes
+    data: RoleCreationAttributes,
   ): Promise<RoleAttributes> {
     const newRole = await RoleModel.create(data);
     return newRole.get({ plain: true });
@@ -113,7 +115,7 @@ export class RoleActions {
    */
   public static async update(
     id: number,
-    data: Partial<RoleCreationAttributes>
+    data: Partial<RoleCreationAttributes>,
   ): Promise<RoleAttributes | null> {
     const [updatedCount] = await RoleModel.update(data, { where: { id } });
     if (updatedCount === 0) {

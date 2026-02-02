@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { REFRESH_COOKIE_OPTIONS } from "./auth.cookies.js";
-import { UserActions } from "../models/user.model.js";
+import { UserActions } from "../models/finance-app/user.model.js";
 import * as authService from "./auth.service.js";
 
 export const authController = {

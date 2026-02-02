@@ -5,7 +5,7 @@ import {
   IncomeCreationAttributes,
   IncomeAttributes,
   type IncomeSearchData,
-} from "../models/income.model.js";
+} from "../models/finance-app/income.model.js";
 import {
   IncomeCreationRequest,
   IncomeUpdateRequest,

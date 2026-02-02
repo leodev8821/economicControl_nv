@@ -1,5 +1,5 @@
 import { DataTypes, Model, type Optional, type Transaction } from "sequelize";
-import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { getSequelizeConfig } from "../../config/sequelize.config.js";
 
 const connection = getSequelizeConfig();
 
@@ -61,7 +61,7 @@ CashModel.init(
     tableName: "cashes",
     timestamps: false,
     modelName: "Cash",
-  }
+  },
 );
 
 export class CashActions {
@@ -87,7 +87,7 @@ export class CashActions {
    */
   public static async getOne(
     data: CashSearchData,
-    t?: Transaction
+    t?: Transaction,
   ): Promise<CashAttributes | null> {
     const cash = await CashModel.findOne({
       where: data,
@@ -102,7 +102,7 @@ export class CashActions {
    * @returns promise con el objeto CashAttributes creado.
    */
   public static async create(
-    data: CashCreationAttributes
+    data: CashCreationAttributes,
   ): Promise<CashAttributes> {
     return connection.transaction(async (t) => {
       const newCash = await CashModel.create(data, { transaction: t });
@@ -130,7 +130,7 @@ export class CashActions {
   public static async update(
     id: number,
     data: Partial<CashCreationAttributes>,
-    t?: Transaction
+    t?: Transaction,
   ): Promise<CashAttributes | null> {
     const transaction = t ?? null;
 

@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
-import { IncomeActions } from "../models/income.model.js";
-import { OutcomeActions } from "../models/outcome.model.js";
-import { CashActions } from "../models/cash.model.js";
+import { IncomeActions } from "../models/finance-app/income.model.js";
+import { OutcomeActions } from "../models/finance-app/outcome.model.js";
+import { CashActions } from "../models/finance-app/cash.model.js";
 
 export const dashboardController = {
   getBalance: async (_req: Request, res: Response) => {
@@ -81,7 +81,7 @@ export const dashboardController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al calcular el balance."
+        "Error al calcular el balance.",
       );
     }
   },

@@ -5,8 +5,8 @@ import {
   type Optional,
   Op,
 } from "sequelize";
-import { getSequelizeConfig } from "../config/sequelize.config.js";
-import formatDate from "../utils/formatDate.js";
+import { getSequelizeConfig } from "../../config/sequelize.config.js";
+import formatDate from "../../utils/formatDate.js";
 import { addDays, addWeeks, startOfWeek } from "date-fns";
 
 const connection = getSequelizeConfig();
