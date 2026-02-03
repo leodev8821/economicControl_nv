@@ -4,6 +4,7 @@ import {
   NetworkActions,
   NetworkAttributes,
   NetworkCreationAttributes,
+  NetworkUpdateRequest,
   NetworkSearchData,
 } from "../../models/consolidation-app/network.model.js";
 import {
@@ -11,7 +12,7 @@ import {
   NetworkUpdateSchema,
 } from "@economic-control/shared";
 
-export const redController = {
+export const networkController = {
   // Obtiene todas las redes
   allNetworks: async (_req: Request, res: Response) => {
     try {
