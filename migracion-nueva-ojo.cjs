@@ -3,7 +3,13 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // 1. Crear tabla ROLES (Necesaria para Users)
+    /**
+     * =========================================================
+     * BLOQUE 1: TABLAS COMPARTIDAS / SISTEMA BASE
+     * =========================================================
+     */
+
+    // 1. Crear tabla ROLES (Compartida por Users y leaders)
     await queryInterface.createTable('roles', {
       id: {
         type: Sequelize.INTEGER,
@@ -17,7 +23,13 @@ module.exports = {
       },
     });
 
-    // 2. Crear tabla WEEKS (Necesaria para Incomes, Outcomes y Reports)
+    /**
+     * =========================================================
+     * BLOQUE 2: SISTEMA FINANCIERO (NO TOCAR)
+     * =========================================================
+     */
+
+    // 2. Crear tabla WEEKS
     await queryInterface.createTable('weeks', {
       id: {
         type: Sequelize.INTEGER,
@@ -28,7 +40,7 @@ module.exports = {
       week_end: { type: Sequelize.STRING, allowNull: false, unique: true },
     });
 
-    // 3. Crear tabla USERS (Depende de Roles)
+    // 3. Crear tabla USERS (Admin del sistema financiero)
     await queryInterface.createTable('users', {
       id: {
         type: Sequelize.INTEGER,
@@ -56,7 +68,7 @@ module.exports = {
       actual_amount: { type: Sequelize.DECIMAL(15, 2), defaultValue: 0 },
     });
 
-    // 5. Crear tabla PERSONS
+    // 5. Crear tabla PERSONS (Entidades financieras / Proveedores / Miembros financieros)
     await queryInterface.createTable('persons', {
       id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
       first_name: { type: Sequelize.STRING, allowNull: false },
@@ -65,7 +77,7 @@ module.exports = {
       is_visible: { type: Sequelize.BOOLEAN, defaultValue: true },
     });
 
-    // 6. Crear tabla INCOMES (Depende de Person, Week y Cash)
+    // 6. Crear tabla INCOMES
     await queryInterface.createTable('incomes', {
       id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
       amount: { type: Sequelize.DECIMAL(15, 2), allowNull: false },
@@ -86,7 +98,7 @@ module.exports = {
       },
     });
 
-    // 7. Crear tabla OUTCOMES (Depende de Week y Cash)
+    // 7. Crear tabla OUTCOMES
     await queryInterface.createTable('outcomes', {
       id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
       amount: { type: Sequelize.DECIMAL(15, 2), allowNull: false },
@@ -123,10 +135,120 @@ module.exports = {
       total_outcome: { type: Sequelize.DECIMAL(15, 2), defaultValue: 0 },
       net_balance: { type: Sequelize.DECIMAL(15, 2), defaultValue: 0 },
     });
+
+    /**
+     * =========================================================
+     * BLOQUE 3: SISTEMA DE CONSOLIDACIÓN (NUEVO)
+     * =========================================================
+     */
+
+    // 10. Tabla NETWORKS
+    await queryInterface.createTable('networks', {
+      id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      name: {
+        type: Sequelize.STRING(100),
+        allowNull: false,
+      },
+      is_visible: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
+      },
+    });
+
+    // 11. Tabla leaders (Distinto a Users, pero usa Roles)
+    await queryInterface.createTable('leaders', {
+      id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      role_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        references: { model: 'roles', key: 'role_name' },
+        onUpdate: 'CASCADE',
+      },
+      username: { type: Sequelize.STRING, unique: true, allowNull: false },
+      password: { type: Sequelize.STRING, allowNull: false },
+      first_name: { type: Sequelize.STRING, allowNull: false },
+      last_name: { type: Sequelize.STRING, allowNull: false },
+      email: { type: Sequelize.STRING, allowNull: false },
+      phone: { type: Sequelize.STRING, allowNull: false },
+      is_visible: { type: Sequelize.BOOLEAN, defaultValue: true },
+    });
+
+    // 12. Tabla REGISTER-PERSONS (Personas captadas para consolidación)
+    await queryInterface.createTable('member-registers', {
+      id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      first_name: { type: Sequelize.STRING(100), allowNull: false },
+      last_name: { type: Sequelize.STRING(100), allowNull: false },
+      phone: { type: Sequelize.STRING(15), unique: true, allowNull: false },
+      gender: { type: Sequelize.STRING(1), allowNull: false },
+      birth_date: { type: Sequelize.DATE, allowNull: false },
+      status: { type: Sequelize.STRING, allowNull: false },
+      is_visible: { type: Sequelize.BOOLEAN, defaultValue: true },
+    });
+
+    // 13. Tabla CONSOLIDATIONS
+    await queryInterface.createTable('consolidations', {
+      id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      // FK a Register Person
+      member_register_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: { model: 'member-registers', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+      },
+      // FK a Lider
+      leader_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: { model: 'leaders', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL', 
+      },
+      // FK a Network
+      network_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: { model: 'networks', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+      },
+      church_visit_date: { type: Sequelize.DATE, allowNull: true },
+      call_date: { type: Sequelize.DATE, allowNull: true },
+      visit_date: { type: Sequelize.DATE, allowNull: true },
+      observations: { type: Sequelize.TEXT, allowNull: true },
+      invited_by: { type: Sequelize.STRING, allowNull: true },
+      clasification: { 
+        type: Sequelize.ENUM('No contesta', 'No interesado', 'Otra ciudad', 'Real'),
+        allowNull: false 
+      },
+      is_visible: { type: Sequelize.BOOLEAN, defaultValue: true },
+    });
   },
 
   async down(queryInterface, _Sequelize) {
-    // Eliminar en orden inverso para evitar errores de restricción
+    // 1. ELIMINAR SISTEMA CONSOLIDACIÓN (Orden inverso a creación)
+    await queryInterface.dropTable('consolidations');
+    await queryInterface.dropTable('member-registers');
+    await queryInterface.dropTable('leaders');
+    await queryInterface.dropTable('networks');
+
+    // 2. ELIMINAR SISTEMA FINANCIERO
     await queryInterface.dropTable('reports');
     await queryInterface.dropTable('cash_denominations');
     await queryInterface.dropTable('outcomes');
@@ -135,6 +257,8 @@ module.exports = {
     await queryInterface.dropTable('cashes');
     await queryInterface.dropTable('users');
     await queryInterface.dropTable('weeks');
+    
+    // 3. ELIMINAR TABLAS BASE
     await queryInterface.dropTable('roles');
   }
 };

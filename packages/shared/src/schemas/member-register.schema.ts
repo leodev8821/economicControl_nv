@@ -14,7 +14,7 @@ export type StatusType = (typeof STATUS)[number];
 // ----------------------------------------------------------------------
 // 2. DEFINICIÓN BASE (Campos comunes y limpieza de datos)
 // ----------------------------------------------------------------------
-const BasePersonRegisterSchema = z.object({
+const BaseMemberRegisterSchema = z.object({
   first_name: z.string().min(1, "El nombre es obligatorio").max(50),
   last_name: z.string().min(1, "El apellido es obligatorio").max(50),
   phone: z.string().min(1, "El teléfono es obligatorio").max(15),
@@ -23,27 +23,30 @@ const BasePersonRegisterSchema = z.object({
     .string()
     .min(1, "La fecha de nacimiento es obligatoria")
     .max(10),
+  status: z.enum(STATUS, {
+    message: "El estado civil no es válido",
+  }),
   is_visible: z.boolean().default(true).optional(),
 });
 
 // ----------------------------------------------------------------------
 // 3. ESQUEMA de Creación
 // ----------------------------------------------------------------------
-export const PersonRegisterCreationSchema = BasePersonRegisterSchema;
+export const MemberRegisterCreationSchema = BaseMemberRegisterSchema;
 
 // ----------------------------------------------------------------------
 // 4. ESQUEMA de Actualización
 // ----------------------------------------------------------------------
-export const PersonRegisterUpdateSchema = BasePersonRegisterSchema.partial();
+export const MemberRegisterUpdateSchema = BaseMemberRegisterSchema.partial();
 
 // ----------------------------------------------------------------------
 // 5. EXPORTACIÓN DE TIPOS E INTERFACES
 // ----------------------------------------------------------------------
-export type PersonRegisterCreationRequest = z.infer<
-  typeof PersonRegisterCreationSchema
+export type MemberRegisterCreationRequest = z.infer<
+  typeof MemberRegisterCreationSchema
 >;
-export type PersonRegisterUpdateRequest = z.infer<
-  typeof PersonRegisterUpdateSchema
+export type MemberRegisterUpdateRequest = z.infer<
+  typeof MemberRegisterUpdateSchema
 >;
 
 // ----------------------------------------------------------------------
@@ -51,21 +54,21 @@ export type PersonRegisterUpdateRequest = z.infer<
 // ----------------------------------------------------------------------
 
 // 1. Definimos el item del Bulk con la validación de "Diezmo"
-export const BulkPersonRegisterItemSchema = BasePersonRegisterSchema;
+export const BulkMemberRegisterItemSchema = BaseMemberRegisterSchema;
 
 // 2. El Schema del formulario ahora usará el item refinado
-export const BulkPersonRegisterSchema = z.object({
-  persons: z
-    .array(BulkPersonRegisterItemSchema)
+export const BulkMemberRegisterSchema = z.object({
+  members: z
+    .array(BulkMemberRegisterItemSchema)
     .min(1, "Debe agregar al menos una persona"),
 });
 
-export type BulkPersonRegisterItemRequest = z.infer<
-  typeof BulkPersonRegisterItemSchema
+export type BulkMemberRegisterItemRequest = z.infer<
+  typeof BulkMemberRegisterItemSchema
 >;
-export type BulkPersonRegisterRequest = z.infer<
-  typeof BulkPersonRegisterSchema
+export type BulkMemberRegisterRequest = z.infer<
+  typeof BulkMemberRegisterSchema
 >;
 
 // Para la UI
-export type PersonRegisterType = z.infer<typeof BasePersonRegisterSchema>;
+export type MemberRegisterType = z.infer<typeof BaseMemberRegisterSchema>;

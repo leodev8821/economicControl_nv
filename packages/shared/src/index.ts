@@ -11,6 +11,6 @@ export * from "./schemas/week.schema.js";
 export * from "./schemas/auth.schema.js";
 export * from "./schemas/cash-denomination.schema.js";
 export * from "./schemas/consolidation.schema.js";
-export * from "./schemas/registro-persona.schema.js";
+export * from "./schemas/member-register.schema.js";
 export * from "./schemas/network.schema.js";
 export * from "./schemas/leader.schema.js";

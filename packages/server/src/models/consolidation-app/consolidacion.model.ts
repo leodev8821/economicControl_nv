@@ -1,8 +1,8 @@
 // models/outcome.ts
 import { DataTypes, Model, type Optional } from "sequelize";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
-import { RegisterModel } from "./registro-persona.model.js";
-import { LiderModel } from "./leader.model.js";
+import { MemberRegisterModel } from "./member-register.model.js";
+import { LeaderModel } from "./leader.model.js";
 import { NetworkModel } from "./network.model.js";
 import {
   CLASIFICATION,
@@ -13,9 +13,9 @@ const connection = getSequelizeConfig();
 
 export interface ConsolidationAttributes {
   id: number;
-  register_id: number;
-  lider_id: number | null;
-  red_id: number | null;
+  member_register_id: number;
+  leader_id: number | null;
+  network_id: number | null;
   church_visit_date: Date;
   call_date: Date | null;
   visit_date: Date | null;
@@ -27,9 +27,9 @@ export interface ConsolidationAttributes {
 
 export type ConsolidationSearchData = {
   id?: number;
-  register_id?: number;
-  lider_id?: number;
-  red_id?: number;
+  member_register_id?: number;
+  leader_id?: number;
+  network_id?: number;
   church_visit_date?: Date;
   call_date?: Date;
   visit_date?: Date;
@@ -51,9 +51,9 @@ export class ConsolidationModel
   implements ConsolidationAttributes
 {
   declare id: number;
-  declare register_id: number;
-  declare lider_id: number | null;
-  declare red_id: number | null;
+  declare member_register_id: number;
+  declare leader_id: number | null;
+  declare network_id: number | null;
   declare church_visit_date: Date;
   declare call_date: Date | null;
   declare visit_date: Date | null;
@@ -71,27 +71,27 @@ ConsolidationModel.init(
       primaryKey: true,
       autoIncrement: true,
     },
-    register_id: {
+    member_register_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: "registers",
+        model: "member-registers",
         key: "id",
       },
     },
-    lider_id: {
+    leader_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: "leaders",
         key: "id",
       },
     },
-    red_id: {
+    network_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: "reds",
+        model: "networks",
         key: "id",
       },
     },
@@ -136,20 +136,20 @@ ConsolidationModel.init(
       populated: {
         include: [
           {
-            model: RegisterModel,
-            as: "Register",
+            model: MemberRegisterModel,
+            as: "MemberRegister",
             attributes: ["id", "first_name", "last_name", "phone"],
             required: true,
           },
           {
-            model: LiderModel,
-            as: "Lider",
+            model: LeaderModel,
+            as: "Leader",
             attributes: ["id", "first_name", "last_name", "phone"],
             required: false,
           },
           {
             model: NetworkModel,
-            as: "Red",
+            as: "Network",
             attributes: ["id", "name"],
             required: false,
           },
