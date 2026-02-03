@@ -50,6 +50,7 @@ export const consolidationController = {
 
       if (!consolidationObtained) {
         return res.status(404).json({
+          ok: false,
           message:
             "No se encontró la consolidación con los parámetros proporcionados.",
         });

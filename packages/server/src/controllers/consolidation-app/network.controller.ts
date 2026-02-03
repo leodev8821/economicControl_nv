@@ -47,6 +47,7 @@ export const networkController = {
 
       if (!networkObtained) {
         return res.status(404).json({
+          ok: false,
           message: "No se encontró la red con los parámetros proporcionados.",
         });
       }
