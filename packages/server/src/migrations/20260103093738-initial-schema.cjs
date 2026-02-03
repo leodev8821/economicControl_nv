@@ -142,8 +142,8 @@ module.exports = {
      * =========================================================
      */
 
-    // 10. Tabla REDES
-    await queryInterface.createTable('redes', {
+    // 10. Tabla NETWORKS
+    await queryInterface.createTable('networks', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -182,7 +182,7 @@ module.exports = {
     });
 
     // 12. Tabla REGISTER-PERSONS (Personas captadas para consolidación)
-    await queryInterface.createTable('register-persons', {
+    await queryInterface.createTable('register_persons', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -208,7 +208,7 @@ module.exports = {
       register_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: { model: 'register-persons', key: 'id' },
+        references: { model: 'register_persons', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
@@ -220,11 +220,11 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE', 
       },
-      // FK a Red
+      // FK a Network
       red_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: { model: 'redes', key: 'id' },
+        references: { model: 'networks', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
@@ -233,7 +233,10 @@ module.exports = {
       visit_date: { type: Sequelize.DATE, allowNull: true },
       observations: { type: Sequelize.TEXT, allowNull: true },
       invited_by: { type: Sequelize.STRING, allowNull: true },
-      clasification: { type: Sequelize.STRING, allowNull: false },
+      clasification: { 
+        type: Sequelize.ENUM('new', 'renewal', 'renewal-previous', 'renewal-previous-previous'),
+        allowNull: false 
+      },
       is_visible: { type: Sequelize.BOOLEAN, defaultValue: true },
     });
   },
@@ -241,9 +244,9 @@ module.exports = {
   async down(queryInterface, _Sequelize) {
     // 1. ELIMINAR SISTEMA CONSOLIDACIÓN (Orden inverso a creación)
     await queryInterface.dropTable('consolidations');
-    await queryInterface.dropTable('register-persons');
+    await queryInterface.dropTable('register_persons');
     await queryInterface.dropTable('leaders');
-    await queryInterface.dropTable('redes');
+    await queryInterface.dropTable('networks');
 
     // 2. ELIMINAR SISTEMA FINANCIERO
     await queryInterface.dropTable('reports');
