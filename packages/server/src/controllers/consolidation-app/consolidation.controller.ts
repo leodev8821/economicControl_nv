@@ -89,11 +89,17 @@ export const consolidationController = {
         visit_date,
         observations,
         invited_by,
+        register_id,
+        lider_id,
+        red_id,
         ...rest
       } = validationResult.data;
 
       const consolidationData: ConsolidationCreationAttributes = {
         ...rest,
+        member_register_id: register_id,
+        leader_id: lider_id,
+        network_id: red_id,
         church_visit_date: new Date(church_visit_date),
         call_date: new Date(call_date),
         visit_date: new Date(visit_date),
@@ -138,11 +144,21 @@ export const consolidationController = {
         });
       }
 
-      const { church_visit_date, call_date, visit_date, ...restUpdate } =
-        validationResult.data;
+      const {
+        church_visit_date,
+        call_date,
+        visit_date,
+        register_id,
+        lider_id,
+        red_id,
+        ...restUpdate
+      } = validationResult.data;
 
       const updateData: Partial<ConsolidationCreationAttributes> = {
         ...restUpdate,
+        ...(register_id && { member_register_id: register_id }),
+        ...(lider_id && { leader_id: lider_id }),
+        ...(red_id && { network_id: red_id }),
         ...(church_visit_date && {
           church_visit_date: new Date(church_visit_date),
         }),

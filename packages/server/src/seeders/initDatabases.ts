@@ -59,7 +59,7 @@ const databaseSeeder: DatabaseSeeder = {
         for (const roleData of rolesToCreate) {
           await Role.findOrCreate({
             where: { role_name: roleData.role_name },
-            defaults: { role_name: roleData.role_name },
+            defaults: { role_name: roleData.role_name, application: 1 },
             transaction,
           });
         } //
