@@ -4,7 +4,6 @@ import {
   NetworkActions,
   NetworkAttributes,
   NetworkCreationAttributes,
-  NetworkUpdateRequest,
   NetworkSearchData,
 } from "../../models/consolidation-app/network.model.js";
 import {
