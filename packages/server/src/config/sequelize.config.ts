@@ -27,11 +27,14 @@ const dbConfig: Options = {
 };
 
 // EXPORTACIÓN ÚNICA (ESM)
-export default {
+const configurations = {
   development: dbConfig,
   test: dbConfig,
   production: dbConfig,
 };
+
+export { configurations };
+export default configurations;
 
 export function getSequelizeConfig(): Sequelize {
   if (!sequelizeInstance) {
@@ -39,7 +42,7 @@ export function getSequelizeConfig(): Sequelize {
       env.DB_DB,
       env.DB_USER,
       env.DB_PASSWORD,
-      dbConfig
+      dbConfig,
     );
   }
   return sequelizeInstance;
