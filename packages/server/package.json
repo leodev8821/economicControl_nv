@@ -8,11 +8,11 @@
     "clean": "rm -rf dist .turbo node_modules tsconfig.tsbuildinfo",
     "dev": "tsx watch --clear-screen=false src/app.ts",
     "lint": "eslint src",
-    "build": "tsc -b",
+    "build": "tsc -b && copyfiles -u 1 \"src/migrations/**/*.cjs\" dist/",
     "db:migrate": "sequelize-cli db:migrate",
     "db:seed": "tsx src/seeders/initDatabases.ts",
     "db:setup": "pnpm db:migrate && pnpm db:seed",
-    "db:deploy": "npx sequelize-cli db:migrate && node dist/seeders/initDatabases.js",
+    "db:deploy": "npx sequelize-cli db:migrate --env production && node dist/seeders/initDatabases.js",
     "start:prod": "node dist/app.js"
   },
   "keywords": [],
@@ -21,7 +21,6 @@
   "packageManager": "pnpm@10.26.2+sha512.0e308ff2005fc7410366f154f625f6631ab2b16b1d2e70238444dd6ae9d630a8482d92a451144debc492416896ed16f7b114a86ec68b8404b2443869e68ffda6",
   "dependencies": {
     "@economic-control/shared": "workspace:*",
-    "sequelize-cli": "^6.6.3",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
@@ -35,6 +34,7 @@
     "pg-hstore": "^2.3.4",
     "postgres": "^3.4.7",
     "sequelize": "^6.37.7",
+    "sequelize-cli": "^6.6.3",
     "socket.io": "^4.8.3",
     "zod": "^4.2.1"
   },
@@ -44,6 +44,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.4",
+    "copyfiles": "^2.4.1",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
