@@ -29,6 +29,9 @@
     "src/**/*",
     "types/express.d.ts" 
   ],
+  "exclude": [
+    "src/migrations"
+  ],
   "references": [
     { "path": "../shared" }      
   ]
