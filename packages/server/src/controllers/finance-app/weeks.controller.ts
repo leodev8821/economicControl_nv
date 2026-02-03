@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
+import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
 import {
   WeekActions,
   WeekCreationAttributes,
   WeekAttributes,
   type WeekSearchData,
-} from "../models/finance-app/week.model.js";
+} from "../../models/finance-app/week.model.js";
 import {
   WeekCreationSchema,
   WeekCreationRequest,

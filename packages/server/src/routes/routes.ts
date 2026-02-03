@@ -5,16 +5,16 @@ import authRouter from "../auth/auth.routes.js";
 import { decodeAccessToken, requireRole } from "../auth/auth.middleware.js";
 
 // --- CONTROLLERS ---
-import { cashesController } from "../controllers/cashes.controller.js";
-import { dashboardController } from "../controllers/dashboard.controller.js";
-import { incomesController } from "../controllers/incomes.controller.js";
-import { outcomesController } from "../controllers/outcomes.controller.js";
-import { personsController } from "../controllers/persons.controller.js";
-import { reportsController } from "../controllers/reports.controller.js";
+import { cashesController } from "../controllers/finance-app/cashes.controller.js";
+import { dashboardController } from "../controllers/finance-app/dashboard.controller.js";
+import { incomesController } from "../controllers/finance-app/incomes.controller.js";
+import { outcomesController } from "../controllers/finance-app/outcomes.controller.js";
+import { personsController } from "../controllers/finance-app/persons.controller.js";
+import { reportsController } from "../controllers/finance-app/reports.controller.js";
 import { rolesController } from "../controllers/roles.controller.js";
-import { weeksController } from "../controllers/weeks.controller.js";
-import { cashDenominationController } from "../controllers/cash-denomination.controller.js";
-import { usersController } from "../controllers/users.controller.js";
+import { weeksController } from "../controllers/finance-app/weeks.controller.js";
+import { cashDenominationController } from "../controllers/finance-app/cash-denomination.controller.js";
+import { usersController } from "../controllers/finance-app/users.controller.js";
 
 const router: Router = Router();
 

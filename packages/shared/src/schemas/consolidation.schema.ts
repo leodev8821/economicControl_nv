@@ -63,17 +63,16 @@ const BaseConsolidationSchema = z.object({
       "El formato de fecha es inválido (debe ser AAAA-MM-DD)",
     ),
 
-  /*   observations: z
-    .string({
-      message: "La observación es obligatoria",
-    })
-    .min(1, "La observación no puede estar vacía"),
+  observations: z
+    .string()
+    .min(1, "Si escribes algo, no puede estar vacío")
+    .optional(), // Permite que el campo no exista o sea undefined
 
   invited_by: z
-    .string({
-      message: "La persona que invita es obligatoria",
-    })
-    .min(1, "La persona que invita no puede estar vacía"), */
+    .string()
+    .min(1, "El nombre no puede estar vacío")
+    .optional()
+    .or(z.literal("")),
 
   clasification: z.enum(CLASIFICATION, {
     message: "La clasificación es obligatoria",

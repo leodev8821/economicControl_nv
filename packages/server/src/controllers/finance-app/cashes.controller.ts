@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
-import type { CashSearchData } from "../models/finance-app/cash.model.js";
+import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
+import type { CashSearchData } from "../../models/finance-app/cash.model.js";
 import {
   CashActions,
   CashAttributes,
   CashCreationAttributes,
-} from "../models/finance-app/cash.model.js";
+} from "../../models/finance-app/cash.model.js";
 import {
   CashCreationSchema,
   CashCreationRequest,

@@ -6,16 +6,14 @@ import {
 } from "sequelize";
 import bcrypt from "bcryptjs";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
-import { ROLE_TYPES } from "../finance-app/role.model.js";
+import { RoleType } from "../finance-app/role.model.js";
 
 const connection = getSequelizeConfig();
 
 /** Tipos del modelo */
-export type UserRole =
-  | typeof ROLE_TYPES.ADMINISTRADOR
-  | typeof ROLE_TYPES.SUPER_USER;
+export type UserRole = RoleType;
 
-export interface LiderAttributes {
+export interface LeaderAttributes {
   id: number;
   role_name: UserRole;
   username: string;
@@ -37,7 +35,7 @@ export type LoginPayload = {
   phone: string;
 };
 
-export type UserSearchData = {
+export type LeaderSearchData = {
   id?: number;
   role_name?: UserRole;
   username?: string | undefined;
@@ -48,14 +46,14 @@ export type UserSearchData = {
   is_visible?: boolean;
 };
 
-export interface LiderCreationAttributes extends Optional<
-  LiderAttributes,
+export interface LeaderCreationAttributes extends Optional<
+  LeaderAttributes,
   "id" | "is_visible"
 > {}
 
-export class LiderModel
-  extends SequelizeModel<LiderAttributes, LiderCreationAttributes>
-  implements LiderAttributes
+export class LeaderModel
+  extends SequelizeModel<LeaderAttributes, LeaderCreationAttributes>
+  implements LeaderAttributes
 {
   declare id: number;
   declare role_name: UserRole;
@@ -73,7 +71,7 @@ export class LiderModel
   }
 }
 
-LiderModel.init(
+LeaderModel.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -119,7 +117,7 @@ LiderModel.init(
     sequelize: connection,
     tableName: "leaders",
     timestamps: false,
-    modelName: "Lider",
+    modelName: "Leader",
 
     defaultScope: {
       attributes: { exclude: ["password"] },
@@ -136,7 +134,7 @@ LiderModel.init(
     },
 
     hooks: {
-      beforeSave: async (user: LiderModel) => {
+      beforeSave: async (user: LeaderModel) => {
         if (user.changed("password")) {
           const pass: string = user.password ?? "";
           if (
@@ -164,8 +162,8 @@ export class LiderActions {
   public static async login(
     login_data: string,
     password: string,
-  ): Promise<LiderAttributes | null> {
-    const user = await LiderModel.scope(["withPassword", "visible"]).findOne({
+  ): Promise<LeaderAttributes | null> {
+    const user = await LeaderModel.scope(["withPassword", "visible"]).findOne({
       where: {
         username: login_data,
       },
@@ -181,15 +179,15 @@ export class LiderActions {
       plain: true,
     });
 
-    return userWithoutPassword as LiderAttributes;
+    return userWithoutPassword as LeaderAttributes;
   }
 
   /**
    * Obtiene todas las usuarios de la base de datos.
    * @returns promise con un array de objetos UserAttributes.
    */
-  public static async getAll(): Promise<LiderAttributes[]> {
-    const users = await LiderModel.scope("visible").findAll();
+  public static async getAll(): Promise<LeaderAttributes[]> {
+    const users = await LeaderModel.scope("visible").findAll();
     return users.map((u) => u.get({ plain: true }));
   }
 
@@ -199,9 +197,9 @@ export class LiderActions {
    * @returns promise con un objeto UserAttributes o null si no se encuentra ningun usuario.
    */
   public static async getOne(
-    data: UserSearchData,
-  ): Promise<LiderAttributes | null> {
-    const user = await LiderModel.scope("visible").findOne({
+    data: LeaderSearchData,
+  ): Promise<LeaderAttributes | null> {
+    const user = await LeaderModel.scope("visible").findOne({
       where: data,
     });
 
@@ -215,13 +213,13 @@ export class LiderActions {
    */
   public static async getOneByAnyIdentifier(
     identifier: string | number,
-  ): Promise<LiderAttributes | null> {
+  ): Promise<LeaderAttributes | null> {
     const conditions =
       typeof identifier === "number"
         ? [{ id: identifier }]
         : [{ username: identifier.trim() }];
 
-    const user = await LiderModel.scope("visible").findOne({
+    const user = await LeaderModel.scope("visible").findOne({
       where: { [Op.or]: conditions },
     });
 
@@ -234,9 +232,9 @@ export class LiderActions {
    * @returns Instancia de UserModel o null si no se encuentra ninguna.
    */
   public static async getOneInstance(
-    data: UserSearchData,
-  ): Promise<LiderModel | null> {
-    return LiderModel.findOne({ where: data });
+    data: LeaderSearchData,
+  ): Promise<LeaderModel | null> {
+    return LeaderModel.findOne({ where: data });
   }
 
   /**
@@ -245,9 +243,9 @@ export class LiderActions {
    * @returns promise con el objeto UserAttributes creado.
    */
   public static async create(
-    data: LiderCreationAttributes,
-  ): Promise<LiderAttributes> {
-    const user = await LiderModel.create(data);
+    data: LeaderCreationAttributes,
+  ): Promise<LeaderAttributes> {
+    const user = await LeaderModel.create(data);
     return user.get({ plain: true });
   }
 
@@ -257,7 +255,7 @@ export class LiderActions {
    * @returns promise con un booleano que indica si la eliminación fue exitosa.
    */
   public static async delete(id: number): Promise<boolean> {
-    const [count] = await LiderModel.update(
+    const [count] = await LeaderModel.update(
       { is_visible: false },
       { where: { id } },
     );
@@ -273,12 +271,12 @@ export class LiderActions {
    */
   public static async update(
     id: number,
-    data: Partial<LiderCreationAttributes>,
-  ): Promise<LiderAttributes | null> {
-    const [count] = await LiderModel.update(data, { where: { id } });
+    data: Partial<LeaderCreationAttributes>,
+  ): Promise<LeaderAttributes | null> {
+    const [count] = await LeaderModel.update(data, { where: { id } });
     if (!count) return null;
 
-    const updated = await LiderModel.findByPk(id);
+    const updated = await LeaderModel.findByPk(id);
     return updated ? updated.get({ plain: true }) : null;
   }
 }

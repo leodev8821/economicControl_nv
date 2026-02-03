@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
+import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
 import {
   IncomeActions,
   IncomeCreationAttributes,
   IncomeAttributes,
   type IncomeSearchData,
-} from "../models/finance-app/income.model.js";
+} from "../../models/finance-app/income.model.js";
 import {
   IncomeCreationRequest,
   IncomeUpdateRequest,

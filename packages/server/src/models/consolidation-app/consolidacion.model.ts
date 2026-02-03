@@ -3,7 +3,7 @@ import { DataTypes, Model, type Optional } from "sequelize";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import { RegisterModel } from "./registro-persona.model.js";
 import { LiderModel } from "./leader.model.js";
-import { RedModel } from "./red.model.js";
+import { NetworkModel } from "./network.model.js";
 import {
   CLASIFICATION,
   type ClasificationType,
@@ -148,7 +148,7 @@ ConsolidationModel.init(
             required: false,
           },
           {
-            model: RedModel,
+            model: NetworkModel,
             as: "Red",
             attributes: ["id", "name"],
             required: false,

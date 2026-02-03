@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
+
 import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
+
 import {
   LiderActions,
   LeaderAttributes,
   LeaderCreationAttributes,
   LeaderSearchData,
-  LoginPayload,
 } from "../../models/consolidation-app/leader.model.js";
+
 import {
   LeaderCreationSchema,
   LeaderUpdateSchema,
@@ -27,7 +29,11 @@ export const leaderController = {
         data: leaders,
       });
     } catch (error) {
-      return ControllerErrorHandler(res, error, "Error al obtener los líderes.");
+      return ControllerErrorHandler(
+        res,
+        error,
+        "Error al obtener los líderes.",
+      );
     }
   },
 
@@ -35,11 +41,13 @@ export const leaderController = {
   oneLeader: async (req: Request, res: Response) => {
     try {
       const { id, username } = req.params;
+
       const searchCriteria: LeaderSearchData = {};
 
       if (id) {
         searchCriteria.id = parseInt(id as string, 10);
       }
+
       if (username) {
         searchCriteria.username = username as string;
       }
@@ -75,7 +83,7 @@ export const leaderController = {
         });
       }
 
-      const leaderData: LeaderCreationAttributes = validationResult.data;
+      const leaderData = validationResult.data as LeaderCreationAttributes;
 
       const newLeader = await LiderActions.create(leaderData);
 
@@ -109,8 +117,7 @@ export const leaderController = {
         });
       }
 
-      const updateData: Partial<LeaderCreationAttributes> =
-        validationResult.data;
+      const updateData = validationResult.data as Partial<LeaderAttributes>;
 
       if (Object.keys(updateData).length === 0) {
         return res.status(400).json({
@@ -121,6 +128,7 @@ export const leaderController = {
 
       const updatedLeader = await LiderActions.update(
         leaderId,
+
         updateData as Partial<LeaderCreationAttributes>,
       );
 
@@ -136,7 +144,11 @@ export const leaderController = {
         data: updatedLeader,
       });
     } catch (error) {
-      return ControllerErrorHandler(res, error, "Error al actualizar el líder.");
+      return ControllerErrorHandler(
+        res,
+        error,
+        "Error al actualizar el líder.",
+      );
     }
   },
 
@@ -153,9 +165,10 @@ export const leaderController = {
       const deleted = await LiderActions.delete(leaderId);
 
       if (!deleted) {
-        return res
-          .status(404)
-          .json({ ok: false, message: "No se encontró el líder para eliminar." });
+        return res.status(404).json({
+          ok: false,
+          message: "No se encontró el líder para eliminar.",
+        });
       }
 
       return res.status(200).json({
@@ -182,17 +195,14 @@ export const leaderController = {
       const leader = await LiderActions.login(username, password);
 
       if (!leader) {
-        return res.status(401).json({
-          ok: false,
-          message: "Credenciales inválidas.",
-        });
+        return res
+          .status(401)
+          .json({ ok: false, message: "Credenciales inválidas." });
       }
 
-      return res.status(200).json({
-        ok: true,
-        message: "Inicio de sesión exitoso.",
-        data: leader,
-      });
+      return res
+        .status(200)
+        .json({ ok: true, message: "Inicio de sesión exitoso.", data: leader });
     } catch (error) {
       return ControllerErrorHandler(res, error, "Error al iniciar sesión.");
     }

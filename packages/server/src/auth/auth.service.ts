@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import type { Secret } from "jsonwebtoken";
 import { tokenUtils } from "../utils/token.utils.js";
 import { type JwtPayload } from "./auth.types.js";
-import { usersController } from "../controllers/users.controller.js";
+import { usersController } from "../controllers/finance-app/users.controller.js";
 
 const REFRESH_SECRET: Secret = process.env.REFRESH_SECRET as string;
 

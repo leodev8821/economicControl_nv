@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
-import type { OutcomeSearchData } from "../models/finance-app/outcome.model.js";
+import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
+import type { OutcomeSearchData } from "../../models/finance-app/outcome.model.js";
 import {
   OutcomeActions,
   OutcomeCreationAttributes,
   OutcomeAttributes,
-} from "../models/finance-app/outcome.model.js";
+} from "../../models/finance-app/outcome.model.js";
 import {
   OutcomeCreationSchema,
   OutcomeCreationRequest,

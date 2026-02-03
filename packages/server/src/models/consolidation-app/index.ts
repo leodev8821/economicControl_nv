@@ -1,7 +1,7 @@
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import { ConsolidationModel as Consolidation } from "./consolidacion.model.js";
 import { LiderModel as Lider } from "./leader.model.js";
-import { RedModel as Red } from "./red.model.js";
+import { NetworkModel as Red } from "./network.model.js";
 import { RegisterModel as Register } from "./registro-persona.model.js";
 
 // =================================================================
