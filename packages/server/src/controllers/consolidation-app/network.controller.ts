@@ -4,7 +4,6 @@ import {
   NetworkActions,
   NetworkAttributes,
   NetworkCreationAttributes,
-  NetworkUpdateRequest,
   NetworkSearchData,
 } from "../../models/consolidation-app/network.model.js";
 import {
@@ -70,16 +69,14 @@ export const redController = {
       if (!validationResult.success) {
         return res.status(400).json({
           ok: false,
-          message: "Datos de nueva rol inválidos.",
+          message: "Datos de nueva red inválidos.",
           errors: validationResult.error.issues,
         });
       }
 
-      const networkData: NetworkCreationRequest = validationResult.data;
+      const networkData: NetworkCreationAttributes = validationResult.data;
 
-      const newNetwork = await NetworkActions.create(
-        networkData as NetworkCreationAttributes,
-      );
+      const newNetwork = await NetworkActions.create(networkData);
 
       return res.status(201).json({
         ok: true,
@@ -91,14 +88,14 @@ export const redController = {
     }
   },
 
-  updateRol: async (req: Request, res: Response) => {
+  updateNetwork: async (req: Request, res: Response) => {
     try {
-      const roleId = parseInt((req.params.id as string) || "0", 10);
+      const networkId = parseInt((req.params.id as string) || "0", 10);
 
-      if (!roleId) {
+      if (!networkId) {
         return res
           .status(400)
-          .json({ ok: false, message: "ID de rol inválido" });
+          .json({ ok: false, message: "ID de red inválido" });
       }
 
       const validationResult = NetworkUpdateSchema.safeParse(req.body);
@@ -106,12 +103,13 @@ export const redController = {
       if (!validationResult.success) {
         return res.status(400).json({
           ok: false,
-          message: "Datos de actualización de rol inválidos.",
+          message: "Datos de actualización de red inválidos.",
           errors: validationResult.error.issues,
         });
       }
 
-      const updateData: NetworkUpdateRequest = validationResult.data;
+      const updateData: Partial<NetworkCreationAttributes> =
+        validationResult.data;
 
       if (Object.keys(updateData).length === 0) {
         return res.status(400).json({
@@ -121,23 +119,23 @@ export const redController = {
       }
 
       const updatedNetwork = await NetworkActions.update(
-        roleId,
+        networkId,
         updateData as Partial<NetworkCreationAttributes>,
       );
 
       if (!updatedNetwork) {
         return res
           .status(404)
-          .json({ ok: false, message: "Role no encontrada para actualizar." });
+          .json({ ok: false, message: "Red no encontrada para actualizar." });
       }
 
       return res.status(200).json({
         ok: true,
-        message: "Role actualizada correctamente.",
+        message: "Red actualizada correctamente.",
         data: updatedNetwork,
       });
     } catch (error) {
-      return ControllerErrorHandler(res, error, "Error al actualizar la rol.");
+      return ControllerErrorHandler(res, error, "Error al actualizar la red.");
     }
   },
 
@@ -161,10 +159,10 @@ export const redController = {
 
       return res.status(200).json({
         ok: true,
-        message: "Role eliminada correctamente.",
+        message: "Red eliminada correctamente.",
       });
     } catch (error) {
-      return ControllerErrorHandler(res, error, "Error al eliminar la rol.");
+      return ControllerErrorHandler(res, error, "Error al eliminar la red.");
     }
   },
 };
