@@ -3,17 +3,17 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import {
   ProtectedRoute,
   PublicOnlyRoute,
-} from "./components/shared/ProtectedRoute";
-import AppLayout from "./components/layout/AppLayout";
+} from "@modules/auth/components/ProtectedRoute";
+import AppLayout from "@shared/components/layout/AppLayout";
 
-import { DashboardPage } from "./pages/DashboardPage";
-import { CashesPage } from "./pages/CashesPage";
-import { IncomesPage } from "./pages/IncomesPage";
-import { OutcomesPage } from "./pages/OutcomesPage";
-import { PersonsPage } from "./pages/PersonsPage";
-import { CashDenominationPage } from "./pages/CashDenominationPage";
-import { UserPage } from "./pages/UsersPage";
-import SignIn from "./pages/SignIn";
+import { DashboardPage } from "@modules/finance/pages/DashboardPage";
+import { CashesPage } from "@modules/finance/pages/CashesPage";
+import { IncomesPage } from "@modules/finance/pages/IncomesPage";
+import { OutcomesPage } from "@modules/finance/pages/OutcomesPage";
+import { PersonsPage } from "@modules/finance/pages/PersonsPage";
+import { CashDenominationPage } from "@modules/finance/pages/CashDenominationPage";
+import { UserPage } from "@modules/auth/pages/UsersPage";
+import SignIn from "@modules/auth/pages/SignIn";
 
 function App() {
   return (

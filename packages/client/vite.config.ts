@@ -17,10 +17,15 @@ export default defineConfig({
       // Alias interno para src
       "@": path.resolve(__dirname, "./src"),
 
+      // Alias para /client/src
+      "@core": path.resolve(__dirname, "./src/core"),
+      "@modules": path.resolve(__dirname, "./src/modules"),
+      "@shared": path.resolve(__dirname, "./src/shared"),
+
       // Alias para el monorepo (Debe coincidir con el nombre en package.json)
       "@economic-control/shared": path.resolve(
         rootDir,
-        "packages/shared/src/index.ts"
+        "packages/shared/src/index.ts",
       ),
     },
   },

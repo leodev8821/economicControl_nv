@@ -1,7 +1,7 @@
 {
-  "extends": "../../tsconfig.base.json", // Importante para no repetir configuración
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true, // REQUERIDO para 'tsc -b' y caché de Turbo
+    "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2022",
     "useDefineForClassFields": true,
@@ -32,7 +32,10 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@core/*": ["./src/core/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@shared/*": ["./src/shared/*"]
     }
   },
   "include": ["src"],
