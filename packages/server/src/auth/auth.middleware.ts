@@ -2,13 +2,16 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { type JwtPayload } from "./auth.types.js";
 import { tokenUtils } from "../utils/token.utils.js";
-import { UserRole } from "../models/finance-app/user.model.js";
+import { UserRole } from "../models/auth/user.model.js";
+import { UserPermissionActions } from "../models/auth/user-permission.model.js";
+import { ROLE_TYPES } from "@economic-control/shared";
 
 const REFRESH_SECRET = process.env.REFRESH_SECRET as string;
 
-// =======================
-// ACCESS TOKEN
-// =======================
+/**
+ * Middleware de Decodificación de Access Token
+ * Verifica y decodifica el access token para obtener el payload
+ */
 export const decodeAccessToken = (
   req: Request,
   res: Response,
@@ -40,9 +43,10 @@ export const decodeAccessToken = (
   next();
 };
 
-// =======================
-// REFRESH TOKEN
-// =======================
+/**
+ * Middleware de Decodificación de Refresh Token
+ * Verifica y decodifica el refresh token para obtener el payload
+ */
 export const decodeRefreshToken = (
   req: Request,
   res: Response,
@@ -66,9 +70,40 @@ export const decodeRefreshToken = (
   }
 };
 
-// =======================
-// SUDO ROLE
-// =======================
+/**
+ * Middleware de Autorización por Aplicación
+ * Verifica si el usuario tiene permiso para la app específica (finance, consolidation, etc.)
+ */
+export const checkAppAccess =
+  (appName: string) =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (req.userRole === ROLE_TYPES.SUPER_USER) {
+      return next();
+    }
+
+    // Verifica en la tabla de permisos usando el ID del usuario
+    if (!req.id) {
+      return res
+        .status(401)
+        .json({ ok: false, message: "Usuario no identificado" });
+    }
+
+    const hasAccess = await UserPermissionActions.checkAccess(req.id, appName);
+
+    if (!hasAccess) {
+      return res.status(403).json({
+        ok: false,
+        message: `No tienes permisos para acceder a la aplicación: ${appName}`,
+      });
+    }
+
+    next();
+  };
+
+/**
+ * Middleware de Autorización por Rol
+ * Verifica si el usuario tiene permiso para el rol específico dentro de una aplicación
+ */
 export const requireRole =
   (...allowedRoles: UserRole[]) =>
   (req: Request, res: Response, next: NextFunction) => {

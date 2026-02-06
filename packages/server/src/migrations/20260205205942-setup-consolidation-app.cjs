@@ -3,6 +3,12 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
+
+    const tableInfo = await queryInterface.describeTable('roles');
+    if (tableInfo.application) {
+      await queryInterface.removeColumn('roles', 'application');
+    }
+    
     // 1. Añadir campos faltantes a la tabla 'users'
     await queryInterface.addColumn('users', 'email', { type: Sequelize.STRING, allowNull: true });
     await queryInterface.addColumn('users', 'phone', { type: Sequelize.STRING, allowNull: true });
@@ -10,13 +16,13 @@ module.exports = {
     // 2. Crear tabla APPLICATIONS
     await queryInterface.createTable('applications', {
       id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-      name: { type: Sequelize.STRING, allowNull: false, unique: true },
+      app_name: { type: Sequelize.STRING, allowNull: false, unique: true },
       description: { type: Sequelize.STRING, allowNull: true }
     });
 
     await queryInterface.bulkInsert('applications', [
-      { name: 'finance', description: 'Sistema de control financiero' },
-      { name: 'consolidation', description: 'Sistema de consolidación de miembros' }
+      { app_name: 'Finanzas', description: 'Sistema de control financiero' },
+      { app_name: 'Consolidación', description: 'Sistema de consolidación de miembros' }
     ]);
 
     // 3. Crear tabla USER_PERMISSIONS (Relación Usuarios <-> Apps)
@@ -56,7 +62,7 @@ module.exports = {
       phone: { type: Sequelize.STRING },
       gender: { type: Sequelize.STRING },
       birth_date: { type: Sequelize.DATEONLY },
-      status: { type: Sequelize.STRING, defaultValue: 'Nuevo' },
+      status: { type: Sequelize.STRING, defaultValue: 'Soltero/a' },
       is_visible: { type: Sequelize.BOOLEAN, defaultValue: true },
     });
 

@@ -41,7 +41,6 @@ NetworkModel.init(
       allowNull: false,
     },
     is_visible: {
-      // Agregado
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },

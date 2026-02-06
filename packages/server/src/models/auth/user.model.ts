@@ -6,14 +6,16 @@ import {
 } from "sequelize";
 import bcrypt from "bcryptjs";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
-import { RoleType } from "../finance-app/role.model.js";
+import { ROLE_TYPES } from "../auth/role.model.js";
 
 const connection = getSequelizeConfig();
 
 /** Tipos del modelo */
-export type UserRole = RoleType;
+export type UserRole =
+  | typeof ROLE_TYPES.ADMINISTRADOR
+  | typeof ROLE_TYPES.SUPER_USER;
 
-export interface LeaderAttributes {
+export interface UserAttributes {
   id: number;
   role_name: UserRole;
   username: string;
@@ -35,7 +37,7 @@ export type LoginPayload = {
   phone: string;
 };
 
-export type LeaderSearchData = {
+export type UserSearchData = {
   id?: number;
   role_name?: UserRole;
   username?: string | undefined;
@@ -46,14 +48,14 @@ export type LeaderSearchData = {
   is_visible?: boolean;
 };
 
-export interface LeaderCreationAttributes extends Optional<
-  LeaderAttributes,
-  "id" | "is_visible"
+export interface UserCreationAttributes extends Optional<
+  UserAttributes,
+  "id" | "is_visible" | "email" | "phone"
 > {}
 
-export class LeaderModel
-  extends SequelizeModel<LeaderAttributes, LeaderCreationAttributes>
-  implements LeaderAttributes
+export class UserModel
+  extends SequelizeModel<UserAttributes, UserCreationAttributes>
+  implements UserAttributes
 {
   declare id: number;
   declare role_name: UserRole;
@@ -71,7 +73,7 @@ export class LeaderModel
   }
 }
 
-LeaderModel.init(
+UserModel.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -101,11 +103,11 @@ LeaderModel.init(
     },
     email: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     phone: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     is_visible: {
       type: DataTypes.BOOLEAN,
@@ -115,9 +117,9 @@ LeaderModel.init(
   },
   {
     sequelize: connection,
-    tableName: "leaders",
+    tableName: "users",
     timestamps: false,
-    modelName: "Leader",
+    modelName: "User",
 
     defaultScope: {
       attributes: { exclude: ["password"] },
@@ -134,7 +136,7 @@ LeaderModel.init(
     },
 
     hooks: {
-      beforeSave: async (user: LeaderModel) => {
+      beforeSave: async (user: UserModel) => {
         if (user.changed("password")) {
           const pass: string = user.password ?? "";
           if (
@@ -152,7 +154,7 @@ LeaderModel.init(
   },
 );
 
-export class LiderActions {
+export class UserActions {
   /**
    * Inicia sesión en el sistema.
    * @param login_data username del usuario.
@@ -162,8 +164,8 @@ export class LiderActions {
   public static async login(
     login_data: string,
     password: string,
-  ): Promise<LeaderAttributes | null> {
-    const user = await LeaderModel.scope(["withPassword", "visible"]).findOne({
+  ): Promise<UserAttributes | null> {
+    const user = await UserModel.scope(["withPassword", "visible"]).findOne({
       where: {
         username: login_data,
       },
@@ -179,15 +181,15 @@ export class LiderActions {
       plain: true,
     });
 
-    return userWithoutPassword as LeaderAttributes;
+    return userWithoutPassword as UserAttributes;
   }
 
   /**
    * Obtiene todas las usuarios de la base de datos.
    * @returns promise con un array de objetos UserAttributes.
    */
-  public static async getAll(): Promise<LeaderAttributes[]> {
-    const users = await LeaderModel.scope("visible").findAll();
+  public static async getAll(): Promise<UserAttributes[]> {
+    const users = await UserModel.scope("visible").findAll();
     return users.map((u) => u.get({ plain: true }));
   }
 
@@ -197,9 +199,9 @@ export class LiderActions {
    * @returns promise con un objeto UserAttributes o null si no se encuentra ningun usuario.
    */
   public static async getOne(
-    data: LeaderSearchData,
-  ): Promise<LeaderAttributes | null> {
-    const user = await LeaderModel.scope("visible").findOne({
+    data: UserSearchData,
+  ): Promise<UserAttributes | null> {
+    const user = await UserModel.scope("visible").findOne({
       where: data,
     });
 
@@ -213,13 +215,13 @@ export class LiderActions {
    */
   public static async getOneByAnyIdentifier(
     identifier: string | number,
-  ): Promise<LeaderAttributes | null> {
+  ): Promise<UserAttributes | null> {
     const conditions =
       typeof identifier === "number"
         ? [{ id: identifier }]
         : [{ username: identifier.trim() }];
 
-    const user = await LeaderModel.scope("visible").findOne({
+    const user = await UserModel.scope("visible").findOne({
       where: { [Op.or]: conditions },
     });
 
@@ -232,9 +234,9 @@ export class LiderActions {
    * @returns Instancia de UserModel o null si no se encuentra ninguna.
    */
   public static async getOneInstance(
-    data: LeaderSearchData,
-  ): Promise<LeaderModel | null> {
-    return LeaderModel.findOne({ where: data });
+    data: UserSearchData,
+  ): Promise<UserModel | null> {
+    return UserModel.findOne({ where: data });
   }
 
   /**
@@ -243,9 +245,9 @@ export class LiderActions {
    * @returns promise con el objeto UserAttributes creado.
    */
   public static async create(
-    data: LeaderCreationAttributes,
-  ): Promise<LeaderAttributes> {
-    const user = await LeaderModel.create(data);
+    data: UserCreationAttributes,
+  ): Promise<UserAttributes> {
+    const user = await UserModel.create(data);
     return user.get({ plain: true });
   }
 
@@ -255,7 +257,7 @@ export class LiderActions {
    * @returns promise con un booleano que indica si la eliminación fue exitosa.
    */
   public static async delete(id: number): Promise<boolean> {
-    const [count] = await LeaderModel.update(
+    const [count] = await UserModel.update(
       { is_visible: false },
       { where: { id } },
     );
@@ -271,12 +273,12 @@ export class LiderActions {
    */
   public static async update(
     id: number,
-    data: Partial<LeaderCreationAttributes>,
-  ): Promise<LeaderAttributes | null> {
-    const [count] = await LeaderModel.update(data, { where: { id } });
+    data: Partial<UserCreationAttributes>,
+  ): Promise<UserAttributes | null> {
+    const [count] = await UserModel.update(data, { where: { id } });
     if (!count) return null;
 
-    const updated = await LeaderModel.findByPk(id);
+    const updated = await UserModel.findByPk(id);
     return updated ? updated.get({ plain: true }) : null;
   }
 }

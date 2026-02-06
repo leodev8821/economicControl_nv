@@ -8,7 +8,6 @@ export interface CashAttributes {
   id: number;
   name: string;
   actual_amount: number;
-  //pettyCash_limit: number | null;
 }
 
 // Tipo para criterios de búsqueda simple
@@ -30,7 +29,6 @@ export class CashModel
   declare id: number;
   declare name: string;
   declare actual_amount: number;
-  //declare pettyCash_limit: number | null;
 }
 
 // Inicialización del modelo
@@ -50,11 +48,6 @@ CashModel.init(
       allowNull: false,
       defaultValue: 0.0,
     },
-    //pettyCash_limit: {
-    //  type: DataTypes.DECIMAL(15, 2),
-    //  allowNull: true,
-    //  defaultValue: null, // Cambiado a null para ser coherente con la interfaz
-    //},
   },
   {
     sequelize: connection,

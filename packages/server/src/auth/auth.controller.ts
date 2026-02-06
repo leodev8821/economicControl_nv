@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { REFRESH_COOKIE_OPTIONS } from "./auth.cookies.js";
-import { UserActions } from "../models/finance-app/user.model.js";
+import { UserActions } from "../models/auth/user.model.js";
+import { UserPermissionActions } from "../models/auth/user-permission.model.js";
 import * as authService from "./auth.service.js";
 
 export const authController = {
@@ -11,7 +12,6 @@ export const authController = {
    */
   loginUser: async (req: Request, res: Response) => {
     const { login_data, password } = req.body;
-
     const user = await UserActions.login(login_data, password);
 
     if (!user) {
@@ -21,12 +21,18 @@ export const authController = {
       });
     }
 
+    const permissions = await UserPermissionActions.getPermissionsByUser(
+      user.id,
+    );
+
     const { accessToken, refreshToken } = await authService.login({
       id: user.id,
       username: user.username,
       role_name: user.role_name,
       first_name: user.first_name,
       last_name: user.last_name,
+      email: user.email,
+      phone: user.phone,
     });
 
     res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
@@ -34,6 +40,10 @@ export const authController = {
     return res.status(200).json({
       ok: true,
       token: accessToken,
+      permissions: permissions.map((p) => ({
+        appId: p.application_id,
+        role: p.role_name,
+      })),
     });
   },
 

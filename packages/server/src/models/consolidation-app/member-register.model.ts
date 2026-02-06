@@ -61,64 +61,51 @@ MemberRegisterModel.init(
   {
     id: {
       type: DataTypes.INTEGER,
-
       primaryKey: true,
-
       autoIncrement: true,
     },
 
     first_name: {
       type: DataTypes.STRING(100),
-
       allowNull: false,
     },
 
     last_name: {
       type: DataTypes.STRING(100),
-
       allowNull: false,
     },
 
     phone: {
       type: DataTypes.STRING(15),
-
       unique: true,
-
       allowNull: false,
     },
 
     gender: {
       type: DataTypes.STRING(1),
-
       allowNull: false,
     },
 
     birth_date: {
       type: DataTypes.DATE,
-
       allowNull: false,
     },
 
     status: {
       type: DataTypes.ENUM(...STATUS),
-
       allowNull: false,
     },
 
     is_visible: {
       type: DataTypes.BOOLEAN,
-
       defaultValue: true,
     },
   },
 
   {
     sequelize: connection,
-
-    tableName: "member-registers",
-
+    tableName: "member_registers",
     timestamps: false,
-
     modelName: "MemberRegister",
 
     scopes: {
@@ -130,12 +117,9 @@ MemberRegisterModel.init(
 );
 
 export class MemberRegisterActions {
-  /**                                                                                                     
-                                                                                                          
-   * Obtiene todas las personas de la base de datos.                                                      
-                                                                                                          
-   * @returns promise con un array de objetos PersonAttributes.                                           
-                                                                                                          
+  /**
+   * Obtiene todas las personas de la base de datos.
+   * @returns promise con un array de objetos PersonAttributes.
    */
 
   public static async getAll(): Promise<MemberRegisterAttributes[]> {
@@ -144,14 +128,10 @@ export class MemberRegisterActions {
     return persons.map((person) => person.get({ plain: true }));
   }
 
-  /**                                                                                                     
-                                                                                                          
-   * obtiene un persona que cumpla con los criterios de búsqueda proporcionados.                          
-                                                                                                          
-   * @param data criterios de búsqueda.                                                                   
-                                                                                                          
-   * @returns promise con un objeto PersonAttributes o null si no se encuentra ningun persona.            
-                                                                                                          
+  /**
+   * obtiene un persona que cumpla con los criterios de búsqueda proporcionados.
+   * @param data criterios de búsqueda.
+   * @returns promise con un objeto PersonAttributes o null si no se encuentra ningun persona.
    */
 
   public static async getOne(
@@ -164,14 +144,10 @@ export class MemberRegisterActions {
     return person ? person.get({ plain: true }) : null;
   }
 
-  /**                                                                                                     
-                                                                                                          
-   * Crea un nuevo persona en la base de datos.                                                           
-                                                                                                          
-   * @param data datos de la persona a crear.                                                             
-                                                                                                          
-   * @returns promise con el objeto PersonAttributes creado.                                              
-                                                                                                          
+  /**
+   * Crea un nuevo persona en la base de datos.
+   * @param data datos de la persona a crear.
+   * @returns promise con el objeto PersonAttributes creado.
    */
 
   public static async create(
@@ -186,47 +162,35 @@ export class MemberRegisterActions {
     });
   }
 
-  /**                                                                                                     
-                                                                                                          
-   * Elimina un persona de la base de datos por su ID.                                                    
-                                                                                                          
-   * @param data criterios de búsqueda para la persona a eliminar.                                        
-                                                                                                          
-   * @returns promise con un booleano que indica si la eliminación fue exitosa.                           
-                                                                                                          
+  /**
+   * Elimina un persona de la base de datos por su ID.
+   * @param data criterios de búsqueda para la persona a eliminar.
+   * @returns promise con un booleano que indica si la eliminación fue exitosa.
    */
 
   public static async delete(id: number): Promise<boolean> {
     const [count] = await MemberRegisterModel.update(
       { is_visible: false },
-
       { where: { id } },
     );
 
     return count > 0;
   }
 
-  /**                                                                                                     
-                                                                                                          
-   * Actualiza un persona existente en la base de datos.                                                  
-                                                                                                          
-   * @param id ID de la persona a actualizar.                                                             
-                                                                                                          
-   * @param data datos a actualizar.                                                                      
-                                                                                                          
-   * @returns promise con un booleano que indica si la actualización fue exitosa.                         
-                                                                                                          
+  /**
+   * Actualiza un persona existente en la base de datos.
+   * @param id ID de la persona a actualizar.
+   * @param data datos a actualizar.
+   * @returns promise con un booleano que indica si la actualización fue exitosa.
    */
 
   public static async update(
     id: number,
-
     data: Partial<MemberRegisterCreationAttributes>,
   ): Promise<MemberRegisterAttributes | null> {
     return await connection.transaction(async (t) => {
       const [count] = await MemberRegisterModel.update(data, {
         where: { id },
-
         transaction: t,
       });
 

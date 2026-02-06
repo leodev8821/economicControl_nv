@@ -6,6 +6,7 @@ import { z } from "zod";
 export const ROLE_TYPES = {
   ADMINISTRADOR: "Administrador",
   SUPER_USER: "SuperUser",
+  LEADER: "Leader",
   USUARIO: "Usuario",
 } as const;
 

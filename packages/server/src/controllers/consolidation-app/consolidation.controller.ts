@@ -5,7 +5,7 @@ import {
   ConsolidationAttributes,
   ConsolidationCreationAttributes,
   ConsolidationSearchData,
-} from "../../models/consolidation-app/consolidacion.model.js";
+} from "../../models/consolidation-app/consolidation.model.js";
 import {
   ConsolidationCreationSchema,
   ConsolidationUpdateSchema,

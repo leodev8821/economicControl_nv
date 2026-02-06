@@ -15,7 +15,7 @@ import {
 
 export const cashesController = {
   // Obtiene todas las cajas
-  allCash: async (_req: Request, res: Response) => {
+  allCashes: async (_req: Request, res: Response) => {
     try {
       const cashes: CashAttributes[] = await CashActions.getAll();
 

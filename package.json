@@ -5,7 +5,7 @@
   "description": "Configuration root package for Economic Control monorepo",
   "scripts": {
     "install:all": "pnpm install",
-    "db:setup": "turbo db:setup",
+    "db:setup": "turbo run db:setup --filter=@economic-control/server",
     "init": "pnpm install && pnpm build && pnpm db:setup && pnpm dev",
     "dev": "turbo dev",
     "build": "turbo build",

@@ -2,12 +2,12 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import { MemberRegisterModel } from "./member-register.model.js";
-import { LeaderModel } from "./leader.model.js";
 import { NetworkModel } from "./network.model.js";
 import {
   CLASIFICATION,
   type ClasificationType,
 } from "@economic-control/shared";
+import { UserModel } from "../auth/user.model.js";
 
 const connection = getSequelizeConfig();
 
@@ -83,7 +83,7 @@ ConsolidationModel.init(
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: "leaders",
+        model: "users",
         key: "id",
       },
     },
@@ -142,7 +142,7 @@ ConsolidationModel.init(
             required: true,
           },
           {
-            model: LeaderModel,
+            model: UserModel,
             as: "Leader",
             attributes: ["id", "first_name", "last_name", "phone"],
             required: false,

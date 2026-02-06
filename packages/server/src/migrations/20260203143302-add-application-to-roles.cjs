@@ -6,7 +6,7 @@ module.exports = {
     await queryInterface.addColumn('roles', 'application', {
       type: Sequelize.INTEGER,
       allowNull: false,
-      defaultValue: 1, // Por defecto 1 (finance-app) para no romper registros existentes
+      defaultValue: 1,
       comment: '1: finance-app, 2: consolidation-app, 3: future-app'
     });
   },

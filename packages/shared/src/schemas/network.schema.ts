@@ -5,7 +5,6 @@ import { z } from "zod";
 // ----------------------------------------------------------------------
 const BaseNetworkSchema = z.object({
   id: z.number().int().positive().optional(),
-
   name: z.string().min(1, "El nombre es obligatorio"),
   is_visible: z.boolean().default(true),
 });

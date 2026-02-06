@@ -35,6 +35,9 @@
       "persistent": true,
       "dependsOn": ["^build"]
     },
+    "db:setup": {
+      "cache": false
+    },
     "check-types": {
       "outputs": []
     },

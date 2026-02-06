@@ -1,9 +1,6 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../utils/ControllerErrorHandler.js";
-import {
-  RoleActions,
-  RoleAttributes,
-} from "../models/finance-app/role.model.js";
+import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
+import { RoleActions, RoleAttributes } from "../../models/auth/role.model.js";
 
 export const rolesController = {
   // Obtiene todas las rols

@@ -13,11 +13,6 @@ const BaseCashSchema = z.object({
     .refine((v) => Math.round(v * 100) === v * 100, {
       message: "El monto solo puede tener dos decimales",
     }),
-
-  //pettyCash_limit: z.coerce
-  //  .number()
-  //  .positive("El límite debe ser positivo")
-  //  .optional(),
 });
 
 // ----------------------------------------------------------------------

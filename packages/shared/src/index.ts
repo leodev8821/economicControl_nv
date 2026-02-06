@@ -13,4 +13,5 @@ export * from "./schemas/cash-denomination.schema.js";
 export * from "./schemas/consolidation.schema.js";
 export * from "./schemas/member-register.schema.js";
 export * from "./schemas/network.schema.js";
-export * from "./schemas/leader.schema.js";
+export * from "./schemas/application.schema.js";
+export * from "./schemas/user-permission.schema.js";

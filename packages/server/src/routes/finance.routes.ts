@@ -1,76 +1,19 @@
 import { Router } from "express";
-import authRouter from "../auth/auth.routes.js";
-
-// --- MIDDLEWARES ---
-import { decodeAccessToken, requireRole } from "../auth/auth.middleware.js";
-
-// --- CONTROLLERS ---
 import { cashesController } from "../controllers/finance-app/cashes.controller.js";
 import { dashboardController } from "../controllers/finance-app/dashboard.controller.js";
 import { incomesController } from "../controllers/finance-app/incomes.controller.js";
 import { outcomesController } from "../controllers/finance-app/outcomes.controller.js";
 import { personsController } from "../controllers/finance-app/persons.controller.js";
 import { reportsController } from "../controllers/finance-app/reports.controller.js";
-import { rolesController } from "../controllers/roles.controller.js";
 import { weeksController } from "../controllers/finance-app/weeks.controller.js";
 import { cashDenominationController } from "../controllers/finance-app/cash-denomination.controller.js";
-import { usersController } from "../controllers/finance-app/users.controller.js";
 
 const router: Router = Router();
 
 // =================================================================
-// 🔑 LOGIN
-// =================================================================
-router.use("/auth", authRouter);
-
-// =================================================================
-// 🔐 MIDDLEWARES
-// =================================================================
-router.use(decodeAccessToken);
-
-// =================================================================
-// 👨‍💻 USERS (ADMIN)
-// =================================================================
-router.get(
-  "/users",
-  requireRole("SuperUser", "Administrador"),
-  usersController.allUsers,
-);
-router.get(
-  "/users/:id",
-  requireRole("SuperUser", "Administrador"),
-  usersController.oneUser,
-);
-router.post(
-  "/users",
-  requireRole("SuperUser", "Administrador"),
-  usersController.createUser,
-);
-router.put(
-  "/users/:id",
-  requireRole("SuperUser", "Administrador"),
-  usersController.updateUser,
-);
-router.delete(
-  "/users/:id",
-  requireRole("SuperUser", "Administrador"),
-  usersController.deleteUser,
-);
-
-// =================================================================
-// 👤 ROLES (ADMIN)
-// =================================================================
-router.get(
-  "/roles",
-  requireRole("SuperUser", "Administrador"),
-  rolesController.allRoles,
-);
-
-// =================================================================
 // 💰 CAJAS (CASHES)
-// Se usa :id/:name para permitir buscar por ambos en la URL
 // =================================================================
-router.get("/cashes", cashesController.allCash);
+router.get("/cashes", cashesController.allCashes);
 router.get("/cashes/:id", cashesController.oneCash);
 router.get("/cashes/name/:name", cashesController.oneCash);
 router.post("/cashes/new-cash", cashesController.createCash);
@@ -79,7 +22,6 @@ router.delete("/cashes/:id", cashesController.deleteCash);
 
 // =================================================================
 // 💵 INGRESOS (INCOMES)
-// El controller de incomes usa exports individuales (allIncomes, oneIncome, etc.)
 // =================================================================
 router.get("/incomes", incomesController.allIncomes);
 router.get("/incomes/:id", incomesController.oneIncome);
@@ -103,16 +45,13 @@ router.get("/outcomes/cash/:cash_id", outcomesController.outcomesByCash);
 
 // =================================================================
 // 🧑 PERSONAS (PERSONS)
-// Se usa :id/:dni para buscar por ambos
 // =================================================================
 router.get("/persons", personsController.allPersons);
 router.get("/persons/:id", personsController.onePerson);
 router.get("/persons/dni/:dni", personsController.onePerson);
 router.post("/persons/new-person", personsController.createPerson);
-// Se puede actualizar por id o dni
 router.put("/persons/:id", personsController.updatePerson);
 router.put("/persons/dni/:dni", personsController.updatePerson);
-// Se puede eliminar por id o dni
 router.delete("/persons/:id", personsController.deletePerson);
 router.delete("/persons/dni/:dni", personsController.deletePerson);
 

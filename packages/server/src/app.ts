@@ -2,7 +2,7 @@ import express, { Express, json, urlencoded } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { Server } from "http";
-import router from "./routes/routes.js";
+import mainRouter from "./routes/index.js";
 import database from "./seeders/initDatabases.js";
 import { env } from "./config/env.js";
 
@@ -42,7 +42,7 @@ app.get("/health", (_req, res) => {
 /* ===========================
  * Routes
  * =========================== */
-app.use("/ec/api/v1", router);
+app.use("/ec/api/v1", mainRouter);
 
 /* ===========================
  * Server bootstrap

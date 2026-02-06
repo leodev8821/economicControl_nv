@@ -5,7 +5,7 @@ import {
   User,
   CashDenomination,
   sequelizeInstance,
-} from "../models/finance-app/index.js";
+} from "../models/index.js";
 import { ROLE_TYPES } from "@economic-control/shared";
 import { env } from "../config/env.js";
 import { fileURLToPath } from "url";
@@ -53,13 +53,14 @@ const databaseSeeder: DatabaseSeeder = {
         const rolesToCreate = [
           { role_name: ROLE_TYPES.ADMINISTRADOR },
           { role_name: ROLE_TYPES.SUPER_USER },
+          { role_name: ROLE_TYPES.LEADER },
           { role_name: ROLE_TYPES.USUARIO },
         ]; //
 
         for (const roleData of rolesToCreate) {
           await Role.findOrCreate({
             where: { role_name: roleData.role_name },
-            defaults: { role_name: roleData.role_name, application: 1 },
+            defaults: { role_name: roleData.role_name },
             transaction,
           });
         } //
@@ -120,9 +121,7 @@ const databaseSeeder: DatabaseSeeder = {
               is_visible: env.SUDO_IS_VISIBLE,
             },
             { transaction },
-          ); //
-
-          console.log(`✅ Superusuario '${env.SUDO_USERNAME}' creado`);
+          );
         }
 
         /* ===========================

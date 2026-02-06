@@ -14,13 +14,11 @@ export type RoleType = (typeof ROLE_TYPES)[keyof typeof ROLE_TYPES];
 export interface RoleAttributes {
   id: number;
   role_name: RoleType;
-  application: number;
 }
 
 export type RoleSearchData = {
   id?: number;
   role_name?: string | RoleType;
-  application?: number;
 };
 
 /**
@@ -40,7 +38,6 @@ export class RoleModel
 {
   declare id: number;
   declare role_name: RoleType;
-  declare application: number;
 }
 
 /** Inicialización del modelo */
@@ -56,11 +53,6 @@ RoleModel.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-    },
-    application: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 1,
     },
   },
   {
