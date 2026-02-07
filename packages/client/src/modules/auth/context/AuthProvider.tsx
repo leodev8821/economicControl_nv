@@ -6,7 +6,7 @@ import apiClient, {
 } from "@core/api/axios";
 import type { User, LoginCredentials } from "@modules/auth/types/user.type";
 import { login as apiLogin } from "@modules/auth/api/authApi";
-import { AuthContext } from "@modules/auth/context/auth.context";
+import { AuthContext } from "./auth.context";
 
 interface AuthProviderProps {
   children: ReactNode;
