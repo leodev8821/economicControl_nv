@@ -12,15 +12,12 @@ export interface User {
   permissions: UserPermissionType[];
 }
 
-export interface User extends Omit<UserCreationRequest, "password"> {
-  id: number;
-}
-
 export type UserAttributes = User;
 
 export type LoginCredentials = LoginType;
 
 export interface LoginResponse {
+  ok: boolean;
   token: string;
   user: User;
   message?: string;
