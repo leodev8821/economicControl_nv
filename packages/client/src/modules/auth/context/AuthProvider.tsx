@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    * - Realiza la petición de login al backend
    * - Almacena el Access Token en el estado (memoria)
    * - Configura el interceptor de Axios con el nuevo token
-   * - Obtiene y almacena el perfil del usuario
+   * - Obtiene y almacena el perfil del usuario (ya incluido en la respuesta)
    * - Maneja errores y estados de carga
    * - Usa useCallback para optimización y estabilidad
    */
@@ -125,7 +125,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setIsLoading(true);
       try {
         // 1. Petición de Login (Obtiene Access Token en el body y Refresh Token en la cookie HttpOnly)
-        const { token: newAccessToken, message } = await apiLogin(credentials);
+        // Ahora devuelve también el user directamente
+        const { token: newAccessToken, user: userData, message } = await apiLogin(credentials);
 
         // 2. Guarda el nuevo Access Token en el estado (memoria)
         setAccessToken(newAccessToken);
@@ -133,13 +134,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // 3. Registra el token en el interceptor de Axios (global)
         setGlobalAccessToken(newAccessToken);
 
-        // 4. Obtener el perfil del usuario (ya se usa el nuevo token gracias a setGlobalAccessToken)
-        const userResponse = await apiClient.get<User>("/auth/profile");
-        const newUser = userResponse.data;
-
-        // 5. Almacenar el usuario (los datos, no el token)
-        setUser(newUser);
-        localStorage.setItem("authUser", JSON.stringify(newUser));
+        // 4. Almacenar el usuario (los datos, no el token)
+        setUser(userData);
+        localStorage.setItem("authUser", JSON.stringify(userData));
 
         console.log(message);
       } catch (error) {
@@ -181,7 +178,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, [logout, initializeAuth]);
 
   // Determina si el usuario está autenticado
-  const isAuthenticated = !!token;
+  const isAuthenticated = !!token && !!user;
 
   return (
     <AuthContext.Provider
