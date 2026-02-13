@@ -14,7 +14,7 @@ import { useAuth } from "@modules/auth/hooks/useAuth";
 import type { User } from "@modules/auth/types/user.type";
 import * as SharedUserSchema from "@economic-control/shared";
 
-export const UserPage: React.FC = () => {
+const UserPage: React.FC = () => {
   // 1. Seguridad y Autenticación
   const { user: authUser } = useAuth();
   const navigate = useNavigate();
@@ -23,7 +23,6 @@ export const UserPage: React.FC = () => {
   const hasPermission =
     authUser?.role_name && ALLOWED_ROLES.includes(authUser.role_name);
 
-  // Redirección si no hay permiso
   useEffect(() => {
     if (authUser && !hasPermission) {
       navigate("/dashboard");
@@ -31,7 +30,6 @@ export const UserPage: React.FC = () => {
   }, [authUser, hasPermission, navigate]);
 
   // 2. Hooks de Datos (CRUD)
-  // Nota: Si hasPermission es falso, evitamos hacer fetch (opcional, depende de tu lógica de hooks)
   const { data: users = [], isLoading, isError, error } = useUsers();
   const createMutation = useCreateUser();
   const updateMutation = useUpdateUser();
@@ -43,32 +41,34 @@ export const UserPage: React.FC = () => {
   // 4. Manejadores (Handlers)
 
   // Crear
-  const handleCreateUser = (data: SharedUserSchema.UserCreationRequest) => {
-    createMutation.mutate(data, {
-      onSuccess: () => {
-        // El formulario se resetea internamente si no es modo edición,
-        // o podemos forzar lógica extra aquí.
-      },
-    });
+  const handleCreateUser = async (
+    data: SharedUserSchema.UserCreationRequest,
+  ) => {
+    try {
+      await createMutation.mutateAsync(data);
+    } catch (error) {
+      //console.error("Error en Create:", error);
+      throw error;
+    }
   };
 
   // Actualizar
-  const handleUpdateUser = (data: User) => {
-    // Ajusta el tipo según lo que espere tu API
-    updateMutation.mutate(data, {
-      onSuccess: () => {
-        setEditingUser(null); // Salir del modo edición
-      },
-    });
+  const handleUpdateUser = async (data: User) => {
+    try {
+      await updateMutation.mutateAsync(data);
+      setEditingUser(null);
+    } catch (error) {
+      //console.error("Error en Update:", error);
+      throw error;
+    }
   };
 
   // Switcher para el Formulario
-  const handleFormSubmit = (data: any) => {
+  const handleFormSubmit = async (data: any) => {
     if (editingUser) {
-      // Al editar, aseguramos enviar el ID
-      handleUpdateUser({ ...data, id: editingUser.id });
+      return await handleUpdateUser({ ...data, id: editingUser.id });
     } else {
-      handleCreateUser(data);
+      return await handleCreateUser(data);
     }
   };
 
@@ -125,21 +125,9 @@ export const UserPage: React.FC = () => {
         </Alert>
       )}
 
-      {/* Mensaje de error de mutación */}
-      {(deleteMutation.isError ||
-        updateMutation.isError ||
-        createMutation.isError) && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          Error:{" "}
-          {deleteMutation.error?.message ||
-            updateMutation.error?.message ||
-            createMutation.error?.message}
-        </Alert>
-      )}
-
       {/* === SECCIÓN FORMULARIO === */}
       <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: "background.paper" }}>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" color="secondary" gutterBottom>
           {editingUser
             ? `Editando Usuario: ${editingUser.username}`
             : "Crear Nuevo Usuario"}
@@ -217,3 +205,4 @@ export const UserPage: React.FC = () => {
     </Box>
   );
 };
+export default UserPage;

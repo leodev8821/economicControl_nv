@@ -7,6 +7,7 @@ import {
 import bcrypt from "bcryptjs";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import { ROLE_TYPES } from "../auth/role.model.js";
+import { UserPermissionModel } from "./user-permission.model.js";
 
 const connection = getSequelizeConfig();
 
@@ -244,11 +245,34 @@ export class UserActions {
    * @param data datos de la usuario a crear.
    * @returns promise con el objeto UserAttributes creado.
    */
-  public static async create(
+  public static async createWithPermissions(
     data: UserCreationAttributes,
+    permissions: { application_id: number; role_id: number }[],
   ): Promise<UserAttributes> {
-    const user = await UserModel.create(data);
-    return user.get({ plain: true });
+    const sequelize = getSequelizeConfig();
+    const transaction = await sequelize.transaction();
+
+    try {
+      const user = await UserModel.create(data, { transaction });
+
+      if (permissions && permissions.length > 0) {
+        const permissionsToCreate = permissions.map((p) => ({
+          user_id: user.id,
+          application_id: p.application_id,
+          role_id: p.role_id,
+        }));
+
+        await UserPermissionModel.bulkCreate(permissionsToCreate, {
+          transaction,
+        });
+      }
+
+      await transaction.commit();
+      return user.get({ plain: true });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   /**

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   IconButton,
@@ -8,21 +8,6 @@ import {
   ListItemIcon,
   ListItemText,
   CssBaseline,
-} from "@mui/material";
-import {
-  Logout,
-  People,
-  AccountBalance,
-  Payments,
-  Euro,
-  Home,
-  Login,
-  Menu,
-  FindInPage,
-  PeopleAlt,
-} from "@mui/icons-material";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import {
   AppBar,
   Toolbar,
   Typography,
@@ -31,50 +16,64 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
+import {
+  Logout,
+  People,
+  AccountBalance,
+  Payments,
+  Euro,
+  Home,
+  Menu as MenuIcon,
+  FindInPage,
+  PeopleAlt,
+  DateRange, // Para Semanas
+  Handshake, // Para Consolidación
+} from "@mui/icons-material";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@modules/auth/hooks/useAuth";
+import { APPS } from "@shared/constants/app";
 import ColorModeSelect from "@core/theme/shared-theme/ColorModeSelect";
 import AppTheme from "@core/theme/shared-theme/AppTheme";
 
+// Ancho del Drawer
 const drawerWidthOpen = 240;
 const drawerWidthClose = 64;
 
-interface DashboardLayoutProps {
-  appBar: {
-    position: string;
-    sx: {
-      zIndex: (theme: { zIndex: { drawer: number } }) => number;
-    };
-    actions: React.ReactNode;
-  };
-  navigation: Array<{
-    kind?: "header" | "divider" | "item";
-    title?: string;
-    segment?: string;
-    icon?: React.ReactNode;
-    onClick?: () => void;
-  }>;
+// =================================================================
+// TIPO DE DATO PARA LA NAVEGACIÓN
+// =================================================================
+type NavItem = {
+  kind?: "header" | "divider";
+  title?: string;
+  segment?: string;
+  icon?: React.ReactNode;
+  onClick?: () => void;
+};
+
+// =================================================================
+// COMPONENTE INTERNO: SHELL DEL DASHBOARD (UI)
+// =================================================================
+interface DashboardShellProps {
   children: React.ReactNode;
+  navigation: NavItem[];
+  userRole?: string;
+  onLogout: () => void;
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({
-  appBar,
-  navigation,
+const DashboardShell: React.FC<DashboardShellProps> = ({
   children,
+  navigation,
+  onLogout,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
-  const iconSize = isMobile ? "small" : "medium";
-  const fontSize = isMobile ? "0.85rem" : "0.9rem";
-  const itemPaddingY = isMobile ? 0.5 : 1;
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Función unificada para el botón del menú
+  // Toggle del menú
   const handleDrawerToggle = () => {
     if (isMobile) {
       setMobileOpen(!mobileOpen);
@@ -83,28 +82,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     }
   };
 
-  // Cerrar el menú móvil al hacer clic en un item
+  // Click en un item del menú
   const handleItemClick = (segment?: string, onClick?: () => void) => {
-    if (onClick) onClick();
-    else if (segment) navigate(segment);
-
+    if (onClick) {
+      onClick();
+    } else if (segment) {
+      navigate(segment);
+    }
     if (isMobile) setMobileOpen(false);
   };
 
-  const renderNavItem = (item: DashboardLayoutProps["navigation"][0]) => {
+  // Renderizado de cada item de la lista
+  const renderNavItem = (item: NavItem, index: number) => {
+    // Render: Header de sección
     if (item.kind === "header") {
       if (collapsed && !isMobile) return null;
-
       return (
         <Typography
-          key={item.title}
+          key={`header-${index}`}
           variant="overline"
           sx={{
             px: 3,
-            py: 0.5,
+            mt: 2,
+            mb: 0.5,
             display: "block",
             color: "text.secondary",
-            fontSize: isMobile ? "0.65rem" : "0.75rem",
+            fontWeight: "bold",
+            fontSize: "0.75rem",
           }}
         >
           {item.title}
@@ -112,51 +116,51 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       );
     }
 
+    // Render: Separador
     if (item.kind === "divider") {
-      if (collapsed && !isMobile) return null;
-      return <Divider key={Math.random()} />;
+      return <Divider key={`div-${index}`} sx={{ my: 1 }} />;
     }
 
-    const isSelected = location.pathname === item.segment;
+    // Render: Item navegable
+    const isSelected = item.segment
+      ? location.pathname.startsWith(item.segment)
+      : false;
 
     return (
-      <ListItem key={item.title} disablePadding>
+      <ListItem
+        key={item.title || index}
+        disablePadding
+        sx={{ display: "block" }}
+      >
         <ListItemButton
-          sx={{
-            justifyContent: collapsed && !isMobile ? "center" : "flex-start",
-            px: 2.5,
-            py: itemPaddingY,
-          }}
           selected={isSelected}
           onClick={() => handleItemClick(item.segment, item.onClick)}
+          sx={{
+            minHeight: 48,
+            justifyContent: collapsed && !isMobile ? "center" : "initial",
+            px: 2.5,
+          }}
         >
-          {item.icon && (
-            <ListItemIcon
-              sx={{
-                minWidth: 0,
-                mr: collapsed && !isMobile ? 0 : 2,
-                justifyContent: "center",
-              }}
-            >
-              {React.isValidElement(item.icon)
-                ? React.cloneElement(item.icon as React.ReactElement<any>, {
-                    fontSize: iconSize,
-                  })
-                : item.icon}
-            </ListItemIcon>
-          )}
-
-          {(isMobile || !collapsed) && (
-            <ListItemText
-              primary={item.title}
-              slotProps={{
-                primary: {
-                  fontSize: fontSize,
-                  fontWeight: isSelected ? 600 : 400,
-                },
-              }}
-            />
-          )}
+          <ListItemIcon
+            sx={{
+              minWidth: 0,
+              mr: collapsed && !isMobile ? 0 : 2,
+              justifyContent: "center",
+              color: isSelected ? "primary.main" : "inherit",
+            }}
+          >
+            {item.icon}
+          </ListItemIcon>
+          <ListItemText
+            primary={item.title}
+            sx={{ opacity: collapsed && !isMobile ? 0 : 1 }}
+            slotProps={{
+              primary: {
+                fontSize: "0.9rem",
+                fontWeight: isSelected ? 600 : 400,
+              },
+            }}
+          />
         </ListItemButton>
       </ListItem>
     );
@@ -164,45 +168,56 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   return (
     <Box sx={{ display: "flex" }}>
+      {/* APP BAR SUPERIOR */}
       <AppBar
         position="fixed"
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          boxShadow: 1,
+        }}
+        color="default"
       >
         <Toolbar>
           <IconButton
             color="inherit"
+            aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
             sx={{ mr: 2 }}
           >
-            <Menu />
+            <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            NV - Economic Control
+
+          <Typography
+            variant="h6"
+            noWrap
+            component="div"
+            sx={{ flexGrow: 1, fontWeight: "bold" }}
+          >
+            NV Control
           </Typography>
-          <Box sx={{ flexGrow: 1 }} />
-          {appBar.actions}
+
+          {/* ACCIONES DEL HEADER (Dark Mode + Logout) */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <ColorModeSelect />
+            <IconButton onClick={onLogout} color="error" title="Cerrar Sesión">
+              <Logout />
+            </IconButton>
+          </Box>
         </Toolbar>
       </AppBar>
 
+      {/* DRAWER (Menú Lateral) */}
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}
         open={isMobile ? mobileOpen : true}
         onClose={handleDrawerToggle}
         ModalProps={{ keepMounted: true }}
         sx={{
-          width: isMobile
-            ? 280
-            : collapsed
-              ? drawerWidthClose
-              : drawerWidthOpen,
+          width: collapsed ? drawerWidthClose : drawerWidthOpen,
           flexShrink: 0,
           "& .MuiDrawer-paper": {
-            width: isMobile
-              ? 280
-              : collapsed
-                ? drawerWidthClose
-                : drawerWidthOpen,
+            width: collapsed ? drawerWidthClose : drawerWidthOpen,
             boxSizing: "border-box",
             overflowX: "hidden",
             transition: theme.transitions.create("width", {
@@ -212,112 +227,128 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           },
         }}
       >
-        <Toolbar />
-        <Box sx={{ overflow: "auto" }}>
+        <Toolbar /> {/* Espaciador para no tapar con el AppBar */}
+        <Box sx={{ overflow: "auto", py: 1 }}>
           <List>
-            {navigation.map((item: DashboardLayoutProps["navigation"][0]) =>
-              renderNavItem(item),
-            )}
+            {navigation.map((item, index) => renderNavItem(item, index))}
           </List>
         </Box>
       </Drawer>
 
-      <Box component="main" sx={{ flexGrow: 1, p: 3, width: "100%" }}>
-        <Toolbar />
+      {/* CONTENIDO PRINCIPAL */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: "100%",
+          minHeight: "100vh",
+          bgcolor: "background.default",
+        }}
+      >
+        <Toolbar /> {/* Espaciador superior */}
         {children}
       </Box>
     </Box>
   );
 };
-// --- Fin de Componentes Mock ---
 
-const AppLayout = () => {
-  const { user, logout } = useAuth();
-  const isAuthenticated = useMemo(() => !!user, [user]);
+// =================================================================
+// COMPONENTE PRINCIPAL: APPLAYOUT
+// =================================================================
+const AppLayout: React.FC = () => {
+  const { isAuthenticated, logout, user } = useAuth();
+  const navigate = useNavigate();
 
-  const isAdmin = useMemo(
+  // Redirección de seguridad si se pierde la sesión estando dentro del layout
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  // 1. Verificamos accesos basándonos en los permisos que vienen del backend
+  const hasFinanceAccess = useMemo(
     () =>
-      user?.role_name === "Administrador" || user?.role_name === "SuperUser",
+      user?.permissions?.some(
+        (p) =>
+          p.application_id === APPS.FINANCE || p.application_id === APPS.ALL,
+      ),
     [user],
   );
 
-  type NavItem = {
-    kind?: "header" | "divider" | "item";
-    title?: string;
-    segment?: string;
-    icon?: React.ReactNode;
-    onClick?: () => void;
-  };
+  const hasConsolidationAccess = useMemo(
+    () =>
+      user?.permissions?.some(
+        (p) =>
+          p.application_id === APPS.CONSOLIDATION ||
+          p.application_id === APPS.ALL,
+      ),
+    [user],
+  );
 
-  const navigation: NavItem[] = useMemo(() => {
-    if (isAuthenticated) {
-      const baseNav: NavItem[] = [
-        { kind: "header", title: "General" },
-        { segment: "/dashboard", title: "Dashboard", icon: <Home /> },
-        { kind: "header", title: "Operaciones" },
-        { segment: "/cajas", title: "Cajas", icon: <AccountBalance /> },
-        { segment: "/arqueo", title: "Arqueo", icon: <FindInPage /> },
-        { segment: "/ingresos", title: "Ingresos", icon: <Euro /> },
-        { segment: "/egresos", title: "Egresos", icon: <Payments /> },
+  const isAdmin =
+    user?.role_name === "Administrador" || user?.role_name === "SuperUser";
+
+  // 2. Construcción dinámica del menú
+  const navigation = useMemo(() => {
+    const menu: NavItem[] = [];
+
+    // --- SECCIÓN FINANZAS ---
+    if (hasFinanceAccess) {
+      menu.push(
+        { kind: "header", title: "Finanzas" },
+        { title: "Dashboard", segment: "/finance/dashboard", icon: <Home /> },
+        {
+          title: "Cajas",
+          segment: "/finance/cashes",
+          icon: <AccountBalance />,
+        },
+        { title: "Ingresos", segment: "/finance/incomes", icon: <Euro /> },
+        { title: "Egresos", segment: "/finance/outcomes", icon: <Payments /> },
+        {
+          title: "Arqueo",
+          segment: "/finance/cash-denominations",
+          icon: <FindInPage />,
+        },
+        { title: "Semanas", segment: "/finance/weeks", icon: <DateRange /> },
         { kind: "divider" },
-        { kind: "header", title: "Datos" },
-        { segment: "/personas", title: "Personas", icon: <People /> },
-        { kind: "divider" },
-      ];
-
-      if (isAdmin) {
-        baseNav.push(
-          { kind: "divider" },
-          { kind: "header", title: "Administración" },
-          { segment: "/usuarios", title: "Usuarios", icon: <PeopleAlt /> },
-        );
-      }
-
-      baseNav.push({ kind: "divider" });
-      return baseNav;
-    } else {
-      return [
-        { kind: "header", title: "Acceso" },
-        { segment: "/login", title: "Iniciar Sesión", icon: <Login /> },
-      ];
+        { kind: "header", title: "Gestión" },
+        { title: "Personas", segment: "/finance/persons", icon: <People /> },
+      );
     }
-  }, [isAuthenticated, isAdmin]);
+
+    // --- SECCIÓN CONSOLIDACIÓN ---
+    if (hasConsolidationAccess) {
+      if (menu.length > 0) menu.push({ kind: "divider" });
+      menu.push(
+        { kind: "header", title: "Módulos" },
+        {
+          title: "Consolidación",
+          segment: "/consolidation",
+          icon: <Handshake />,
+        },
+      );
+    }
+
+    // --- SECCIÓN ADMIN (Usuarios) ---
+    if (isAdmin) {
+      menu.push(
+        { kind: "divider" },
+        { kind: "header", title: "Sistema" },
+        { title: "Usuarios", segment: "/admin/users", icon: <PeopleAlt /> },
+      );
+    }
+
+    return menu;
+  }, [hasFinanceAccess, hasConsolidationAccess, isAdmin]);
 
   return (
     <AppTheme>
       <CssBaseline enableColorScheme />
-      <DashboardLayout
-        navigation={navigation}
-        appBar={{
-          position: "sticky",
-          sx: { zIndex: (theme) => theme.zIndex.drawer + 1 },
-          actions: (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <ColorModeSelect />
-              {isAuthenticated ? (
-                <IconButton
-                  aria-label="logout"
-                  onClick={logout}
-                  color="inherit"
-                >
-                  <Logout />
-                </IconButton>
-              ) : null}
-            </Box>
-          ),
-        }}
-      >
-        <Box
-          sx={{
-            py: 4,
-            width: "100%",
-            mx: "auto",
-            minHeight: "80vh",
-          }}
-        >
-          <Outlet />
-        </Box>
-      </DashboardLayout>
+      <DashboardShell navigation={navigation} onLogout={logout}>
+        <Outlet />
+      </DashboardShell>
     </AppTheme>
   );
 };

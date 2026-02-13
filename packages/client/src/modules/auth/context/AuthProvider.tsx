@@ -1,9 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
-import apiClient, {
-  setGlobalAccessToken,
-  refreshInstance,
-} from "@core/api/axios";
+import { setGlobalAccessToken, refreshInstance } from "@core/api/axios";
 import type { User, LoginCredentials } from "@modules/auth/types/user.type";
 import { login as apiLogin } from "@modules/auth/api/authApi";
 import { AuthContext } from "./auth.context";
@@ -124,24 +121,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     async (credentials: LoginCredentials) => {
       setIsLoading(true);
       try {
-        // 1. Petición de Login (Obtiene Access Token en el body y Refresh Token en la cookie HttpOnly)
-        // Ahora devuelve también el user directamente
-        const { token: newAccessToken, user: userData, message } = await apiLogin(credentials);
+        const { token: newAccessToken, user: userData } =
+          await apiLogin(credentials);
 
-        // 2. Guarda el nuevo Access Token en el estado (memoria)
         setAccessToken(newAccessToken);
 
-        // 3. Registra el token en el interceptor de Axios (global)
         setGlobalAccessToken(newAccessToken);
 
-        // 4. Almacenar el usuario (los datos, no el token)
         setUser(userData);
         localStorage.setItem("authUser", JSON.stringify(userData));
-
-        console.log(message);
       } catch (error) {
         console.error("Login fallido:", error);
-        logout(); // Forzar la limpieza si falla
+        logout();
         throw error;
       } finally {
         setIsLoading(false);

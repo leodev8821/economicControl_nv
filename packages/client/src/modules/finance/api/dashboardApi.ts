@@ -10,7 +10,7 @@ import type { ApiResponse } from "@shared/types/apiResponse";
 export const getBalance = async (): Promise<ApiResponse<CashBalance>> => {
   try {
     const response = await apiClient.get<ApiResponse<CashBalance>>(
-      "/balance/get-balance",
+      "/finance/balance/get-balance",
     );
     return response.data;
   } catch (error) {

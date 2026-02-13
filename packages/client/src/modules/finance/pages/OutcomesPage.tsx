@@ -23,7 +23,7 @@ import BulkOutcomeForm from "@modules/finance/components/forms/BulkOutcomeForm";
 import * as SharedOutcomeSchemas from "@economic-control/shared";
 import type { Outcome } from "@modules/finance/types/outcome.type";
 
-export const OutcomesPage: React.FC = () => {
+const OutcomesPage: React.FC = () => {
   const { data: outcomes = [], isLoading, isError, error } = useReadOutcomes();
   const createMutation = useCreateOutcome();
   const updateMutation = useUpdateOutcome();
@@ -170,3 +170,5 @@ export const OutcomesPage: React.FC = () => {
     </Box>
   );
 };
+
+export default OutcomesPage;

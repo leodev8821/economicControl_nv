@@ -33,6 +33,8 @@ export const envSchema = z.object({
   SUDO_PASSWORD: z.string().min(1),
   SUDO_FIRSTNAME: z.string().min(1),
   SUDO_LASTNAME: z.string().min(1),
+  SUDO_EMAIL: z.email(),
+  SUDO_PHONE: z.string().min(1),
 
   SUDO_IS_VISIBLE: z.coerce.boolean().default(true),
 

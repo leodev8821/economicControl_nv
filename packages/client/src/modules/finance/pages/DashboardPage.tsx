@@ -16,7 +16,7 @@ const transformToPieData = (
   }));
 };
 
-export const DashboardPage: React.FC = () => {
+const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { data: apiResponse, isLoading, isError, error } = useBalance();
 
@@ -222,3 +222,5 @@ export const DashboardPage: React.FC = () => {
     </Box>
   );
 };
+
+export default DashboardPage;

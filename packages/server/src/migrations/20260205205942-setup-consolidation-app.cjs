@@ -21,6 +21,7 @@ module.exports = {
     });
 
     await queryInterface.bulkInsert('applications', [
+      { app_name: 'Todas', description: 'Todas las aplicaciones' },
       { app_name: 'Finanzas', description: 'Sistema de control financiero' },
       { app_name: 'Consolidación', description: 'Sistema de consolidación de miembros' }
     ]);
@@ -40,11 +41,17 @@ module.exports = {
         references: { model: 'applications', key: 'id' },
         onUpdate: 'CASCADE', onDelete: 'CASCADE',
       },
-      role_name: {
-        type: Sequelize.STRING,
+      role_id: {
+        type: Sequelize.INTEGER,
         allowNull: false,
-        references: { model: 'roles', key: 'role_name' },
+        references: { model: 'roles', key: 'id' },
         onUpdate: 'CASCADE',
+      }
+    }, {
+      uniqueKeys: {
+        user_app_unique: {
+          fields: ['user_id', 'application_id']
+        }
       }
     });
 

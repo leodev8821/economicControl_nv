@@ -13,7 +13,7 @@ import type { Cash } from "@modules/finance/types/cash.type";
 import type { CashUpdateData } from "@modules/finance/api/cashApi";
 import * as SharedCashSchemas from "@economic-control/shared";
 
-export const CashesPage: React.FC = () => {
+const CashesPage: React.FC = () => {
   const { data: cashes = [], isLoading, isError, error } = useCashes();
   const createMutation = useCreateCash();
   const updateMutation = useUpdateCash();
@@ -160,3 +160,5 @@ export const CashesPage: React.FC = () => {
     </Box>
   );
 };
+
+export default CashesPage;

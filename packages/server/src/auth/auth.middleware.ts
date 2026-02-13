@@ -75,7 +75,7 @@ export const decodeRefreshToken = (
  * Verifica si el usuario tiene permiso para la app específica (finance, consolidation, etc.)
  */
 export const checkAppAccess =
-  (appName: string) =>
+  (application_id: number) =>
   async (req: Request, res: Response, next: NextFunction) => {
     if (req.userRole === ROLE_TYPES.SUPER_USER) {
       return next();
@@ -88,12 +88,15 @@ export const checkAppAccess =
         .json({ ok: false, message: "Usuario no identificado" });
     }
 
-    const hasAccess = await UserPermissionActions.checkAccess(req.id, appName);
+    const hasAccess = await UserPermissionActions.checkAccess(
+      req.id,
+      application_id,
+    );
 
     if (!hasAccess) {
       return res.status(403).json({
         ok: false,
-        message: `No tienes permisos para acceder a la aplicación: ${appName}`,
+        message: `No tienes permisos para acceder a la aplicación: ${application_id}`,
       });
     }
 

@@ -49,8 +49,8 @@ UserPermission.belongsTo(Application, {
   as: "Application",
 });
 UserPermission.belongsTo(Role, {
-  foreignKey: "role_name",
-  targetKey: "role_name",
+  foreignKey: "role_id",
+  targetKey: "id",
   as: "Role",
 });
 

@@ -115,9 +115,9 @@ export const userPermissionsController = {
   // Verifica acceso específico
   verifyAccess: async (req: Request, res: Response) => {
     try {
-      const { userId, appName, role } = req.body;
+      const { userId, application_id, role_id } = req.body;
 
-      if (!userId || !appName) {
+      if (!userId || !application_id) {
         return res
           .status(400)
           .json({ ok: false, message: "Faltan datos para verificar." });
@@ -125,8 +125,8 @@ export const userPermissionsController = {
 
       const hasAccess = await UserPermissionActions.checkAccess(
         Number(userId),
-        String(appName),
-        role ? String(role) : undefined,
+        Number(application_id),
+        role_id ? Number(role_id) : undefined,
       );
 
       return res.status(200).json({

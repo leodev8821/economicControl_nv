@@ -12,7 +12,7 @@ import type { UserCreationRequest } from "@economic-control/shared";
 export const getAllUsers = async (): Promise<User[]> => {
   try {
     // Usamos la ruta relativa, el proxy de Vite y el prefijo de Axios hacen el resto.
-    const response = await apiClient.get<ApiResponse<User>>("/users");
+    const response = await apiClient.get<ApiResponse<User>>("/auth/users");
 
     // Devolvemos el array limpio y tipado correctamente
     return response.data.data.map((user) => ({
@@ -27,14 +27,16 @@ export const getAllUsers = async (): Promise<User[]> => {
 /**
  * Función que realiza la petición POST al backend para crear un nuevo usuario.
  * Ruta: POST /ec/api/v1/users
- * @param user - Objeto UserCreationRequest con los datos del usuario a crear.
+ * @param userData - Objeto UserCreationRequest con los datos del usuario a crear.
  * @returns Promesa que resuelve en un objeto User.
  */
-export const createUser = async (user: UserCreationRequest): Promise<User> => {
+export const createUser = async (
+  userData: UserCreationRequest,
+): Promise<User> => {
   try {
     const response = await apiClient.post<ApiResponseData<User>>(
-      "/users",
-      user,
+      "/auth/users",
+      userData,
     );
     return response.data.data as unknown as User;
   } catch (error) {
@@ -55,7 +57,7 @@ export const updateUser = async ({
 }: UserAttributes): Promise<User> => {
   try {
     const response = await apiClient.put<ApiResponseData<User>>(
-      `/users/${id}`,
+      `/auth/users/${id}`,
       data,
     );
     return response.data.data as unknown as User;
@@ -72,7 +74,7 @@ export const updateUser = async ({
  */
 export const deleteUser = async (id: number): Promise<void> => {
   try {
-    await apiClient.delete(`/users/${id}`);
+    await apiClient.delete(`/auth/users/${id}`);
   } catch (error) {
     throw error;
   }

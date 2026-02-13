@@ -4,6 +4,7 @@ import { z } from "zod";
 // 1. DEFINICIÓN DE CONSTANTES (Single Source of Truth)
 // ----------------------------------------------------------------------
 export const APPLICATION_TYPES = {
+  ALL: "Todas",
   FINANCE: "Finanzas",
   CONSOLIDATION: "Consolidación",
 } as const;
@@ -14,6 +15,7 @@ export const APPLICATION_VALUES = Object.values(APPLICATION_TYPES) as [
 ];
 
 export const APPLICATION_DESCRIPTIONS = {
+  ALL: "Todas las aplicaciones",
   FINANCE: "Sistema de control financiero",
   CONSOLIDATION: "Sistema de consolidación de miembros",
 } as const;

@@ -40,10 +40,20 @@ export const authController = {
     return res.status(200).json({
       ok: true,
       token: accessToken,
-      permissions: permissions.map((p) => ({
-        appId: p.application_id,
-        role: p.role_name,
-      })),
+      user: {
+        id: user.id,
+        username: user.username,
+        role_name: user.role_name,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        permissions: permissions.map((p) => ({
+          id: p.id,
+          user_id: p.user_id,
+          application_id: p.application_id,
+          role_id: p.role_id,
+        })),
+      },
     });
   },
 

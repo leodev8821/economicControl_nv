@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Box from "@mui/material/Box";
@@ -73,10 +73,15 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
     login_data: "",
     password: "",
   });
-  const [serverError, setServerError] = useState<string | null>(null); // Para errores del servidor
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   if (isAuthenticated) {
-    navigate("/dashboard", { replace: true });
     return null;
   }
 
@@ -132,7 +137,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
 
     try {
       await login(credentials);
-      navigate("/dashboard", { replace: true });
+      navigate("/", { replace: true });
     } catch (err) {
       const errorMessage =
         err instanceof Error

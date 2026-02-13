@@ -13,7 +13,7 @@ import type { Person } from "@modules/finance/types/person.type";
 import type { PersonAttributes } from "@modules/finance/types/person.type";
 import * as SharedPersonSchemas from "@economic-control/shared";
 
-export const PersonsPage: React.FC = () => {
+const PersonsPage: React.FC = () => {
   const { data: persons = [], isLoading, isError, error } = usePersons();
   const createMutation = useCreatePerson();
   const updateMutation = useUpdatePerson();
@@ -162,3 +162,5 @@ export const PersonsPage: React.FC = () => {
     </Box>
   );
 };
+
+export default PersonsPage;

@@ -7,7 +7,6 @@ import {
 } from "../../models/auth/user.model.js";
 import {
   UserCreationSchema,
-  type UserCreationRequest,
   UserUpdateSchema,
   type UserUpdateRequest,
 } from "@economic-control/shared";
@@ -97,17 +96,25 @@ export const usersController = {
   // Crea una nueva usuario
   createUser: async (req: Request, res: Response) => {
     try {
+      // 1. Validar con Zod
       const validationResult = UserCreationSchema.safeParse(req.body);
 
       if (!validationResult.success) {
         return res.status(400).json({
           ok: false,
-          message: "Datos de nueva usuario inválidos.",
+          message: "Datos de usuario o permisos inválidos.",
           errors: validationResult.error.issues,
         });
       }
 
-      const userData: UserCreationRequest = validationResult.data;
+      const { permissions, ...userData } = validationResult.data;
+
+      if (userData.role_name === sudoRole) {
+        return res.status(403).json({
+          ok: false,
+          message: `No está permitido crear usuarios con el rol '${sudoRole}'.`,
+        });
+      }
 
       const existingUser = await UserActions.getOne({
         username: userData.username,
@@ -120,30 +127,29 @@ export const usersController = {
         });
       }
 
-      if (userData.role_name === sudoRole) {
-        return res.status(403).json({
-          ok: false,
-          message: `No está permitido crear usuarios con el rol '${sudoRole}'.`,
-        });
-      }
-
-      const newUser = await UserActions.create(
+      const newUser = await UserActions.createWithPermissions(
         userData as UserCreationAttributes,
+        permissions,
       );
 
       return res.status(201).json({
         ok: true,
-        message: "Usuario creada correctamente.",
+        message: "Usuario y permisos creados correctamente.",
         data: newUser,
       });
     } catch (error) {
       if (error instanceof UniqueConstraintError) {
         return res.status(409).json({
           ok: false,
-          message: "El nombre de usuario ya está en uso.",
+          message:
+            "Conflicto de duplicidad: El usuario o un permiso ya existe.",
         });
       }
-      return ControllerErrorHandler(res, error, "Error al crear la usuario.");
+      return ControllerErrorHandler(
+        res,
+        error,
+        "Error crítico al crear usuario con permisos.",
+      );
     }
   },
 

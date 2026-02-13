@@ -1,6 +1,6 @@
 import * as React from "react";
 /**MUI */
-//import { useTheme } from "@mui/material/styles";
+import { type Theme, useTheme } from "@mui/material/styles";
 import {
   OutlinedInput,
   FormControl,
@@ -12,21 +12,56 @@ import {
   Select,
   MenuItem,
   Typography,
+  InputAdornment,
+  Divider,
+  IconButton,
+  Snackbar,
+  Alert,
 } from "@mui/material";
-import { useForm } from "@conform-to/react";
+import { Delete, AddCircleOutline } from "@mui/icons-material";
+import { AxiosError } from "axios";
 
 /** Schemas de validación */
+import { getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import * as SharedUserSchema from "@economic-control/shared";
 import { ROLE_VALUES } from "@economic-control/shared";
 
-/** Types */
-import type { User } from "@/modules/auth/types/user.type";
+/** Hooks & Context */
+import { useAuth } from "../hooks/useAuth";
+import { useApplications } from "../hooks/useApplications";
+import { useRoles } from "../hooks/useRoles";
+
+// Constantes para MUI Select
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
+interface FeedbackState {
+  open: boolean;
+  message: string;
+  severity: "success" | "error";
+}
+
+function getStyles(name: string, selectedValue: string, theme: Theme) {
+  return {
+    fontWeight:
+      selectedValue === name
+        ? theme.typography.fontWeightMedium
+        : theme.typography.fontWeightRegular,
+  };
+}
 
 interface UserFormProps {
-  initialValues?: User | null;
-  //onSubmit: (data: SharedUserSchema.UserCreationRequest) => void;
-  onSubmit: (data: any) => void;
+  initialValues?: any;
+  onSubmit: (data: any) => Promise<void> | void;
   onCancel?: () => void;
   isLoading?: boolean;
   isUpdateMode?: boolean;
@@ -38,63 +73,197 @@ export default function UserForm({
   isLoading = false,
   isUpdateMode = false,
 }: UserFormProps) {
-  //const theme = useTheme();
+  const theme = useTheme();
+  const { user: currentUser } = useAuth();
+
+  // 1. Cargar datos maestros para los selectores de permisos
+  const { data: applications = [] } = useApplications();
+  const { data: roles = [] } = useRoles();
+
+  // 2. Estado local para la tabla de permisos
+  const [selectedApps, setSelectedApps] = React.useState<
+    { application_id: number }[]
+  >(
+    initialValues?.permissions?.map((p: any) => ({
+      application_id: p.application_id,
+    })) || [],
+  );
+
+  const [fieldErrors, setFieldErrors] = React.useState<{
+    [key: string]: string | null;
+  }>({});
+
+  // 3. Estado para el feedback (Snackbar)
+  const [feedback, setFeedback] = React.useState<FeedbackState>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const schema = isUpdateMode
     ? SharedUserSchema.UserUpdateSchema
     : SharedUserSchema.UserCreationSchema;
 
-  // 1. Inicialización de Conform
   const [form, fields] = useForm({
     onValidate({ formData }) {
-      return parseWithZod(formData, {
-        schema,
-      });
+      return parseWithZod(formData, { schema });
     },
-    shouldValidate: "onBlur",
-    shouldRevalidate: "onInput",
-    defaultValue: initialValues
-      ? ({
-          ...initialValues,
-        } as any)
-      : undefined,
+    defaultValue: initialValues,
   });
 
-  // 2. Manejador de Envío
+  // --- Lógica de Permisos ---
+  const addApp = () => {
+    setSelectedApps([...selectedApps, { application_id: 0 }]);
+  };
+
+  const updateApp = (index: number, value: number) => {
+    const updated = [...selectedApps];
+    updated[index] = { application_id: value };
+    setSelectedApps(updated);
+  };
+
+  const removeApp = (index: number) => {
+    setSelectedApps(selectedApps.filter((_, i) => i !== index));
+  };
+
+  // --- Manejador para cerrar el Snackbar ---
+  const handleCloseFeedback = () => {
+    setFeedback((prev) => ({ ...prev, open: false }));
+  };
+
+  // --- Manejo del Submit ---
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setFieldErrors({});
 
-    const formData = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const formData = new FormData(formElement);
     const submission = parseWithZod(formData, { schema });
 
     if (submission.status !== "success") return;
 
-    onSubmit(submission.value);
+    const selectedRoleName = submission.value.role_name;
+    const targetRole = roles.find((r) => r.role_name === selectedRoleName);
 
-    if (!isUpdateMode) event.currentTarget.reset();
+    if (!targetRole) {
+      setFeedback({
+        open: true,
+        message: `Error: No se encontró configuración interna para el rol "${selectedRoleName}".`,
+        severity: "error",
+      });
+      return;
+    }
+
+    const cleanPermissions = selectedApps
+      .filter((p) => p.application_id !== 0)
+      .map((p) => ({
+        application_id: p.application_id,
+        role_id: targetRole.id,
+      }));
+
+    const payload = {
+      ...submission.value,
+      permissions: cleanPermissions,
+    };
+
+    try {
+      await onSubmit(payload);
+
+      setFeedback({
+        open: true,
+        message: isUpdateMode
+          ? "Usuario actualizado correctamente."
+          : "Usuario creado correctamente.",
+        severity: "success",
+      });
+
+      if (!isUpdateMode) {
+        formElement.reset();
+        setSelectedApps([]);
+      }
+    } catch (error) {
+      //console.error("Error capturado:", error);
+      let errorMessage = "Hubo un error desconocido al procesar la solicitud.";
+
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 409) {
+          errorMessage =
+            error.response.data?.message || "El usuario ya existe.";
+          setFieldErrors({ username: errorMessage });
+        } else {
+          errorMessage = error.response?.data?.message || "Error del servidor.";
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      setFeedback({ open: true, message: errorMessage, severity: "error" });
+    }
   };
 
-  return (
-    <form id={form.id} onSubmit={handleSubmit} noValidate>
-      <Typography variant="h5" mb={3}>
-        {isUpdateMode ? "Editar Usuario" : "Crear Nuevo Usuario"}
-      </Typography>
+  // --- Filtrado de Roles ---
+  const filteredRoles = ROLE_VALUES.filter((role) => {
+    if (role === "SuperUser") {
+      return currentUser?.role_name === "SuperUser";
+    }
+    return true;
+  });
 
-      <Grid container spacing={2}>
+  return (
+    <form
+      method="post"
+      id={form.id}
+      onSubmit={handleSubmit}
+      className="user-form"
+      noValidate
+    >
+      {/* Errores a nivel de formulario */}
+      {form.errors && (
+        <Typography color="error" variant="body2" mb={2}>
+          {form.errors}
+        </Typography>
+      )}
+
+      {/* Componente Snackbar para feedback */}
+      <Snackbar
+        open={feedback.open}
+        autoHideDuration={6000}
+        onClose={handleCloseFeedback}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseFeedback}
+          severity={feedback.severity}
+          sx={{ width: "100%" }}
+          variant="filled"
+        >
+          {feedback.message}
+        </Alert>
+      </Snackbar>
+
+      <Grid container spacing={3}>
         {/* Username */}
         <Grid size={{ xs: 12, sm: 6 }}>
-          <FormControl fullWidth error={!!fields.username.errors}>
-            <InputLabel htmlFor={fields.username.id}>
-              Nombre de Usuario *
-            </InputLabel>
+          <FormControl
+            fullWidth
+            error={!!fields.username.errors || !!fieldErrors.username}
+          >
+            <InputLabel>Nombre de Usuario *</InputLabel>
             <OutlinedInput
-              id={fields.username.id}
-              name={fields.username.name}
-              label="Nombre de Usuario *"
+              {...getInputProps(fields.username, { type: "text" })}
               defaultValue={initialValues?.username}
+              label="Nombre de Usuario *"
               disabled={isLoading}
+              onChange={() => {
+                if (fieldErrors.username)
+                  setFieldErrors({ ...fieldErrors, username: null });
+              }}
             />
-            <FormHelperText>{fields.username.errors}</FormHelperText>
+            <FormHelperText>
+              {fields.username.errors
+                ? fields.username.errors
+                : fieldErrors.username}
+            </FormHelperText>
           </FormControl>
         </Grid>
 
@@ -109,14 +278,21 @@ export default function UserForm({
               label="Rol *"
               defaultValue={initialValues?.role_name ?? ""}
               disabled={isLoading}
+              MenuProps={MenuProps}
             >
-              {ROLE_VALUES.map((role) => (
-                <MenuItem key={role} value={role}>
-                  {role}
+              {filteredRoles.map((r) => (
+                <MenuItem
+                  key={r}
+                  value={r}
+                  style={getStyles("role_name", r, theme)}
+                >
+                  {r}
                 </MenuItem>
               ))}
             </Select>
-            <FormHelperText>{fields.role_name.errors}</FormHelperText>
+            {fields.role_name.errors && (
+              <FormHelperText>{fields.role_name.errors}</FormHelperText>
+            )}
           </FormControl>
         </Grid>
 
@@ -125,13 +301,14 @@ export default function UserForm({
           <FormControl fullWidth error={!!fields.first_name.errors}>
             <InputLabel htmlFor={fields.first_name.id}>Nombre *</InputLabel>
             <OutlinedInput
-              id={fields.first_name.id}
-              name={fields.first_name.name}
-              label="Nombre *"
+              {...getInputProps(fields.first_name, { type: "text" })}
               defaultValue={initialValues?.first_name}
+              label="Nombre *"
               disabled={isLoading}
             />
-            <FormHelperText>{fields.first_name.errors}</FormHelperText>
+            {fields.first_name.errors && (
+              <FormHelperText>{fields.first_name.errors}</FormHelperText>
+            )}
           </FormControl>
         </Grid>
 
@@ -140,13 +317,14 @@ export default function UserForm({
           <FormControl fullWidth error={!!fields.last_name.errors}>
             <InputLabel htmlFor={fields.last_name.id}>Apellido *</InputLabel>
             <OutlinedInput
-              id={fields.last_name.id}
-              name={fields.last_name.name}
-              label="Apellido *"
+              {...getInputProps(fields.last_name, { type: "text" })}
               defaultValue={initialValues?.last_name}
+              label="Apellido *"
               disabled={isLoading}
             />
-            <FormHelperText>{fields.last_name.errors}</FormHelperText>
+            {fields.last_name.errors && (
+              <FormHelperText>{fields.last_name.errors}</FormHelperText>
+            )}
           </FormControl>
         </Grid>
 
@@ -155,13 +333,14 @@ export default function UserForm({
           <FormControl fullWidth error={!!fields.email.errors}>
             <InputLabel htmlFor={fields.email.id}>Email *</InputLabel>
             <OutlinedInput
-              id={fields.email.id}
-              name={fields.email.name}
-              label="Email *"
+              {...getInputProps(fields.email, { type: "email" })}
               defaultValue={initialValues?.email}
+              label="Email *"
               disabled={isLoading}
             />
-            <FormHelperText>{fields.email.errors}</FormHelperText>
+            {fields.email.errors && (
+              <FormHelperText>{fields.email.errors}</FormHelperText>
+            )}
           </FormControl>
         </Grid>
 
@@ -170,26 +349,32 @@ export default function UserForm({
           <FormControl fullWidth error={!!fields.phone.errors}>
             <InputLabel htmlFor={fields.phone.id}>Teléfono *</InputLabel>
             <OutlinedInput
-              id={fields.phone.id}
-              name={fields.phone.name}
-              label="Teléfono *"
+              {...getInputProps(fields.phone, { type: "text" })}
               defaultValue={initialValues?.phone}
+              label="Teléfono *"
               disabled={isLoading}
+              startAdornment={
+                <InputAdornment position="start">
+                  <Typography variant="body2" color="text.secondary">
+                    +34
+                  </Typography>
+                </InputAdornment>
+              }
             />
-            <FormHelperText>{fields.phone.errors}</FormHelperText>
+            {fields.phone.errors && (
+              <FormHelperText>{fields.phone.errors}</FormHelperText>
+            )}
           </FormControl>
         </Grid>
 
-        {/* Password - Solo obligatorio en creación */}
+        {/* Password */}
         <Grid size={{ xs: 12 }}>
           <FormControl fullWidth error={!!fields.password.errors}>
             <InputLabel htmlFor={fields.password.id}>
               Contraseña {isUpdateMode ? "(Opcional)" : "*"}
             </InputLabel>
             <OutlinedInput
-              id={fields.password.id}
-              name={fields.password.name}
-              type="password"
+              {...getInputProps(fields.password, { type: "password" })}
               label={`Contraseña ${isUpdateMode ? "(Opcional)" : "*"}`}
               disabled={isLoading}
             />
@@ -200,28 +385,92 @@ export default function UserForm({
           </FormControl>
         </Grid>
 
+        {/* SECCIÓN DE PERMISOS */}
         <Grid size={{ xs: 12 }}>
-          <Stack direction="row" spacing={2} justifyContent="flex-end" mt={2}>
-            {onCancel && (
-              <Button
-                variant="outlined"
-                onClick={onCancel}
-                disabled={isLoading}
-              >
-                Cancelar
-              </Button>
-            )}
+          <Divider sx={{ my: 1 }} />
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mb: 2 }}
+          >
+            <Typography variant="subtitle1" fontWeight="bold">
+              Acceso a Aplicaciones
+            </Typography>
             <Button
-              type="submit"
-              variant="contained"
-              disabled={isLoading}
-              sx={{ minWidth: 150 }}
+              startIcon={<AddCircleOutline />}
+              onClick={addApp}
+              size="small"
+              variant="outlined"
             >
+              Añadir App
+            </Button>
+          </Stack>
+
+          {selectedApps.map((appItem, index) => (
+            <Stack
+              key={index}
+              direction="row"
+              spacing={2}
+              sx={{ mb: 2 }}
+              alignItems="center"
+            >
+              <FormControl fullWidth size="small">
+                <InputLabel>Aplicación</InputLabel>
+                <Select
+                  value={appItem.application_id || ""}
+                  label="Aplicación"
+                  MenuProps={MenuProps}
+                  onChange={(e) => updateApp(index, Number(e.target.value))}
+                >
+                  {applications.map((app) => (
+                    <MenuItem
+                      key={app.id}
+                      value={app.id}
+                      style={getStyles("application_id", app.app_name, theme)}
+                    >
+                      {app.app_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <Typography
+                variant="caption"
+                sx={{ whiteSpace: "nowrap", color: "text.secondary", px: 2 }}
+              >
+                Rol: (Heredado)
+              </Typography>
+
+              <IconButton color="error" onClick={() => removeApp(index)}>
+                <Delete />
+              </IconButton>
+            </Stack>
+          ))}
+          {selectedApps.length === 0 && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontStyle: "italic" }}
+            >
+              No hay aplicaciones asignadas. El usuario tendrá el rol global
+              pero sin acceso a apps específicas.
+            </Typography>
+          )}
+        </Grid>
+
+        {/* Actions */}
+        <Grid size={{ xs: 12 }}>
+          <Stack direction="row" spacing={2} justifyContent="flex-end">
+            <Button variant="outlined" onClick={onCancel} disabled={isLoading}>
+              Cancelar
+            </Button>
+            <Button type="submit" variant="contained" disabled={isLoading}>
               {isLoading
-                ? "Guardando..."
+                ? "Procesando..."
                 : isUpdateMode
-                  ? "Actualizar Usuario"
-                  : "Guardar Usuario"}
+                  ? "Actualizar"
+                  : "Crear Usuario"}
             </Button>
           </Stack>
         </Grid>

@@ -13,7 +13,7 @@ import {
 } from "@modules/finance/hooks/useCashDenomination";
 import CashDenominationTable from "@modules/finance/components/tables/CashDenominationTable";
 
-export const CashDenominationPage: React.FC = () => {
+const CashDenominationPage: React.FC = () => {
   const {
     data: denominations = [],
     isLoading,
@@ -141,3 +141,5 @@ export const CashDenominationPage: React.FC = () => {
     </Box>
   );
 };
+
+export default CashDenominationPage;

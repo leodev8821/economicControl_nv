@@ -1,16 +1,18 @@
 import { DataTypes, Model, type Optional } from "sequelize";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import { ROLE_VALUES } from "@economic-control/shared";
+import { APPLICATION_VALUES } from "@economic-control/shared";
 
 const connection = getSequelizeConfig();
 
 export type UserPermissionRoleType = (typeof ROLE_VALUES)[number];
+export type UserPermissionApplicationType = (typeof APPLICATION_VALUES)[number];
 
 export interface UserPermissionAttributes {
   id: number;
   user_id: number;
   application_id: number;
-  role_name: UserPermissionRoleType;
+  role_id: number;
 }
 
 export interface UserPermissionCreationAttributes extends Optional<
@@ -25,7 +27,7 @@ export class UserPermissionModel
   declare id: number;
   declare user_id: number;
   declare application_id: number;
-  declare role_name: UserPermissionRoleType;
+  declare role_id: number;
 }
 
 UserPermissionModel.init(
@@ -51,12 +53,12 @@ UserPermissionModel.init(
         key: "id",
       },
     },
-    role_name: {
-      type: DataTypes.ENUM(...ROLE_VALUES),
+    role_id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: "roles",
-        key: "role_name",
+        key: "id",
       },
     },
   },
@@ -115,21 +117,21 @@ export class UserPermissionActions {
    */
   public static async checkAccess(
     userId: number,
-    appName: string,
-    requiredRole?: string,
+    application_id: number,
+    requiredRole?: number,
   ): Promise<boolean> {
     const permission = await UserPermissionModel.findOne({
       where: { user_id: userId },
       include: [
         {
           association: "Application",
-          where: { app_name: appName },
+          where: { id: application_id },
         },
       ],
     });
 
     if (!permission) return false;
-    if (requiredRole && permission.role_name !== requiredRole) return false;
+    if (requiredRole && permission.role_id !== requiredRole) return false;
 
     return true;
   }

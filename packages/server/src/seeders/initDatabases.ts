@@ -3,16 +3,26 @@ import { Transaction } from "sequelize";
 import {
   Role,
   User,
+  Application,
+  UserPermission,
   CashDenomination,
   sequelizeInstance,
 } from "../models/index.js";
 import { ROLE_TYPES } from "@economic-control/shared";
+import {
+  APPLICATION_TYPES,
+  APPLICATION_DESCRIPTIONS,
+} from "@economic-control/shared";
 import { env } from "../config/env.js";
 import { fileURLToPath } from "url";
 import { WeekActions } from "../models/finance-app/week.model.js";
 
-type RoleType = (typeof ROLE_TYPES)[keyof typeof ROLE_TYPES];
-type UserRole = typeof ROLE_TYPES.ADMINISTRADOR | typeof ROLE_TYPES.SUPER_USER;
+// type RoleType = (typeof ROLE_TYPES)[keyof typeof ROLE_TYPES];
+// type UserRole = typeof ROLE_TYPES.ADMINISTRADOR | typeof ROLE_TYPES.SUPER_USER;
+// type ApplicationType =
+//   (typeof APPLICATION_TYPES)[keyof typeof APPLICATION_TYPES];
+// type ApplicationDescription =
+//   (typeof APPLICATION_DESCRIPTIONS)[keyof typeof APPLICATION_DESCRIPTIONS];
 
 interface DatabaseSeeder {
   run: () => Promise<void>;
@@ -67,6 +77,34 @@ const databaseSeeder: DatabaseSeeder = {
         console.log("✅ Roles verificados/creados");
 
         /* ===========================
+         * 2. Seed Applications (Nuevo)
+         * Basado en application.schema.ts
+         * =========================== */
+        const appsToSeed = [
+          {
+            app_name: APPLICATION_TYPES.ALL,
+            description: APPLICATION_DESCRIPTIONS.ALL,
+          },
+          {
+            app_name: APPLICATION_TYPES.FINANCE,
+            description: APPLICATION_DESCRIPTIONS.FINANCE,
+          },
+          {
+            app_name: APPLICATION_TYPES.CONSOLIDATION,
+            description: APPLICATION_DESCRIPTIONS.CONSOLIDATION,
+          },
+        ];
+
+        for (const app of appsToSeed) {
+          await Application.findOrCreate({
+            where: { app_name: app.app_name },
+            defaults: app,
+            transaction,
+          });
+        }
+        console.log("✅ Aplicaciones verificadas/creadas");
+
+        /* ===========================
          * Seed cash denominations
          * =========================== */
         const denominationsToCreate = [
@@ -99,28 +137,44 @@ const databaseSeeder: DatabaseSeeder = {
         /* ===========================
          * Seed super user
          * =========================== */
-        const existsSuperUser = await User.findOne({
+        let sudoUser = await User.findOne({
           where: { username: env.SUDO_USERNAME },
           transaction,
-        }); //
+        });
 
-        if (!existsSuperUser) {
-          if (!Object.values(ROLE_TYPES).includes(env.SUDO_ROLE as RoleType)) {
-            throw new Error(
-              `El rol '${env.SUDO_ROLE}' definido en .env no existe en ROLE_TYPES`,
-            );
-          } //
-
-          await User.create(
+        if (!sudoUser) {
+          sudoUser = await User.create(
             {
-              role_name: env.SUDO_ROLE as UserRole,
+              role_name: env.SUDO_ROLE as any,
               username: env.SUDO_USERNAME,
               password: env.SUDO_PASSWORD,
               first_name: env.SUDO_FIRSTNAME,
               last_name: env.SUDO_LASTNAME,
+              email: env.SUDO_EMAIL,
+              phone: env.SUDO_PHONE,
               is_visible: env.SUDO_IS_VISIBLE,
             },
             { transaction },
+          );
+          console.log("✅ SuperUsuario creado");
+        }
+
+        // Asignar permisos automáticos al SuperUser para todas las apps
+        if (sudoUser) {
+          await UserPermission.findOrCreate({
+            where: {
+              user_id: sudoUser.id,
+              application_id: 1,
+            },
+            defaults: {
+              user_id: sudoUser.id,
+              application_id: 1,
+              role_id: 2, //2 es SUPER_USER
+            },
+            transaction,
+          });
+          console.log(
+            `✅ Permiso '${APPLICATION_TYPES.ALL}' asignado al SuperUser`,
           );
         }
 

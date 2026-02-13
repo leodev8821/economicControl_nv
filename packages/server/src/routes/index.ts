@@ -11,18 +11,13 @@ const mainRouter: Router = Router();
 mainRouter.use("/auth", authRouter);
 
 // 💰 FINANCE: Protegida (Token + Permiso Finance)
-mainRouter.use(
-  "/finance",
-  decodeAccessToken,
-  checkAppAccess("finance"),
-  financeRouter,
-);
+mainRouter.use("/finance", decodeAccessToken, checkAppAccess(2), financeRouter);
 
 // 🤝 CONSOLIDATION: Protegida (Token + Permiso Consolidation)
 mainRouter.use(
   "/consolidation",
   decodeAccessToken,
-  checkAppAccess("consolidation"),
+  checkAppAccess(3),
   consolidationRouter,
 );
 

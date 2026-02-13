@@ -23,7 +23,7 @@ import BulkIncomeForm from "@modules/finance/components/forms/BulkIncomeForm";
 import type { Income } from "@modules/finance/types/income.type";
 import * as SharedIncomeSchemas from "@economic-control/shared";
 
-export const IncomesPage: React.FC = () => {
+const IncomesPage: React.FC = () => {
   const { data: incomes = [], isLoading, isError, error } = useReadIncomes();
 
   const createMutation = useCreateIncome();
@@ -171,3 +171,5 @@ export const IncomesPage: React.FC = () => {
     </Box>
   );
 };
+
+export default IncomesPage;

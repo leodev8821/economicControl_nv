@@ -21,6 +21,11 @@ const BaseUserSchema = z.object({
   is_visible: z.boolean().default(true).optional(),
 });
 
+const UserPermissionEntrySchema = z.object({
+  application_id: z.number().int().positive(),
+  role_id: z.number().int().positive(),
+});
+
 // 2. Validación de Contraseña (Reutilizable)
 const PasswordSchema = z
   .string()
@@ -32,6 +37,7 @@ const PasswordSchema = z
 // CREAR: Base + Contraseña obligatoria
 export const UserCreationSchema = BaseUserSchema.extend({
   password: PasswordSchema,
+  permissions: z.array(UserPermissionEntrySchema).optional().default([]),
 });
 
 // ACTUALIZAR: Todo opcional (incluida la contraseña)

@@ -1,15 +1,11 @@
 import { z } from "zod";
-import { ROLE_VALUES } from "./role.schema.js";
 
 // 1. Base Schema
 const BaseUserPermissionSchema = z.object({
   id: z.number().int().positive().optional(),
   user_id: z.number().int().positive(),
   application_id: z.number().int().positive(),
-
-  role_name: z.enum(ROLE_VALUES, {
-    message: "El rol es obligatorio",
-  }),
+  role_id: z.number().int().positive(),
 });
 
 // 2. Schemas de Operación
