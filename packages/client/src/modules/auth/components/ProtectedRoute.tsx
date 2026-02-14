@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 import { useAuth } from "@modules/auth/hooks/useAuth";
+import { PERMISSION_REDIRECTS, UNAUTHORIZED } from "@core/api/appsApiRoute";
 
 /**
  * Loader simple para estados de transición
@@ -27,8 +28,7 @@ export const ProtectedRoute: React.FC = () => {
   if (isLoading) return <FullScreenLoader />;
 
   if (!isAuthenticated) {
-    // Redirige al nuevo path de login
-    return <Navigate to="/auth/login" replace />;
+    return <Navigate to={PERMISSION_REDIRECTS.LOGIN} replace />;
   }
 
   return <Outlet />;
@@ -38,13 +38,16 @@ export const ProtectedRoute: React.FC = () => {
  * Restringe rutas públicas (Login) si ya hay sesión.
  */
 export const PublicOnlyRoute: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) return <FullScreenLoader />;
 
-  if (isAuthenticated) {
-    // Redirige a la página principal de la app
-    return <Navigate to="/finance/dashboard" replace />;
+  if (isAuthenticated && user) {
+    const applicationId = user.permissions?.[0]?.application_id;
+
+    const redirectTo = PERMISSION_REDIRECTS[applicationId] ?? UNAUTHORIZED;
+
+    return <Navigate to={redirectTo} replace />;
   }
 
   return <Outlet />;

@@ -7,6 +7,7 @@ import ProtectedRoute from "@modules/auth/components/ProtectedRoute";
 import { AppGuard } from "@/modules/auth/components/AppGuard";
 import { RoleGuard } from "@/modules/auth/components/RoleGuard";
 import { APPS } from "@shared/constants/app";
+import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 import EntryRoute from "./EntryRoute";
 
 // 2. Componentes de Carga (Lazy Loading)
@@ -28,6 +29,11 @@ const OutcomesPage = lazy(() => import("@modules/finance/pages/OutcomesPage"));
 const PersonsPage = lazy(() => import("@modules/finance/pages/PersonsPage"));
 const CashDenominationPage = lazy(
   () => import("@modules/finance/pages/CashDenominationPage"),
+);
+
+// --- NOT FOUND MODULE ---
+const ModulePlaceholder = lazy(
+  () => import("@shared/components/pages/ModulePlaceholder"),
 );
 
 // Nota: Asegúrate de crear WeeksPage.tsx en modules/finance/pages si aún no existe,
@@ -53,54 +59,92 @@ export const AppRouter = () => {
         {/* =================================================================
             🔓 RUTAS PÚBLICAS
            ================================================================= */}
-        <Route path="/auth/login" element={<SignIn />} />
+        <Route path={`${API_ROUTES_PATH.AUTH}/login`} element={<SignIn />} />
 
         {/* Redirección EntryRoute*/}
         <Route path="/" element={<EntryRoute />} />
+
+        {/* Not Found */}
+        <Route
+          path="/unauthorized"
+          element={
+            <ModulePlaceholder
+              title="Acceso Denegado"
+              description="Lo siento, no tienes permiso para acceder a esta página."
+              showBackButton={true}
+              backPath="/"
+            />
+          }
+        />
 
         {/* =================================================================
             🔒 RUTAS PRIVADAS (Layout Principal)
            ================================================================= */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
-            {/* ADMIN */}
-            <Route element={<RoleGuard allowedRoles={["SuperUser"]} />}>
-              <Route path="/admin/home" element={<AdminPage />} />
+            {/* 1. RUTAS DE ADMINISTRACIÓN COMPARTIDA */}
+            <Route
+              element={
+                <RoleGuard allowedRoles={["Administrador", "SuperUser"]} />
+              }
+            >
+              <Route path={API_ROUTES_PATH.ADMIN}>
+                <Route path="users" element={<UsersPage />} />
+              </Route>
             </Route>
 
-            {/* SECCIÓN FINANCE (Solo para quienes tengan el permiso en la tabla pivot) */}
-            <Route
-              element={<AppGuard requiredAppId={APPS.FINANCE || APPS.ALL} />}
-            >
-              <Route path="/finance/dashboard" element={<DashboardPage />} />
-              <Route path="/finance/cashes" element={<CashesPage />} />
-              <Route path="/finance/incomes" element={<IncomesPage />} />
-              <Route path="/finance/outcomes" element={<OutcomesPage />} />
-              <Route path="/finance/persons" element={<PersonsPage />} />
-              <Route
-                path="/finance/cash-denominations"
-                element={<CashDenominationPage />}
-              />
-
-              {/* Sub-protección: Solo Admin/SuperUser dentro de Finance */}
+            {/* 2. RUTAS SOLO PARA SUPER USUARIO (APPS.ALL) */}
+            <Route element={<AppGuard requiredAppIds={[APPS.ALL]} />}>
               <Route
                 element={
-                  <RoleGuard allowedRoles={["Administrador", "SuperUser"]} />
+                  <RoleGuard allowedRoles={["SuperUser", "Administrador"]} />
                 }
               >
-                <Route path="/admin/users" element={<UsersPage />} />
+                <Route path={API_ROUTES_PATH.ADMIN}>
+                  <Route path="home" element={<AdminPage />} />
+                </Route>
+              </Route>
+            </Route>
+
+            {/* SECCIÓN FINANCE */}
+            <Route
+              element={<AppGuard requiredAppIds={[APPS.FINANCE, APPS.ALL]} />}
+            >
+              <Route path={API_ROUTES_PATH.FINANCE}>
+                <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="cashes" element={<CashesPage />} />
+                <Route path="incomes" element={<IncomesPage />} />
+                <Route path="outcomes" element={<OutcomesPage />} />
+                <Route path="persons" element={<PersonsPage />} />
+                <Route
+                  path="cash-denominations"
+                  element={<CashDenominationPage />}
+                />
               </Route>
             </Route>
 
             {/* SECCIÓN CONSOLIDATION */}
             <Route
               element={
-                <AppGuard requiredAppId={APPS.CONSOLIDATION || APPS.ALL} />
+                <AppGuard requiredAppIds={[APPS.CONSOLIDATION, APPS.ALL]} />
               }
             >
               <Route
-                path="/consolidation/home"
+                path={`${API_ROUTES_PATH.CONSOLIDATION}/home`}
                 element={<ConsolidationPage />}
+              />
+
+              {/* SECCIÓN NOT-FOUND */}
+              <Route
+                path="*"
+                element={
+                  <ModulePlaceholder
+                    title="Página no encontrada"
+                    description="La página que buscas no existe."
+                    showBackButton
+                    backPath="/"
+                  />
+                }
               />
             </Route>
           </Route>

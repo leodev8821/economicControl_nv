@@ -5,6 +5,7 @@ import { tokenUtils } from "../utils/token.utils.js";
 import { UserRole } from "../models/auth/user.model.js";
 import { UserPermissionActions } from "../models/auth/user-permission.model.js";
 import { ROLE_TYPES } from "@economic-control/shared";
+import { APP_IDS } from "../shared/app.constants.js";
 
 const REFRESH_SECRET = process.env.REFRESH_SECRET as string;
 
@@ -33,13 +34,14 @@ export const decodeAccessToken = (
       .json({ ok: false, message: "Access token inválido" });
   }
 
-  req.userPayload = decoded;
-  req.id = decoded.id;
-  req.username = decoded.username;
-  req.userRole = decoded.role_name;
-  req.first_name = decoded.first_name;
-  req.last_name = decoded.last_name;
+  (req as any).user = {
+    ...decoded,
+    permissions: decoded.permissions || [],
+  };
 
+  // Mantenemos estas por compatibilidad si otros controladores las usan
+  req.id = decoded.id;
+  req.userRole = decoded.role_name;
   next();
 };
 
@@ -81,19 +83,19 @@ export const checkAppAccess =
       return next();
     }
 
-    // Verifica en la tabla de permisos usando el ID del usuario
     if (!req.id) {
       return res
         .status(401)
         .json({ ok: false, message: "Usuario no identificado" });
     }
 
-    const hasAccess = await UserPermissionActions.checkAccess(
-      req.id,
-      application_id,
-    );
+    // verificar acceso a la app específica O acceso global
+    const [hasSpecificAccess, hasGlobalAccess] = await Promise.all([
+      UserPermissionActions.checkAccess(req.id, application_id),
+      UserPermissionActions.checkAccess(req.id, APP_IDS.ALL),
+    ]);
 
-    if (!hasAccess) {
+    if (!hasSpecificAccess && !hasGlobalAccess) {
       return res.status(403).json({
         ok: false,
         message: `No tienes permisos para acceder a la aplicación: ${application_id}`,

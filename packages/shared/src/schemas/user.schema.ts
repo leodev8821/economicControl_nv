@@ -43,6 +43,7 @@ export const UserCreationSchema = BaseUserSchema.extend({
 // ACTUALIZAR: Todo opcional (incluida la contraseña)
 export const UserUpdateSchema = BaseUserSchema.partial().extend({
   password: PasswordSchema.optional(),
+  permissions: z.array(UserPermissionEntrySchema).optional(),
 });
 
 // 4. Tipos

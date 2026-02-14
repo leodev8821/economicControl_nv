@@ -1,5 +1,6 @@
 import axios from "axios";
 import apiClient from "@core/api/axios";
+import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 import type {
   LoginCredentials,
   LoginResponse,
@@ -16,7 +17,7 @@ export const login = async (
   try {
     // POST /ec/api/v1/auth/login
     const response = await apiClient.post<LoginResponse>(
-      "/auth/login",
+      `${API_ROUTES_PATH.AUTH}/login`,
       credentials,
     );
 

@@ -2,6 +2,7 @@
 import apiClient from "@core/api/axios";
 import type { Week } from "@modules/finance/types/week.type";
 import type { ApiResponse } from "@shared/types/apiResponse";
+import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
 /**
  * Función que realiza la petición GET al backend para obtener todos las semanas.
@@ -10,7 +11,9 @@ import type { ApiResponse } from "@shared/types/apiResponse";
  */
 export const getAllWeeks = async (): Promise<Week[]> => {
   try {
-    const response = await apiClient.get<ApiResponse<Week>>("/weeks");
+    const response = await apiClient.get<ApiResponse<Week>>(
+      `${API_ROUTES_PATH.FINANCE}/weeks`,
+    );
 
     return response.data.data.map((week) => ({
       ...week,

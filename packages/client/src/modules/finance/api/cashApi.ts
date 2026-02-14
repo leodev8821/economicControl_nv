@@ -2,6 +2,7 @@
 import apiClient from "@core/api/axios";
 import type { Cash } from "@modules/finance/types/cash.type";
 import type { ApiResponse, ApiResponseData } from "@shared/types/apiResponse";
+import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
 /**
  * Función que realiza la petición GET al backend para obtener todos las cajas.
@@ -10,7 +11,9 @@ import type { ApiResponse, ApiResponseData } from "@shared/types/apiResponse";
  */
 export const getAllCashes = async (): Promise<Cash[]> => {
   try {
-    const response = await apiClient.get<ApiResponse<Cash>>("/cashes");
+    const response = await apiClient.get<ApiResponse<Cash>>(
+      `${API_ROUTES_PATH.FINANCE}/cashes`,
+    );
 
     const cashesArray = response.data.data as any[];
 
@@ -36,7 +39,7 @@ export type CashUpdateData = { id: number } & Partial<Cash>;
 export const createCash = async (data: any): Promise<Cash> => {
   try {
     const response = await apiClient.post<ApiResponseData<Cash>>(
-      "/cashes/new-cash",
+      `${API_ROUTES_PATH.FINANCE}/cashes/new-cash`,
       data,
     );
     return response.data.data;
@@ -55,7 +58,7 @@ export const updateCash = async (data: CashUpdateData): Promise<Cash> => {
   try {
     const { id, ...updatePayload } = data;
     const response = await apiClient.put<ApiResponseData<Cash>>(
-      `/cashes/${id}`,
+      `${API_ROUTES_PATH.FINANCE}/cashes/${id}`,
       updatePayload,
     );
     return response.data.data;
@@ -73,7 +76,7 @@ export const updateCash = async (data: CashUpdateData): Promise<Cash> => {
 export const deleteCash = async (id: number): Promise<boolean> => {
   try {
     const response = await apiClient.delete<ApiResponseData<boolean>>(
-      `/cashes/${id}`,
+      `${API_ROUTES_PATH.FINANCE}/cashes/${id}`,
     );
     return response.data.data;
   } catch (error) {

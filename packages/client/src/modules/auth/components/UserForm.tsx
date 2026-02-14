@@ -31,6 +31,7 @@ import { ROLE_VALUES } from "@economic-control/shared";
 import { useAuth } from "../hooks/useAuth";
 import { useApplications } from "../hooks/useApplications";
 import { useRoles } from "../hooks/useRoles";
+import { APPS } from "@shared/constants/app";
 
 // Constantes para MUI Select
 const ITEM_HEIGHT = 48;
@@ -73,21 +74,52 @@ export default function UserForm({
   isLoading = false,
   isUpdateMode = false,
 }: UserFormProps) {
+  const sanitizedValues = React.useMemo(() => {
+    if (!initialValues) return null;
+    return {
+      ...initialValues,
+      role_name: initialValues.role_name ?? "",
+      permissions: initialValues.permissions || initialValues.Permissions || [],
+    };
+  }, [initialValues]);
+
   const theme = useTheme();
   const { user: currentUser } = useAuth();
 
   // 1. Cargar datos maestros para los selectores de permisos
-  const { data: applications = [] } = useApplications();
+  const { data: allApplications = [] } = useApplications();
   const { data: roles = [] } = useRoles();
+
+  // A. ¿Es SuperUsuario o Admin con APPS.ALL?
+  const hasGlobalAdminPrivileges = React.useMemo(() => {
+    return (
+      currentUser?.role_name === "SuperUser" ||
+      currentUser?.permissions?.some((p: any) => p.application_id === APPS.ALL)
+    );
+  }, [currentUser]);
+
+  // B. Aplicaciones que este usuario puede asignar
+  const assignableApplications = React.useMemo(() => {
+    if (hasGlobalAdminPrivileges) return allApplications;
+    // Si no es global, solo puede asignar las apps a las que él mismo tiene acceso
+    const myAppIds =
+      currentUser?.permissions?.map((p: any) => p.application_id) || [];
+    return allApplications.filter((app) => myAppIds.includes(app.id));
+  }, [allApplications, hasGlobalAdminPrivileges, currentUser]);
+
+  // C. Roles que este usuario puede asignar
+  const filteredRoles = ROLE_VALUES.filter((role) => {
+    // Solo un SuperUser puede crear/asignar el rol SuperUser
+    if (role === "SuperUser") {
+      return currentUser?.role_name === "SuperUser";
+    }
+    return true;
+  });
 
   // 2. Estado local para la tabla de permisos
   const [selectedApps, setSelectedApps] = React.useState<
     { application_id: number }[]
-  >(
-    initialValues?.permissions?.map((p: any) => ({
-      application_id: p.application_id,
-    })) || [],
-  );
+  >([]);
 
   const [fieldErrors, setFieldErrors] = React.useState<{
     [key: string]: string | null;
@@ -104,15 +136,44 @@ export default function UserForm({
     ? SharedUserSchema.UserUpdateSchema
     : SharedUserSchema.UserCreationSchema;
 
+  // Efecto para resetear el estado local cuando cambia el usuario a editar
+  React.useEffect(() => {
+    if (sanitizedValues?.permissions) {
+      setSelectedApps(
+        sanitizedValues.permissions.map((p: any) => ({
+          application_id: p.application_id,
+        })),
+      );
+    } else {
+      setSelectedApps([]);
+    }
+  }, [sanitizedValues]);
+
   const [form, fields] = useForm({
     onValidate({ formData }) {
       return parseWithZod(formData, { schema });
     },
-    defaultValue: initialValues,
+    // Usamos los valores sanitizados aquí
+    defaultValue: sanitizedValues || {
+      username: "",
+      role_name: "",
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      password: "",
+    },
+    shouldRevalidate: "onInput",
   });
 
   // --- Lógica de Permisos ---
   const addApp = () => {
+    // Si el admin normal solo tiene acceso a una app y ya está asignada, no permitir añadir más
+    if (
+      !hasGlobalAdminPrivileges &&
+      selectedApps.length >= assignableApplications.length
+    )
+      return;
     setSelectedApps([...selectedApps, { application_id: 0 }]);
   };
 
@@ -201,14 +262,6 @@ export default function UserForm({
     }
   };
 
-  // --- Filtrado de Roles ---
-  const filteredRoles = ROLE_VALUES.filter((role) => {
-    if (role === "SuperUser") {
-      return currentUser?.role_name === "SuperUser";
-    }
-    return true;
-  });
-
   return (
     <form
       method="post"
@@ -273,12 +326,18 @@ export default function UserForm({
             <InputLabel id="role-label">Rol *</InputLabel>
             <Select
               labelId="role-label"
-              id={fields.role_name.id}
               name={fields.role_name.name}
+              id={fields.role_name.id}
               label="Rol *"
-              defaultValue={initialValues?.role_name ?? ""}
+              value={fields.role_name.value ?? ""}
               disabled={isLoading}
               MenuProps={MenuProps}
+              onChange={(e) => {
+                form.update({
+                  name: fields.role_name.name,
+                  value: e.target.value,
+                });
+              }}
             >
               {filteredRoles.map((r) => (
                 <MenuItem
@@ -402,6 +461,10 @@ export default function UserForm({
               onClick={addApp}
               size="small"
               variant="outlined"
+              disabled={
+                !hasGlobalAdminPrivileges &&
+                selectedApps.length >= assignableApplications.length
+              }
             >
               Añadir App
             </Button>
@@ -423,7 +486,7 @@ export default function UserForm({
                   MenuProps={MenuProps}
                   onChange={(e) => updateApp(index, Number(e.target.value))}
                 >
-                  {applications.map((app) => (
+                  {assignableApplications.map((app) => (
                     <MenuItem
                       key={app.id}
                       value={app.id}

@@ -6,6 +6,7 @@ import type {
 } from "@modules/finance/types/person.type";
 import type { ApiResponse } from "@shared/types/apiResponse";
 import type { PersonCreationRequest } from "@economic-control/shared";
+import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
 /**
  * Función que realiza la petición GET al backend para obtener todos las personas.
@@ -14,7 +15,9 @@ import type { PersonCreationRequest } from "@economic-control/shared";
  */
 export const getAllPersons = async (): Promise<Person[]> => {
   try {
-    const response = await apiClient.get<ApiResponse<Person>>("/persons");
+    const response = await apiClient.get<ApiResponse<Person>>(
+      `${API_ROUTES_PATH.FINANCE}/persons`,
+    );
 
     return response.data.data.map((person) => ({
       ...person,
@@ -35,7 +38,7 @@ export const createPerson = async (
 ): Promise<Person> => {
   try {
     const response = await apiClient.post<ApiResponse<Person>>(
-      "/persons/new-person",
+      `${API_ROUTES_PATH.FINANCE}/persons/new-person`,
       person,
     );
     return response.data.data[0];
@@ -57,7 +60,7 @@ export const updatePerson = async ({
 }: PersonAttributes): Promise<Person> => {
   try {
     const response = await apiClient.put<ApiResponse<Person>>(
-      `/persons/${id}`,
+      `${API_ROUTES_PATH.FINANCE}/persons/${id}`,
       data,
     );
     return response.data.data[0];
@@ -75,7 +78,7 @@ export const updatePerson = async ({
 export const deletePerson = async (id: number): Promise<Person> => {
   try {
     const response = await apiClient.delete<ApiResponse<Person>>(
-      `/persons/${id}`,
+      `${API_ROUTES_PATH.FINANCE}/persons/${id}`,
     );
     return response.data.data[0];
   } catch (error) {

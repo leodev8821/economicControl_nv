@@ -5,6 +5,7 @@ import type {
   AxiosRequestHeaders,
   AxiosRequestConfig,
 } from "axios";
+import { API_ROUTES_PATH } from "./appsApiRoute";
 
 const isProd = import.meta.env.PROD;
 
@@ -68,9 +69,9 @@ apiClient.interceptors.response.use(
     };
 
     const isAuthEndpoint =
-      originalRequest.url?.includes("/auth/login") ||
-      originalRequest.url?.includes("/auth/refresh-token") ||
-      originalRequest.url?.includes("/auth/logout");
+      originalRequest.url?.includes(API_ROUTES_PATH.AUTH + "/login") ||
+      originalRequest.url?.includes(API_ROUTES_PATH.AUTH + "/refresh-token") ||
+      originalRequest.url?.includes(API_ROUTES_PATH.AUTH + "/logout");
 
     // Si la respuesta es un 401 Y no estamos ya intentando renovar
     if (
@@ -110,7 +111,7 @@ apiClient.interceptors.response.use(
         try {
           // USO EXPLÍCITO DE LA RUTA COMPLETA PARA EL REFRESH (ENDPOINT)
           const refreshResponse = await refreshInstance.post<{ token: string }>(
-            `/auth/refresh-token`,
+            `${API_ROUTES_PATH.AUTH}/refresh-token`,
           );
           const newAccessToken: string | undefined =
             refreshResponse.data?.token;

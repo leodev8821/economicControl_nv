@@ -9,6 +9,7 @@ import type {
   IncomeCreationRequest,
   IncomeUpdateRequest,
 } from "@economic-control/shared";
+import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
 export type IncomeUpdateData = IncomeUpdateRequest & { id: number };
 
@@ -30,7 +31,9 @@ const normalizeIncome = (income: any): Income => ({
  */
 export const getAllIncomes = async (): Promise<Income[]> => {
   try {
-    const response = await apiClient.get<ApiResponse<Income>>("/incomes");
+    const response = await apiClient.get<ApiResponse<Income>>(
+      `${API_ROUTES_PATH.FINANCE}/incomes`,
+    );
 
     return response.data.data.map(normalizeIncome);
   } catch (error) {
@@ -49,7 +52,7 @@ export const createIncome = async (
 ): Promise<Income> => {
   try {
     const response = await apiClient.post<ApiResponseData<Income>>(
-      "/incomes/new-income",
+      `${API_ROUTES_PATH.FINANCE}/incomes/new-income`,
       data,
     );
 
@@ -70,7 +73,7 @@ export const createBulkIncome = async (
 ): Promise<Income[]> => {
   try {
     const response = await apiClient.post<ApiResponseData<Income[]>>(
-      "/incomes/bulk-incomes",
+      `${API_ROUTES_PATH.FINANCE}/incomes/bulk-incomes`,
       data,
     );
 
@@ -91,7 +94,7 @@ export const updateIncome = async (data: IncomeUpdateData): Promise<Income> => {
   try {
     const { id, ...updatePayload } = data;
     const response = await apiClient.put<ApiResponseData<Income>>(
-      `/incomes/${id}`,
+      `${API_ROUTES_PATH.FINANCE}/incomes/${id}`,
       updatePayload,
     );
 
@@ -110,7 +113,7 @@ export const updateIncome = async (data: IncomeUpdateData): Promise<Income> => {
 export const deleteIncome = async (id: number): Promise<Income> => {
   try {
     const response = await apiClient.delete<ApiResponseData<Income>>(
-      `/incomes/${id}`,
+      `${API_ROUTES_PATH.FINANCE}/incomes/${id}`,
     );
     return response.data.data;
   } catch (error) {

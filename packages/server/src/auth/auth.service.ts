@@ -3,6 +3,7 @@ import type { Secret } from "jsonwebtoken";
 import { tokenUtils } from "../utils/token.utils.js";
 import { type JwtPayload } from "./auth.types.js";
 import { usersController } from "../controllers/auth/users.controller.js";
+import { UserPermissionActions } from "../models/auth/user-permission.model.js";
 
 const REFRESH_SECRET: Secret = process.env.REFRESH_SECRET as string;
 
@@ -41,6 +42,12 @@ export const refreshSession = async (payload: JwtPayload) => {
     last_name: user.last_name,
     email: user.email,
     phone: user.phone,
+    permissions: (
+      await UserPermissionActions.getPermissionsByUser(user.id)
+    ).map((p) => ({
+      application_id: p.application_id,
+      role_id: p.role_id,
+    })),
   };
 
   const accessToken = await tokenUtils.signJwt(newPayload);

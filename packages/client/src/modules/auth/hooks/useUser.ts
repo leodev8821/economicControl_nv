@@ -8,16 +8,31 @@ import {
 } from "@modules/auth/api/userApi";
 import type { User, UserAttributes } from "@modules/auth/types/user.type";
 import type { UserCreationRequest } from "@economic-control/shared";
+import { useAuth } from "./useAuth";
+import { APPS } from "@shared/constants/app";
 
 // Clave única para la consulta de usuarios
 const USERS_QUERY_KEY = "users";
 
 // Hook para obtener la lista de usuarios
 export const useUsers = (): UseQueryResult<User[], Error> => {
+  const { user } = useAuth();
+
+  // 1. Identificamos si tiene acceso total (APPS.ALL = 1)
+  const hasGlobalAccess =
+    user?.role_name === "SuperUser" ||
+    user?.permissions.some((p) => p.application_id === APPS.ALL);
+
+  // 2. Extraemos el ID de aplicación para el filtro
+  const filterAppId = hasGlobalAccess
+    ? undefined
+    : user?.permissions[0]?.application_id;
+
   return useQuery<User[], Error>({
-    queryKey: [USERS_QUERY_KEY],
-    queryFn: getAllUsers,
+    queryKey: [USERS_QUERY_KEY, filterAppId],
+    queryFn: () => getAllUsers(filterAppId),
     staleTime: 5 * 60 * 1000,
+    enabled: !!user,
   });
 };
 

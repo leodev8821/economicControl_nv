@@ -2,6 +2,7 @@
 import apiClient from "@core/api/axios";
 import type { CashBalance } from "@modules/finance/types/balance.type";
 import type { ApiResponse } from "@shared/types/apiResponse";
+import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
 /**
  * Ruta: GET /ec/api/v1/balance/get-balance
@@ -10,7 +11,7 @@ import type { ApiResponse } from "@shared/types/apiResponse";
 export const getBalance = async (): Promise<ApiResponse<CashBalance>> => {
   try {
     const response = await apiClient.get<ApiResponse<CashBalance>>(
-      "/finance/balance/get-balance",
+      `${API_ROUTES_PATH.FINANCE}/balance`,
     );
     return response.data;
   } catch (error) {

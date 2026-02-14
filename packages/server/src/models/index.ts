@@ -69,6 +69,8 @@ Role.hasMany(User, {
   as: "Users",
 });
 
+User.hasMany(UserPermission, { foreignKey: "user_id", as: "Permissions" });
+
 // =================================================================
 // Consolidation App
 // =================================================================

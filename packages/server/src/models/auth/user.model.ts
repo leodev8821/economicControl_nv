@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import { ROLE_TYPES } from "../auth/role.model.js";
 import { UserPermissionModel } from "./user-permission.model.js";
+import { APP_IDS } from "src/shared/app.constants.js";
 
 const connection = getSequelizeConfig();
 
@@ -36,6 +37,10 @@ export type LoginPayload = {
   last_name: string;
   email: string;
   phone: string;
+  permissions: {
+    application_id: number;
+    role_id: number;
+  }[];
 };
 
 export type UserSearchData = {
@@ -189,9 +194,33 @@ export class UserActions {
    * Obtiene todas las usuarios de la base de datos.
    * @returns promise con un array de objetos UserAttributes.
    */
-  public static async getAll(): Promise<UserAttributes[]> {
-    const users = await UserModel.scope("visible").findAll();
-    return users.map((u) => u.get({ plain: true }));
+  public static async getAll(appId?: number): Promise<UserAttributes[]> {
+    try {
+      const permissionsInclude: any = {
+        model: UserPermissionModel,
+        as: "Permissions",
+        required: false,
+      };
+
+      if (appId && appId > APP_IDS.ALL) {
+        permissionsInclude.where = { application_id: appId };
+        permissionsInclude.required = true;
+      }
+
+      /* const users = await UserModel.scope("visible").findAll({
+        include: [permissionsInclude],
+      }); */
+
+      const users = await UserModel.findAll({
+        where: { is_visible: true },
+        include: [permissionsInclude],
+        attributes: { exclude: ["password"] },
+      });
+
+      return users.map((u) => u.get({ plain: true }));
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**

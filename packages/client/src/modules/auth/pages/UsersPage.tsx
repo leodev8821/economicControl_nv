@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, CircularProgress, Paper, Alert } from "@mui/material";
-//import type { GridRowId } from "@mui/x-data-grid";
+import type { GridRowId } from "@mui/x-data-grid";
 import {
   useUsers,
   useCreateUser,
   useUpdateUser,
   useDeleteUser,
 } from "@modules/auth/hooks/useUser";
-//import UserTable from "../components/tables/UserTable"; // TODO
+import UserTable from "@modules/auth/components/tables/UserTable";
 import UserForm from "@modules/auth/components/UserForm";
 import { useAuth } from "@modules/auth/hooks/useAuth";
 import type { User } from "@modules/auth/types/user.type";
@@ -73,10 +73,10 @@ const UserPage: React.FC = () => {
   };
 
   // Iniciar Edición (viene desde la Tabla)
-  /* const handleStartEdit = (userToEdit: User) => {
+  const handleStartEdit = (userToEdit: User) => {
     setEditingUser(userToEdit);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }; */
+  };
 
   // Cancelar Edición
   const handleCancelEdit = () => {
@@ -84,9 +84,9 @@ const UserPage: React.FC = () => {
   };
 
   // Eliminar
-  /* const handleDeleteUser = (id: GridRowId) => {
+  const handleDeleteUser = (id: GridRowId) => {
     const userId = parseInt(id.toString());
-    
+
     // Evitar que uno se borre a sí mismo (seguridad extra visual)
     if (userId === authUser?.id) {
       alert("No puedes eliminar tu propio usuario.");
@@ -95,12 +95,12 @@ const UserPage: React.FC = () => {
 
     if (
       window.confirm(
-        `¿Está seguro de eliminar al Usuario con ID ${userId}? Esta acción es irreversible.`
+        `¿Está seguro de eliminar al Usuario con ID ${userId}? Esta acción es irreversible.`,
       )
     ) {
       deleteMutation.mutate(userId);
     }
-  }; */
+  };
 
   // Si no tiene permiso, retornamos null (el useEffect redirigirá)
   if (!authUser || !hasPermission) return null;
@@ -133,6 +133,7 @@ const UserPage: React.FC = () => {
             : "Crear Nuevo Usuario"}
         </Typography>
         <UserForm
+          key={editingUser ? `edit-${editingUser.id}` : "new-user"}
           initialValues={editingUser}
           onSubmit={handleFormSubmit}
           isLoading={createMutation.isPending || updateMutation.isPending}
@@ -194,12 +195,12 @@ const UserPage: React.FC = () => {
             </Typography>
           </Box>
 
-          {/* AQUÍ NECESITAS CREAR UserTable BASADO EN PersonTable */}
-          {/*  <UserTable
+          <UserTable
             users={users}
             onEdit={handleStartEdit}
             onDelete={handleDeleteUser}
-          /> */}
+            isLoading={isLoading}
+          />
         </Paper>
       )}
     </Box>

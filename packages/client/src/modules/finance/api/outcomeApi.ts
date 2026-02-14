@@ -9,6 +9,7 @@ import type {
   OutcomeCreationRequest,
   ConsolidationUpdateRequest,
 } from "@economic-control/shared";
+import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
 export type OutcomeUpdateData = ConsolidationUpdateRequest & { id: number };
 
@@ -30,7 +31,9 @@ const normalizeOutcome = (outcome: any): Outcome => ({
  */
 export const getAllOutcomes = async (): Promise<Outcome[]> => {
   try {
-    const response = await apiClient.get<ApiResponse<Outcome>>("/outcomes");
+    const response = await apiClient.get<ApiResponse<Outcome>>(
+      `${API_ROUTES_PATH.FINANCE}/outcomes`,
+    );
 
     return response.data.data.map(normalizeOutcome);
   } catch (error) {
@@ -49,7 +52,7 @@ export const createOutcome = async (
 ): Promise<Outcome> => {
   try {
     const response = await apiClient.post<ApiResponseData<Outcome>>(
-      "/outcomes/new-outcome",
+      `${API_ROUTES_PATH.FINANCE}/outcomes/new-outcome`,
       data,
     );
 
@@ -70,7 +73,7 @@ export const createBulkOutcome = async (
 ): Promise<Outcome[]> => {
   try {
     const response = await apiClient.post<ApiResponseData<Outcome[]>>(
-      "/outcomes/bulk-outcomes",
+      `${API_ROUTES_PATH.FINANCE}/outcomes/bulk-outcomes`,
       data,
     );
 
@@ -93,7 +96,7 @@ export const updateOutcome = async (
   try {
     const { id, ...updatePayload } = data;
     const response = await apiClient.put<ApiResponseData<Outcome>>(
-      `/outcomes/${id}`,
+      `${API_ROUTES_PATH.FINANCE}/outcomes/${id}`,
       updatePayload,
     );
 
@@ -112,7 +115,7 @@ export const updateOutcome = async (
 export const deleteOutcome = async (id: number): Promise<Outcome> => {
   try {
     const response = await apiClient.delete<ApiResponseData<Outcome>>(
-      `/outcomes/${id}`,
+      `${API_ROUTES_PATH.FINANCE}/outcomes/${id}`,
     );
     return response.data.data;
   } catch (error) {

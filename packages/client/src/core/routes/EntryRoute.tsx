@@ -1,17 +1,18 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@modules/auth/hooks/useAuth";
 import { APPS } from "@shared/constants/app";
+import { PERMISSION_REDIRECTS } from "@core/api/appsApiRoute";
 
 const EntryRoute = () => {
   const { user } = useAuth();
 
   if (!user) {
-    return <Navigate to="/auth/login" replace />;
+    return <Navigate to={`${PERMISSION_REDIRECTS.LOGIN}`} replace />;
   }
 
   // 🔱 SuperUser → AdminPage
   if (user.role_name === "SuperUser") {
-    return <Navigate to="/admin/home" replace />;
+    return <Navigate to={`${PERMISSION_REDIRECTS.ALL}`} replace />;
   }
 
   // 🔍 Permisos por aplicación
@@ -30,16 +31,16 @@ const EntryRoute = () => {
 
   // 📊 Prioridad Finance
   if (hasFinance || hasAllAccess) {
-    return <Navigate to="/finance/dashboard" replace />;
+    return <Navigate to={`${PERMISSION_REDIRECTS.FINANCE}`} replace />;
   }
 
   // 📦 Consolidation
   if (hasConsolidation || hasAllAccess) {
-    return <Navigate to="/consolidation/home" replace />;
+    return <Navigate to={`${PERMISSION_REDIRECTS.CONSOLIDATION}`} replace />;
   }
 
   // ❌ Usuario sin apps asignadas
-  return <Navigate to="/auth/login" replace />;
+  return <Navigate to={`${PERMISSION_REDIRECTS.LOGIN}`} replace />;
 };
 
 export default EntryRoute;

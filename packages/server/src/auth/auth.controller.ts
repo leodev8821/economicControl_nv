@@ -33,6 +33,10 @@ export const authController = {
       last_name: user.last_name,
       email: user.email,
       phone: user.phone,
+      permissions: permissions.map((p) => ({
+        application_id: p.application_id,
+        role_id: p.role_id,
+      })),
     });
 
     res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);

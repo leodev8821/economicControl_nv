@@ -1,35 +1,51 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@modules/auth/hooks/useAuth";
-import { APPS } from "@shared/constants/app";
+import { PERMISSION_REDIRECTS } from "@/core/api/appsApiRoute";
+import { Box, CircularProgress } from "@mui/material";
+
+/**
+ * Loader simple para estados de transición
+ */
+const FullScreenLoader = () => (
+  <Box
+    sx={{
+      display: "flex",
+      height: "100vh",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    <CircularProgress />
+  </Box>
+);
 
 interface AppGuardProps {
-  requiredAppId: number;
+  requiredAppIds: number[];
 }
 
-export const AppGuard: React.FC<AppGuardProps> = ({ requiredAppId }) => {
-  const { user, isAuthenticated } = useAuth();
-
-  // 🔒 No autenticado
-  if (!isAuthenticated) {
-    return <Navigate to="/auth/login" replace />;
-  }
+export const AppGuard: React.FC<AppGuardProps> = ({ requiredAppIds }) => {
+  const { user } = useAuth();
 
   // ⏳ Usuario aún no cargado
   if (!user) {
-    return null; // o un loader si quieres
+    return <FullScreenLoader />;
   }
 
+  const permissions = user.permissions ?? [];
+
   // 🔐 Validación de acceso por aplicación
-  const hasAccess = user.permissions.some(
-    (p) => p.application_id === requiredAppId || p.application_id === APPS.ALL,
+  const hasAccess = permissions.some((p) =>
+    requiredAppIds.includes(p.application_id),
   );
 
   if (!hasAccess) {
-    console.warn(
-      `Acceso denegado a App ${requiredAppId}. Permisos:`,
-      user.permissions,
-    );
-    return <Navigate to="/unauthorized" replace />;
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        `Acceso denegado a App ${requiredAppIds}. Permisos:`,
+        permissions,
+      );
+    }
+    return <Navigate to={PERMISSION_REDIRECTS.UNAUTHORIZED} replace />;
   }
 
   return <Outlet />;

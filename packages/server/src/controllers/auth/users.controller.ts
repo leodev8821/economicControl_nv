@@ -15,6 +15,7 @@ import dotenv from "dotenv";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { UniqueConstraintError } from "sequelize";
+import { APP_IDS } from "src/shared/app.constants.js";
 
 // Tipos auxiliares
 export type LoginResult = { token: string; message: string };
@@ -27,25 +28,47 @@ dotenv.config({ path: envPath });
 const sudoRole = process.env.SUDO_ROLE || "SuperUser"; // Valor por defecto seguro
 
 export const usersController = {
-  // Obtiene todas las usuarios
-  allUsers: async (_req: Request, res: Response) => {
+  // Obtiene todos los usuarios
+  allUsers: async (req: Request, res: Response) => {
     try {
-      const users: UserAttributes[] = await UserActions.getAll();
+      const requester = (req as any).user;
+      const { applicationId } = req.query;
+
+      if (!requester) {
+        return res.status(401).json({
+          ok: false,
+          message: "Usuario no autenticado correctamente.",
+        });
+      }
+
+      // 2. Lógica de permisos basada en los datos del token
+      const isSuperUser = requester.role_name === sudoRole;
+      const permissions = requester.permissions || [];
+
+      const hasGlobalAccess = permissions.some(
+        (p: any) => p.application_id === APP_IDS.ALL,
+      );
+
+      let appIdToFilter: number | undefined;
+
+      if (isSuperUser || hasGlobalAccess) {
+        appIdToFilter = applicationId
+          ? parseInt(applicationId as string, 10)
+          : undefined;
+      } else {
+        // Si es admin de app, forzamos su ID asignado
+        appIdToFilter = permissions[0]?.application_id;
+      }
+
+      const users = await UserActions.getAll(appIdToFilter);
 
       return res.status(200).json({
         ok: true,
-        message:
-          users.length === 0
-            ? "No hay usuarios registrados."
-            : "Usuarios obtenidos correctamente.",
         data: users,
       });
     } catch (error) {
-      return ControllerErrorHandler(
-        res,
-        error,
-        "Error al obtener las usuarios.",
-      );
+      console.error("Error en allUsers:", error);
+      return ControllerErrorHandler(res, error, "Error al obtener usuarios.");
     }
   },
 
@@ -108,6 +131,27 @@ export const usersController = {
       }
 
       const { permissions, ...userData } = validationResult.data;
+      const requester = (req as any).user;
+
+      const isSuperUser = requester.role_name === sudoRole;
+      const hasGlobalAccess = requester.permissions.some(
+        (p: any) => p.application_id === APP_IDS.ALL,
+      );
+
+      if (!isSuperUser && !hasGlobalAccess) {
+        const myAppId = requester.permissions[0]?.application_id;
+        const isTargetingOtherApp = permissions.some(
+          (p) => p.application_id !== myAppId,
+        );
+
+        if (isTargetingOtherApp) {
+          return res.status(403).json({
+            ok: false,
+            message:
+              "No tienes permiso para asignar usuarios a otras aplicaciones.",
+          });
+        }
+      }
 
       if (userData.role_name === sudoRole) {
         return res.status(403).json({

@@ -68,7 +68,7 @@ router.delete("/reports/:id", reportsController.deleteReport);
 // =================================================================
 // 📄 BALANCE
 // =================================================================
-router.get("/balance/get-balance", dashboardController.getBalance);
+router.get("/balance", dashboardController.getBalance);
 
 // =================================================================
 // 💰 MONEDAS (CASH DENOMINATIONS)

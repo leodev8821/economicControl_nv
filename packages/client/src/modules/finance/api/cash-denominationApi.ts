@@ -1,6 +1,7 @@
 import apiClient from "@core/api/axios";
 import type { CashDenomination } from "@modules/finance/types/cash-denomination.type";
 import type { ApiResponse, ApiResponseData } from "@shared/types/apiResponse";
+import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
 export type CashDenominationUpdateData = {
   id: number;
@@ -16,7 +17,7 @@ export const getAllCashDenominations = async (): Promise<
 > => {
   try {
     const response = await apiClient.get<ApiResponse<CashDenomination>>(
-      "/cash-denominations",
+      `${API_ROUTES_PATH.FINANCE}/cash-denominations`,
     );
     const denominationsArray = response.data.data as any[];
     const cleanDenominations = denominationsArray.map((denomination) => ({
@@ -40,7 +41,7 @@ export const createCashDenomination = async (
 ): Promise<CashDenomination> => {
   try {
     const response = await apiClient.post<ApiResponseData<CashDenomination>>(
-      "/cash-denominations/new-cash-denomination",
+      `${API_ROUTES_PATH.FINANCE}/cash-denominations/new-cash-denomination`,
       data,
     );
     return response.data.data;
@@ -61,7 +62,7 @@ export const updateCashDenomination = async (
   try {
     const { id, ...updatePayload } = data;
     const response = await apiClient.put<ApiResponseData<CashDenomination>>(
-      `/cash-denominations/${id}`,
+      `${API_ROUTES_PATH.FINANCE}/cash-denominations/${id}`,
       updatePayload,
     );
     return response.data.data;
@@ -79,7 +80,7 @@ export const updateCashDenomination = async (
 export const deleteCashDenomination = async (id: number): Promise<boolean> => {
   try {
     const response = await apiClient.delete<ApiResponseData<boolean>>(
-      `/cash-denominations/${id}`,
+      `${API_ROUTES_PATH.FINANCE}/cash-denominations/${id}`,
     );
     return response.data.data;
   } catch (error) {

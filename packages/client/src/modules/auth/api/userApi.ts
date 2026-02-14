@@ -3,16 +3,22 @@ import apiClient from "@core/api/axios";
 import type { User, UserAttributes } from "@modules/auth/types/user.type";
 import type { ApiResponse, ApiResponseData } from "@shared/types/apiResponse";
 import type { UserCreationRequest } from "@economic-control/shared";
+import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
 /**
  * Función que realiza la petición GET al backend para obtener todos los usuarios.
  * Ruta: GET /ec/api/v1/users
  * @returns Promesa que resuelve en un array de objetos User.
  */
-export const getAllUsers = async (): Promise<User[]> => {
+export const getAllUsers = async (applicationId?: number): Promise<User[]> => {
   try {
     // Usamos la ruta relativa, el proxy de Vite y el prefijo de Axios hacen el resto.
-    const response = await apiClient.get<ApiResponse<User>>("/auth/users");
+    const response = await apiClient.get<ApiResponse<User>>(
+      `${API_ROUTES_PATH.AUTH}/users`,
+      {
+        params: applicationId ? { applicationId: applicationId } : {},
+      },
+    );
 
     // Devolvemos el array limpio y tipado correctamente
     return response.data.data.map((user) => ({
@@ -35,7 +41,7 @@ export const createUser = async (
 ): Promise<User> => {
   try {
     const response = await apiClient.post<ApiResponseData<User>>(
-      "/auth/users",
+      `${API_ROUTES_PATH.AUTH}/users`,
       userData,
     );
     return response.data.data as unknown as User;
@@ -57,7 +63,7 @@ export const updateUser = async ({
 }: UserAttributes): Promise<User> => {
   try {
     const response = await apiClient.put<ApiResponseData<User>>(
-      `/auth/users/${id}`,
+      `${API_ROUTES_PATH.AUTH}/users/${id}`,
       data,
     );
     return response.data.data as unknown as User;
@@ -74,7 +80,7 @@ export const updateUser = async ({
  */
 export const deleteUser = async (id: number): Promise<void> => {
   try {
-    await apiClient.delete(`/auth/users/${id}`);
+    await apiClient.delete(`${API_ROUTES_PATH.AUTH}/users/${id}`);
   } catch (error) {
     throw error;
   }
