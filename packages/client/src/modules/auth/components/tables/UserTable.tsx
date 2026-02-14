@@ -37,6 +37,7 @@ const APP_LABELS: Record<number, string> = {
 
 interface UserTableProps {
   users: User[];
+  currentUser: User;
   onEdit: (user: User) => void;
   onDelete: (id: number) => void;
   isLoading?: boolean;
@@ -63,6 +64,7 @@ const getRoleConfig = (role: string) => {
 
 const UserTable: React.FC<UserTableProps> = ({
   users,
+  currentUser,
   onEdit,
   onDelete,
   isLoading = false,
@@ -207,22 +209,51 @@ const UserTable: React.FC<UserTableProps> = ({
       field: "actions",
       type: "actions",
       headerName: "Acciones",
-      width: 100,
-      getActions: (params) => [
-        <GridActionsCellItem
-          key="edit"
-          icon={<EditIcon />}
-          label="Editar"
-          onClick={() => onEdit(params.row)}
-          showInMenu={false}
-        />,
-        <GridActionsCellItem
-          key="delete"
-          icon={<DeleteIcon color="error" />}
-          label="Eliminar"
-          onClick={() => onDelete(params.row.id)}
-        />,
-      ],
+      width: 120,
+      getActions: (params) => {
+        const targetUser = params.row;
+
+        const isTargetSuperUser = targetUser.role_name === "SuperUser";
+        const isCurrentSuperUser = currentUser.role_name === "SuperUser";
+        const isCurrentAdmin = currentUser.role_name === "Administrador";
+        const isSelf = currentUser.id === targetUser.id;
+
+        // Regla de permisos
+        const canModify =
+          isCurrentSuperUser ||
+          (isCurrentAdmin && !isTargetSuperUser && !isSelf);
+
+        const disabledReason = isTargetSuperUser
+          ? "Un Administrador no puede modificar un SuperUser"
+          : "No tienes permisos";
+
+        return [
+          <Tooltip key="edit-tooltip" title={!canModify ? disabledReason : ""}>
+            <span>
+              <GridActionsCellItem
+                icon={<EditIcon />}
+                label="Editar"
+                onClick={() => onEdit(params.row)}
+                disabled={!canModify}
+              />
+            </span>
+          </Tooltip>,
+
+          <Tooltip
+            key="delete-tooltip"
+            title={!canModify ? disabledReason : ""}
+          >
+            <span>
+              <GridActionsCellItem
+                icon={<DeleteIcon color="error" />}
+                label="Eliminar"
+                onClick={() => onDelete(params.row.id)}
+                disabled={!canModify}
+              />
+            </span>
+          </Tooltip>,
+        ];
+      },
     },
   ];
 

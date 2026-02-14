@@ -108,13 +108,16 @@ export default function UserForm({
   }, [allApplications, hasGlobalAdminPrivileges, currentUser]);
 
   // C. Roles que este usuario puede asignar
-  const filteredRoles = ROLE_VALUES.filter((role) => {
-    // Solo un SuperUser puede crear/asignar el rol SuperUser
-    if (role === "SuperUser") {
-      return currentUser?.role_name === "SuperUser";
-    }
-    return true;
-  });
+  const filteredRoles = React.useMemo(() => {
+    if (!currentUser) return [];
+
+    return ROLE_VALUES.filter((role) => {
+      if (currentUser.role_name === "SuperUser") return true;
+      if (role === "SuperUser") return false;
+
+      return true;
+    });
+  }, [currentUser]);
 
   // 2. Estado local para la tabla de permisos
   const [selectedApps, setSelectedApps] = React.useState<
@@ -326,18 +329,12 @@ export default function UserForm({
             <InputLabel id="role-label">Rol *</InputLabel>
             <Select
               labelId="role-label"
-              name={fields.role_name.name}
               id={fields.role_name.id}
+              name={fields.role_name.name}
               label="Rol *"
-              value={fields.role_name.value ?? ""}
+              defaultValue={initialValues?.role_name ?? ""}
               disabled={isLoading}
               MenuProps={MenuProps}
-              onChange={(e) => {
-                form.update({
-                  name: fields.role_name.name,
-                  value: e.target.value,
-                });
-              }}
             >
               {filteredRoles.map((r) => (
                 <MenuItem

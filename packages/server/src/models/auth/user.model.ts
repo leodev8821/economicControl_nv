@@ -13,9 +13,7 @@ import { APP_IDS } from "src/shared/app.constants.js";
 const connection = getSequelizeConfig();
 
 /** Tipos del modelo */
-export type UserRole =
-  | typeof ROLE_TYPES.ADMINISTRADOR
-  | typeof ROLE_TYPES.SUPER_USER;
+export type UserRole = (typeof ROLE_TYPES)[keyof typeof ROLE_TYPES];
 
 export interface UserAttributes {
   id: number;

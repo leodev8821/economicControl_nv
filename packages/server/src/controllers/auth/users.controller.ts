@@ -6,9 +6,9 @@ import {
   type UserCreationAttributes,
 } from "../../models/auth/user.model.js";
 import {
+  ROLE_TYPES,
   UserCreationSchema,
   UserUpdateSchema,
-  type UserUpdateRequest,
 } from "@economic-control/shared";
 import type { UserSearchData } from "../../models/auth/user.model.js";
 import dotenv from "dotenv";
@@ -199,49 +199,57 @@ export const usersController = {
 
   updateUser: async (req: Request, res: Response) => {
     try {
-      const userId = parseInt((req.params.id as string) || "0", 10);
+      const userId = Number(req.params.id);
+      const currentUserId = req.id;
 
       if (!userId) {
-        return res
-          .status(400)
-          .json({ ok: false, message: "ID de usuario inválido" });
-      }
-
-      const validationResult = UserUpdateSchema.safeParse(req.body);
-
-      if (!validationResult.success) {
         return res.status(400).json({
           ok: false,
-          message: "Datos de actualización de usuario inválidos.",
-          errors: validationResult.error.issues,
+          message: "ID de usuario inválido",
         });
       }
 
-      const updateData: UserUpdateRequest = validationResult.data;
-
-      const existingUser = await UserActions.getOne({
-        username: updateData.username,
-      });
-
-      if (existingUser && existingUser.id !== userId) {
-        return res.status(409).json({
-          ok: false,
-          message: "El nombre de usuario ya está en uso.",
-        });
-      }
-
-      if (updateData.role_name === sudoRole) {
+      // evitar cambiar tu propio rol (recomendado)
+      if (userId === currentUserId && req.body.role_name) {
         return res.status(403).json({
           ok: false,
-          message: `No está permitido crear usuarios con el rol '${sudoRole}'.`,
+          message: "No puedes cambiar tu propio rol",
         });
       }
 
+      // ✅ VALIDACIÓN CON ZOD
+      const parsed = UserUpdateSchema.safeParse(req.body);
+
+      if (!parsed.success) {
+        return res.status(400).json({
+          ok: false,
+          message: "Datos inválidos",
+          errors: parsed.error.issues,
+        });
+      }
+
+      const updateData = parsed.data;
+
+      // evitar update vacío
       if (Object.keys(updateData).length === 0) {
         return res.status(400).json({
           ok: false,
-          message: "No se proporcionaron datos para actualizar.",
+          message: "No se proporcionaron datos para actualizar",
         });
+      }
+
+      // validar username duplicado
+      if (updateData.username) {
+        const existingUser = await UserActions.getOne({
+          username: updateData.username,
+        });
+
+        if (existingUser && existingUser.id !== userId) {
+          return res.status(409).json({
+            ok: false,
+            message: "El nombre de usuario ya está en uso",
+          });
+        }
       }
 
       const updatedUser = await UserActions.update(
@@ -249,62 +257,49 @@ export const usersController = {
         updateData as Partial<UserCreationAttributes>,
       );
 
-      if (!updatedUser) {
-        return res.status(404).json({
+      if (
+        updateData.role_name === ROLE_TYPES.SUPER_USER &&
+        req.userRole !== ROLE_TYPES.SUPER_USER
+      ) {
+        return res.status(403).json({
           ok: false,
-          message: "Usuario no encontrada para actualizar.",
+          message: "No puedes asignar ese rol",
         });
       }
 
-      return res.status(200).json({
+      if (!updatedUser) {
+        return res.status(404).json({
+          ok: false,
+          message: "Usuario no encontrado",
+        });
+      }
+
+      return res.json({
         ok: true,
-        message: "Usuario actualizada correctamente.",
         data: updatedUser,
       });
     } catch (error) {
-      if (error instanceof UniqueConstraintError) {
-        return res.status(409).json({
-          ok: false,
-          message: "El nombre de usuario ya está en la base de datos.",
-        });
-      }
-      return ControllerErrorHandler(
-        res,
-        error,
-        "Error al actualizar la usuario.",
-      );
+      return ControllerErrorHandler(res, error, "Error al actualizar usuario");
     }
   },
 
   deleteUser: async (req: Request, res: Response) => {
-    try {
-      const userId = parseInt((req.params.id as string) || "0", 10);
+    const userIdToDelete = Number(req.params.id);
 
-      if (!userId) {
-        return res
-          .status(400)
-          .json({ ok: false, message: "ID de usuario inválido" });
-      }
-
-      const deleted = await UserActions.delete(userId);
-
-      if (!deleted) {
-        return res.status(404).json({
-          ok: false,
-          message: "No se encontró la usuario para eliminar.",
-        });
-      }
-
-      return res.status(200).json({
-        ok: true,
-        message: "Usuario eliminada correctamente.",
+    if (req.id === userIdToDelete) {
+      return res.status(403).json({
+        ok: false,
+        message: "No puedes eliminar tu propio usuario",
       });
-    } catch (error) {
-      return ControllerErrorHandler(
-        res,
-        error,
-        "Error al eliminar la usuario.",
-      );
     }
+
+    const deleted = await UserActions.update(userIdToDelete, {
+      is_visible: false,
+    });
+
+    return res.json({
+      ok: true,
+      deleted,
+    });
   },
 };

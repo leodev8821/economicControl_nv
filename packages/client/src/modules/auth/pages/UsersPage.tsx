@@ -133,7 +133,7 @@ const UserPage: React.FC = () => {
             : "Crear Nuevo Usuario"}
         </Typography>
         <UserForm
-          key={editingUser ? `edit-${editingUser.id}` : "new-user"}
+          key={editingUser?.id || "new-form"}
           initialValues={editingUser}
           onSubmit={handleFormSubmit}
           isLoading={createMutation.isPending || updateMutation.isPending}
@@ -197,6 +197,7 @@ const UserPage: React.FC = () => {
 
           <UserTable
             users={users}
+            currentUser={authUser}
             onEdit={handleStartEdit}
             onDelete={handleDeleteUser}
             isLoading={isLoading}
