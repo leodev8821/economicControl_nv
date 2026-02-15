@@ -50,6 +50,9 @@ COPY --from=builder /app/package.json .
 COPY --from=builder /app/packages/server/package.json ./packages/server/package.json
 COPY --from=builder /app/packages/server/dist ./packages/server/dist
 COPY --from=builder /app/packages/server/node_modules ./packages/server/node_modules
+COPY --from=builder /app/packages/server/config ./packages/server/config
+COPY --from=builder /app/packages/server/migrations ./packages/server/migrations
+COPY --from=builder /app/packages/server/seeders ./packages/server/seeders
 COPY --from=builder /app/packages/shared ./packages/shared
 
 USER expressjs
