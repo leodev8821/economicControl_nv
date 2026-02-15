@@ -19,6 +19,7 @@
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
     "@mui/system": "^7.3.7",
+    "@mui/utils": "^7.3.8",
     "@mui/x-charts": "^8.22.1",
     "@mui/x-data-grid": "^8.22.1",
     "@mui/x-date-pickers": "^8.22.1",
@@ -47,5 +48,5 @@
     "typescript-eslint": "^8.50.1",
     "vite": "^7.3.0"
   },
-  "packageManager": "pnpm@10.26.2+sha512.0e308ff2005fc7410366f154f625f6631ab2b16b1d2e70238444dd6ae9d630a8482d92a451144debc492416896ed16f7b114a86ec68b8404b2443869e68ffda6"
+  "packageManager": "pnpm@10.29.3+sha512.498e1fb4cca5aa06c1dcf2611e6fafc50972ffe7189998c409e90de74566444298ffe43e6cd2acdc775ba1aa7cc5e092a8b7054c811ba8c5770f84693d33d2dc"
 }
