@@ -15,7 +15,7 @@ import dotenv from "dotenv";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { UniqueConstraintError } from "sequelize";
-import { APP_IDS } from "src/shared/app.constants.js";
+import { APP_IDS } from "../../shared/app.constants.js";
 
 // Tipos auxiliares
 export type LoginResult = { token: string; message: string };

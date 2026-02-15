@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import { ROLE_TYPES } from "../auth/role.model.js";
 import { UserPermissionModel } from "./user-permission.model.js";
-import { APP_IDS } from "src/shared/app.constants.js";
+import { APP_IDS } from "../../shared/app.constants.js";
 
 const connection = getSequelizeConfig();
 
