@@ -48,9 +48,9 @@ COPY --from=builder /app/package.json .
 
 # Copiamos el servidor y el paquete compartido
 COPY --from=builder /app/packages/server ./packages/server
-COPY --from=builder /app/packages/server/config ./packages/server/config
-COPY --from=builder /app/packages/server/migrations ./packages/server/migrations
-COPY --from=builder /app/packages/server/seeders ./packages/server/seeders
+#COPY --from=builder /app/packages/server/config ./packages/server/config
+#COPY --from=builder /app/packages/server/migrations ./packages/server/migrations
+#COPY --from=builder /app/packages/server/seeders ./packages/server/seeders
 COPY --from=builder /app/packages/shared ./packages/shared
 
 USER expressjs
