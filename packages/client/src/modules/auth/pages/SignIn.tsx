@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Box from "@mui/material/Box";
@@ -11,6 +11,7 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
+import Alert from "@mui/material/Alert";
 import { styled } from "@mui/material/styles";
 
 import AppTheme from "@core/theme/shared-theme/AppTheme";
@@ -26,12 +27,11 @@ const Card = styled(MuiCard)(({ theme }) => ({
   width: "100%",
   padding: theme.spacing(4),
   gap: theme.spacing(2),
-  margin: "auto",
-  [theme.breakpoints.up("sm")]: {
-    maxWidth: "450px",
-  },
   boxShadow:
     "hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px",
+  [theme.breakpoints.up("sm")]: {
+    width: "450px",
+  },
   ...theme.applyStyles("dark", {
     boxShadow:
       "hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
@@ -39,12 +39,13 @@ const Card = styled(MuiCard)(({ theme }) => ({
 }));
 
 const SignInContainer = styled(Stack)(({ theme }) => ({
-  height: "calc((1 - var(--template-frame-height, 0)) * 100dvh)",
-  minHeight: "100%",
+  height: "100vh",
+  width: "100vw",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  position: "relative",
   padding: theme.spacing(2),
-  [theme.breakpoints.up("sm")]: {
-    padding: theme.spacing(4),
-  },
   "&::before": {
     content: '""',
     display: "block",
@@ -61,112 +62,95 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-export default function SignIn(props: { disableCustomTheme?: boolean }) {
-  const [usernameError, setUsernameError] = React.useState(false);
-  const [usernameErrorMessage, setUsernameErrorMessage] = React.useState("");
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
-  const { login, isAuthenticated, isLoading } = useAuth();
+export default function SignIn() {
+  const { login, isLoading } = useAuth(); // Error eliminado de aquí
   const navigate = useNavigate();
+
+  // Estados locales para errores
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [usernameError, setUsernameError] = useState(false);
+  const [usernameErrorMessage, setUsernameErrorMessage] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
 
   const [credentials, setCredentials] = useState<LoginCredentials>({
     login_data: "",
     password: "",
   });
-  const [serverError, setServerError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/", { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
-
-  if (isAuthenticated) {
-    return null;
-  }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    // Limpiar errores al escribir
+    if (localError) setLocalError(null);
+  };
 
   const validateInputs = () => {
+    const { login_data, password } = credentials;
     let isValid = true;
 
-    if (
-      !credentials.login_data ||
-      !/^[a-zA-Z0-9.]{3,20}$/.test(credentials.login_data)
-    ) {
+    if (!login_data || login_data.length < 3) {
       setUsernameError(true);
-      setUsernameErrorMessage(
-        !credentials.login_data
-          ? "El usuario no puede estar vacío."
-          : "Usuario no válido (letras, números, puntos, 3-20 caracteres).",
-      );
+      setUsernameErrorMessage("Ingresa un usuario válido.");
       isValid = false;
     } else {
       setUsernameError(false);
       setUsernameErrorMessage("");
     }
 
-    if (!credentials.password || credentials.password.length < 6) {
+    if (!password || password.length < 4) {
       setPasswordError(true);
-      setPasswordErrorMessage("Contraseña no válida (mínimo 6 caracteres).");
+      setPasswordErrorMessage(
+        "La contraseña debe tener al menos 4 caracteres.",
+      );
       isValid = false;
     } else {
       setPasswordError(false);
       setPasswordErrorMessage("");
     }
+
     return isValid;
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    setCredentials({
-      ...credentials,
-      [e.target.name]: e.target.value,
-    });
-    setUsernameError(false);
-    setPasswordError(false);
-    setServerError(null);
-  };
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!validateInputs()) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setServerError(null);
-
-    if (!validateInputs()) {
-      return;
-    }
+    setLocalError(null);
 
     try {
       await login(credentials);
-      navigate("/", { replace: true });
-    } catch (err) {
+      navigate("/");
+    } catch (err: any) {
       const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Error desconocido al iniciar sesión.";
-      setServerError(errorMessage);
-      setUsernameError(true);
-      setUsernameErrorMessage(errorMessage);
-      setPasswordError(true);
-      setPasswordErrorMessage(errorMessage);
+        err.response?.data?.message || err.message || "Error al iniciar sesión";
+      setLocalError(errorMessage);
     }
   };
 
   return (
-    <AppTheme {...props}>
+    <AppTheme>
       <CssBaseline enableColorScheme />
-      <SignInContainer direction="column" justifyContent="space-between">
+      <SignInContainer>
         <ColorModeSelect
           sx={{ position: "fixed", top: "1rem", right: "1rem" }}
         />
         <Card variant="outlined">
-          <NVIcon />
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <NVIcon />
+          </Box>
           <Typography
             component="h1"
-            variant="h6"
-            sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+            variant="h4"
+            sx={{
+              width: "100%",
+              fontSize: "clamp(1.5rem, 10vw, 2rem)",
+              textAlign: "center",
+              fontWeight: "bold",
+            }}
           >
-            Sign in
+            Bienvenido
           </Typography>
+
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -179,27 +163,26 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             }}
           >
             <FormControl>
-              <FormLabel htmlFor="login_data">Email</FormLabel>
+              <FormLabel htmlFor="login_data">Usuario</FormLabel>
               <TextField
                 error={usernameError}
                 helperText={usernameErrorMessage}
                 id="login_data"
-                type="text"
                 name="login_data"
-                placeholder="username"
-                autoComplete="login_data"
+                placeholder="Tu nombre de usuario"
+                autoComplete="username"
                 autoFocus
                 required
                 fullWidth
+                size="small"
                 variant="outlined"
-                color={usernameError ? "error" : "primary"}
                 value={credentials.login_data}
                 onChange={handleChange}
                 disabled={isLoading}
               />
             </FormControl>
             <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
+              <FormLabel htmlFor="password">Contraseña</FormLabel>
               <TextField
                 error={passwordError}
                 helperText={passwordErrorMessage}
@@ -208,33 +191,31 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-                autoFocus
                 required
                 fullWidth
+                size="small"
                 variant="outlined"
-                color={passwordError ? "error" : "primary"}
                 value={credentials.password}
                 onChange={handleChange}
                 disabled={isLoading}
               />
             </FormControl>
 
-            {serverError && (
-              <Typography
-                color="error"
-                variant="body2"
-                sx={{ alignSelf: "center" }}
-              >
-                {serverError}
-              </Typography>
+            {localError && (
+              <Alert severity="error" variant="filled" sx={{ py: 0 }}>
+                {localError}
+              </Alert>
             )}
+
             <Button
               type="submit"
               fullWidth
               variant="contained"
               disabled={isLoading}
+              size="large"
+              sx={{ mt: 1, textTransform: "none", fontWeight: "bold" }}
             >
-              {isLoading ? "Cargando..." : "Sign in"}
+              {isLoading ? "Validando..." : "Iniciar Sesión"}
             </Button>
           </Box>
         </Card>
