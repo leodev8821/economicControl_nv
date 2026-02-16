@@ -16,6 +16,13 @@ import {
   InputAdornment,
   TableSortLabel,
   Button,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Collapse,
+  Stack,
 } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
 
@@ -25,9 +32,17 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CalculateIcon from "@mui/icons-material/Calculate";
 import DownloadIcon from "@mui/icons-material/Download";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import FilterListOffIcon from "@mui/icons-material/FilterListOff";
+
+import dayjs, { Dayjs } from "dayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 // Tipos
 import type { Income } from "@modules/finance/types/income.type";
+import { INCOME_SOURCES } from "@modules/finance/types/income.type";
 
 interface IncomeTableProps {
   incomes: Income[];
@@ -51,6 +66,20 @@ export default function IncomeTable({
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchText, setSearchText] = useState("");
 
+  const initialFilters = {
+    global: "",
+    source: "all",
+    minAmount: "",
+    maxAmount: "",
+    startDate: null as Dayjs | null,
+    endDate: null as Dayjs | null,
+    personDni: "",
+    weekId: "all",
+  };
+
+  const [filters, setFilters] = useState(initialFilters);
+  const [showFilters, setShowFilters] = useState(false);
+
   // Estados para Sorting
   const [order, setOrder] = useState<Order>("desc");
   const [orderBy, setOrderBy] = useState<OrderBy>("date");
@@ -62,22 +91,66 @@ export default function IncomeTable({
     setOrderBy(property);
   };
 
+  // Helper para limpiar filtros
+  const handleResetFilters = () => {
+    setFilters(initialFilters);
+    setPage(0);
+  };
+
+  const availableWeeks = useMemo(() => {
+    const weeksMap = new Map();
+    incomes.forEach((income) => {
+      if (income.Week) {
+        weeksMap.set(income.Week.id, income.Week);
+      }
+    });
+    // Retornamos array ordenado por ID de semana
+    return Array.from(weeksMap.values()).sort((a, b) => b.id - a.id);
+  }, [incomes]);
+
   // --- 1. Filtrado ---
   const filteredIncomes = useMemo(() => {
-    if (!searchText) return incomes;
-    const lowerSearch = searchText.toLowerCase();
-
     return incomes.filter((income) => {
-      const matchSource = income.source?.toLowerCase().includes(lowerSearch);
-      const matchDni = income.Person?.dni?.toLowerCase().includes(lowerSearch);
-      const matchAmount = income.amount.toString().includes(lowerSearch);
-      const matchId = income.id.toString().includes(lowerSearch);
-      const dateStr = new Date(income.date).toLocaleDateString();
-      const matchDate = dateStr.includes(lowerSearch);
+      // 1. Filtro Global (Texto)
+      if (filters.global) {
+        const lowerSearch = filters.global.toLowerCase();
+        const matchSource = income.source?.toLowerCase().includes(lowerSearch);
+        const matchDni = income.Person?.dni
+          ?.toLowerCase()
+          .includes(lowerSearch);
+        const matchId = income.id.toString().includes(lowerSearch);
+        if (!matchSource && !matchDni && !matchId) return false;
+      }
 
-      return matchSource || matchDni || matchAmount || matchId || matchDate;
+      // 2. Filtro por Fuente
+      if (filters.source !== "all" && income.source !== filters.source) {
+        return false;
+      }
+
+      // 3. Filtro por Rango de Montos
+      if (filters.minAmount && income.amount < Number(filters.minAmount))
+        return false;
+      if (filters.maxAmount && income.amount > Number(filters.maxAmount))
+        return false;
+
+      // 4. Filtro por Rango de Fechas
+      const incomeDate = dayjs(income.date);
+      if (filters.startDate && incomeDate.isBefore(filters.startDate, "day"))
+        return false;
+      if (filters.endDate && incomeDate.isAfter(filters.endDate, "day"))
+        return false;
+
+      // 5. Filtro por Persona
+      if (filters.personDni && income.Person?.dni !== filters.personDni)
+        return false;
+
+      // 6. Filtro por Semana
+      if (filters.weekId !== "all" && income.week_id !== Number(filters.weekId))
+        return false;
+
+      return true;
     });
-  }, [incomes, searchText]);
+  }, [incomes, filters]);
 
   // --- 2. Ordenación (Sorting) ---
   const sortedIncomes = useMemo(() => {
@@ -299,6 +372,190 @@ export default function IncomeTable({
             }}
           />
         </Box>
+      </Paper>
+
+      {/* PANEL DE FILTROS AVANZADOS */}
+      <Paper elevation={1} sx={{ p: 2, borderRadius: 2 }}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2}
+        >
+          <Button
+            startIcon={showFilters ? <FilterListOffIcon /> : <FilterListIcon />}
+            onClick={() => setShowFilters(!showFilters)}
+            color="primary"
+          >
+            {showFilters
+              ? "Ocultar Filtros Avanzados"
+              : "Mostrar Filtros Avanzados"}
+          </Button>
+
+          {/* Búsqueda Global Rápida (Mantenemos la existente pero ligada a filters.global) */}
+          <TextField
+            placeholder="Búsqueda rápida (ID, NIF...)"
+            variant="outlined"
+            size="small"
+            value={filters.global}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, global: e.target.value }))
+            }
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            sx={{ width: 300 }}
+          />
+        </Stack>
+
+        <Collapse in={showFilters}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Grid container spacing={2} alignItems="center">
+              {/* Filtro: Fuente */}
+              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Fuente</InputLabel>
+                  <Select
+                    value={filters.source}
+                    label="Fuente"
+                    onChange={(e) =>
+                      setFilters({ ...filters, source: e.target.value })
+                    }
+                  >
+                    <MenuItem value="all">
+                      <em>Todas</em>
+                    </MenuItem>
+                    {/* Aquí deberías importar tus sources constantes o hardcodearlos */}
+                    {INCOME_SOURCES.map((s) => (
+                      <MenuItem key={s} value={s}>
+                        {s}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Filtro Semana */}
+              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Semana</InputLabel>
+                  <Select
+                    value={filters.weekId}
+                    label="Semana"
+                    onChange={(e) => {
+                      setFilters((prev) => ({
+                        ...prev,
+                        weekId: e.target.value,
+                      }));
+                      setPage(0);
+                    }}
+                  >
+                    <MenuItem value="all">
+                      <em>Todas las semanas</em>
+                    </MenuItem>
+                    {availableWeeks.map((w) => (
+                      <MenuItem key={w.id} value={w.id}>
+                        S{w.id} ({dayjs(w.week_start).format("DD/MM")} -{" "}
+                        {dayjs(w.week_end).format("DD/MM")})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Filtro: Rango Fechas */}
+              <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
+                <DatePicker
+                  label="Desde"
+                  value={filters.startDate}
+                  onChange={(val) => setFilters({ ...filters, startDate: val })}
+                  slotProps={{ textField: { size: "small", fullWidth: true } }}
+                />
+              </Grid>
+              <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
+                <DatePicker
+                  label="Hasta"
+                  value={filters.endDate}
+                  onChange={(val) => setFilters({ ...filters, endDate: val })}
+                  slotProps={{ textField: { size: "small", fullWidth: true } }}
+                />
+              </Grid>
+
+              {/* Filtro: Rango Montos */}
+              <Grid sx={{ xs: 6, sm: 3, md: 1.5 }}>
+                <TextField
+                  label="Min €"
+                  type="number"
+                  size="small"
+                  fullWidth
+                  value={filters.minAmount}
+                  onChange={(e) =>
+                    setFilters({ ...filters, minAmount: e.target.value })
+                  }
+                />
+              </Grid>
+              <Grid sx={{ xs: 6, sm: 3, md: 1.5 }}>
+                <TextField
+                  label="Max €"
+                  type="number"
+                  size="small"
+                  fullWidth
+                  value={filters.maxAmount}
+                  onChange={(e) =>
+                    setFilters({ ...filters, maxAmount: e.target.value })
+                  }
+                />
+              </Grid>
+
+              {/* Filtro: Persona */}
+              <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
+                <TextField
+                  label="Persona"
+                  size="small"
+                  fullWidth
+                  value={filters.personDni}
+                  onChange={(e) =>
+                    setFilters({ ...filters, personDni: e.target.value })
+                  }
+                />
+              </Grid>
+
+              {/* Filtro: Semana */}
+              <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
+                <TextField
+                  label="Semana"
+                  size="small"
+                  fullWidth
+                  value={filters.weekId}
+                  onChange={(e) =>
+                    setFilters({ ...filters, weekId: e.target.value })
+                  }
+                />
+              </Grid>
+
+              {/* Botón Reset */}
+              <Grid
+                sx={{ xs: 12, md: 2 }}
+                display="flex"
+                justifyContent="flex-end"
+              >
+                <Button
+                  color="inherit"
+                  onClick={handleResetFilters}
+                  size="small"
+                >
+                  Limpiar Filtros
+                </Button>
+              </Grid>
+            </Grid>
+          </LocalizationProvider>
+        </Collapse>
       </Paper>
 
       {/* Tabla */}
