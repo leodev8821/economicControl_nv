@@ -66,7 +66,18 @@ const UserPage: React.FC = () => {
   // Switcher para el Formulario
   const handleFormSubmit = async (data: any) => {
     if (editingUser) {
-      return await handleUpdateUser({ ...data, id: editingUser.id });
+      // LOGICA DE SANITIZACIÓN
+      const isEditingSelf = editingUser.id === authUser?.id;
+
+      const payload = { ...data, id: editingUser.id };
+
+      if (isEditingSelf) {
+        // Eliminamos role_name del payload para evitar error 403/400 del backend
+        delete payload.role_name;
+        // console.log("Self-edit detectado: role_name omitido del payload.");
+      }
+
+      return await handleUpdateUser(payload);
     } else {
       return await handleCreateUser(data);
     }

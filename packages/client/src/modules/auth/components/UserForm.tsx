@@ -119,6 +119,11 @@ export default function UserForm({
     });
   }, [currentUser]);
 
+  // Detectar si se está editando a sí mismo
+  const isEditingSelf = React.useMemo(() => {
+    return isUpdateMode && initialValues?.id === currentUser?.id;
+  }, [isUpdateMode, initialValues, currentUser]);
+
   // 2. Estado local para la tabla de permisos
   const [selectedApps, setSelectedApps] = React.useState<
     { application_id: number }[]
@@ -333,7 +338,7 @@ export default function UserForm({
               name={fields.role_name.name}
               label="Rol *"
               defaultValue={initialValues?.role_name ?? ""}
-              disabled={isLoading}
+              disabled={isLoading || isEditingSelf}
               MenuProps={MenuProps}
             >
               {filteredRoles.map((r) => (
@@ -346,6 +351,11 @@ export default function UserForm({
                 </MenuItem>
               ))}
             </Select>
+            {isEditingSelf && (
+              <FormHelperText sx={{ color: "text.secondary" }}>
+                No puedes cambiar tu propio rol por seguridad.
+              </FormHelperText>
+            )}
             {fields.role_name.errors && (
               <FormHelperText>{fields.role_name.errors}</FormHelperText>
             )}
