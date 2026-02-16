@@ -6,7 +6,7 @@
   "scripts": {
     "install:all": "pnpm install",
     "db:setup": "turbo run db:setup --filter=@economic-control/server",
-    "init": "pnpm install && pnpm build && pnpm db:setup && pnpm dev",
+    "init": "pnpm build && pnpm db:setup && pnpm dev",
     "dev": "turbo dev",
     "build": "turbo build",
     "clean": "turbo clean && rm -rf node_modules .turbo packages/**/node_modules",
@@ -16,7 +16,7 @@
   "devDependencies": {
     "concurrently": "^9.2.1",
     "sequelize-cli": "^6.6.5",
-    "turbo": "^2.8.8",
+    "turbo": "^2.8.9",
     "typescript": "^5.9.3"
   },
   "engines": {

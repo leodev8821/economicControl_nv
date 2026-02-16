@@ -72,7 +72,10 @@ export default function OutcomeTable({
     label: string;
     align?: "left" | "right" | "center";
   }) => (
-    <TableCell align={align} sx={{ fontWeight: "bold" }}>
+    <TableCell
+      align={align}
+      sx={{ fontWeight: "bold", color: "primary.contrastText" }}
+    >
       <TableSortLabel
         active={orderBy === id}
         direction={orderBy === id ? order : "asc"}
@@ -182,8 +185,6 @@ export default function OutcomeTable({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          bgcolor: "error.main",
-          color: "white",
           borderRadius: 2,
         }}
       >
@@ -208,8 +209,23 @@ export default function OutcomeTable({
             </Typography>
           </Box>
         </Box>
-        <Box sx={{ display: "flex", gap: 1 }}>
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            alignItems: "center",
+          }}
+        >
           <Button
+            sx={{
+              bgcolor: "success.main",
+              color: "success.contrastText",
+              ":hover": {
+                bgcolor: "success.light",
+                color: "success.contrastText",
+              },
+            }}
             variant="outlined"
             onClick={exportToCSV}
             startIcon={<DownloadIcon />}
@@ -222,7 +238,7 @@ export default function OutcomeTable({
             size="small"
             value={searchText}
             onChange={handleSearchChange}
-            sx={{ minWidth: 300 }}
+            sx={{ minWidth: 300, color: "text.secondary" }}
             slotProps={{
               input: {
                 startAdornment: (
@@ -238,19 +254,21 @@ export default function OutcomeTable({
 
       <TableContainer component={Paper}>
         <Table>
-          <TableHead sx={{ bgcolor: "error.dark" }}>
+          <TableHead sx={{ bgcolor: "info.main" }}>
             <TableRow>
               <SortableHeader id="id" label="ID" />
               <SortableHeader id="weekString" label="Semana" />
               <SortableHeader id="date" label="Fecha" />
               <SortableHeader id="amount" label="Monto" align="right" />
               <SortableHeader id="category" label="Categoría" />
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+              <TableCell
+                sx={{ color: "primary.contrastText", fontWeight: "bold" }}
+              >
                 Descripción
               </TableCell>
               <TableCell
                 align="center"
-                sx={{ color: "white", fontWeight: "bold" }}
+                sx={{ color: "primary.contrastText", fontWeight: "bold" }}
               >
                 Acciones
               </TableCell>

@@ -4,91 +4,139 @@ import {
   Typography,
   CircularProgress,
   Paper,
-  Tab,
-  Tabs,
   Alert,
+  Button,
+  Snackbar,
+  Alert as MuiAlert,
 } from "@mui/material";
-import type { GridRowId } from "@mui/x-data-grid";
 import { parseWithZod } from "@conform-to/zod/v4";
 import {
-  useCreateIncome,
   useReadIncomes,
   useUpdateIncome,
   useDeleteIncome,
   useCreateBulkIncome,
 } from "@modules/finance/hooks/useIncome";
 import IncomeTable from "@modules/finance/components/tables/IncomeTable";
-import IncomeForm from "@modules/finance/components/forms/IncomeForm";
 import BulkIncomeForm from "@modules/finance/components/forms/BulkIncomeForm";
 import type { Income } from "@modules/finance/types/income.type";
 import * as SharedIncomeSchemas from "@economic-control/shared";
 
 const IncomesPage: React.FC = () => {
-  const { data: incomes = [], isLoading, isError, error } = useReadIncomes();
+  const [formKey, setFormKey] = useState(0);
+  const [draft, setDraft] = useState<any>(null);
+  const [editingIncome, setEditingIncome] = useState<Income | null>(null);
 
-  const createMutation = useCreateIncome();
+  const { data: incomes = [], isLoading, isError, error } = useReadIncomes();
   const deleteMutation = useDeleteIncome();
   const updateMutation = useUpdateIncome();
   const createBulkMutation = useCreateBulkIncome();
 
-  const [editingIncome, setEditingIncome] = useState<Income | null>(null);
-  const [tabValue, setTabValue] = useState(0); // 0: Individual, 1: Masivo
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+  });
+
+  const formRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const savedDraft = localStorage.getItem("bulk_income_draft");
+    if (savedDraft && !editingIncome) {
+      setDraft(JSON.parse(savedDraft));
+      setFormKey((prev) => prev + 1);
+    }
+  }, [editingIncome]);
+
+  const handleClearDraft = () => {
+    localStorage.removeItem("bulk_income_draft");
+    setDraft(null);
+    setFormKey((prev) => prev + 1);
+    showSnackbar("Borrador eliminado");
+  };
+
+  const showSnackbar = (
+    message: string,
+    severity: "success" | "error" = "success",
+  ) => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   // --- Lógica de Bulk ---
   const handleBulkSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
 
-    // Validamos con el schema de Bulk
     const submission = parseWithZod(formData, {
       schema: SharedIncomeSchemas.BulkIncomeSchema,
     });
 
-    if (submission.status !== "success") return;
+    if (submission.status !== "success") {
+      console.log("Errores de validación:", submission.reply());
+      return;
+    }
 
     const payload = submission.value.incomes.map((item) => ({
       ...item,
-      week_id: submission.value.common_week_id, // Inyectamos el ID global
-      person_id: item.person_id || null, // Limpieza de datos
+      week_id: submission.value.common_week_id,
+      person_id: item.person_id || null,
     }));
+
+    // modo edición → update
+    if (editingIncome) {
+      updateMutation.mutate(
+        { ...payload[0], id: editingIncome.id },
+        {
+          onSuccess: () => {
+            setEditingIncome(null);
+            setFormKey((prev) => prev + 1);
+            showSnackbar("Ingreso actualizado correctamente");
+          },
+          onError: () => showSnackbar("Error al actualizar", "error"),
+        },
+      );
+      return;
+    }
 
     createBulkMutation.mutate(payload, {
       onSuccess: () => {
-        setTabValue(0); // Volver a la tabla tras éxito
+        localStorage.removeItem("bulk_income_draft");
+        setDraft(null);
+        setEditingIncome(null);
+        setFormKey((prev) => prev + 1);
+        showSnackbar("Ingresos creados correctamente");
       },
+      onError: () => showSnackbar("Error al guardar", "error"),
     });
-  };
-
-  // --- Lógica Individual ---
-  const handleFormSubmit = (
-    data: SharedIncomeSchemas.IncomeCreationRequest,
-  ) => {
-    if (editingIncome) {
-      updateMutation.mutate(
-        { ...data, id: editingIncome.id },
-        {
-          onSuccess: () => setEditingIncome(null),
-        },
-      );
-    } else {
-      createMutation.mutate(data);
-    }
   };
 
   const handleStartEdit = (income: Income) => {
     setEditingIncome(income);
-    setTabValue(0); // Forzamos el tab individual al editar
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setFormKey((prev) => prev + 1);
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
   };
 
-  const handleDeleteIncome = (id: GridRowId) => {
-    const incomeId = parseInt(id.toString());
-    if (
-      window.confirm(`¿Está seguro de eliminar el Ingreso con ID ${incomeId}?`)
-    ) {
-      deleteMutation.mutate(incomeId);
+  const handleDeleteIncome = (id: number) => {
+    if (window.confirm(`¿Está seguro de eliminar el Ingreso con ID ${id}?`)) {
+      deleteMutation.mutate(id, {
+        onSuccess: () => showSnackbar("Ingreso eliminado"),
+        onError: () => showSnackbar("Error al eliminar", "error"),
+      });
     }
   };
+
+  const bulkInitialValues = editingIncome
+    ? {
+        common_week_id: editingIncome.week_id,
+        incomes: [editingIncome],
+      }
+    : draft
+      ? draft
+      : undefined;
 
   // 1. Renderizado Principal
   return (
@@ -100,6 +148,29 @@ const IncomesPage: React.FC = () => {
         </Typography>
       )}
 
+      {editingIncome && (
+        <Alert
+          severity="info"
+          sx={{
+            mb: 3,
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+          }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => setEditingIncome(null)}
+            >
+              Cancelar
+            </Button>
+          }
+        >
+          Estás editando el ingreso ID {editingIncome.id}
+        </Alert>
+      )}
+
       <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
         Gestión de Ingresos
       </Typography>
@@ -107,7 +178,6 @@ const IncomesPage: React.FC = () => {
       {/* Alertas de Error Consolidadas */}
       {(deleteMutation.isError ||
         updateMutation.isError ||
-        createMutation.isError ||
         createBulkMutation.isError) && (
         <Alert severity="error" sx={{ mb: 2 }}>
           Hubo un problema al procesar la solicitud. Por favor, intente de
@@ -115,27 +185,61 @@ const IncomesPage: React.FC = () => {
         </Alert>
       )}
 
-      <Paper sx={{ mb: 3 }}>
-        <Tabs value={tabValue} onChange={(_, val) => setTabValue(val)} centered>
-          <Tab label="Registro Individual" />
-          <Tab label="Carga Masiva" />
-        </Tabs>
-      </Paper>
+      <Paper ref={formRef} elevation={3} sx={{ p: 3, mb: 4, bgcolor: "paper" }}>
+        {/* Banner de Borrador Recuperado */}
+        {draft && !editingIncome && (
+          <Alert
+            severity="warning"
+            sx={{ mb: 2 }}
+            action={
+              <Button color="inherit" size="small" onClick={handleClearDraft}>
+                Descartar Borrador
+              </Button>
+            }
+          >
+            Se han recuperado datos de un borrador guardado localmente.
+          </Alert>
+        )}
 
-      <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: "background.paper" }}>
-        {tabValue === 0 ? (
-          <IncomeForm
-            initialValues={editingIncome}
-            onSubmit={handleFormSubmit}
-            isLoading={createMutation.isPending || updateMutation.isPending}
-            isUpdateMode={!!editingIncome}
-            onCancel={() => setEditingIncome(null)}
-          />
-        ) : (
-          <BulkIncomeForm
-            onSubmit={handleBulkSubmit}
-            isLoading={createBulkMutation.isPending}
-          />
+        {editingIncome && (
+          <Typography color="primary" sx={{ mb: 2 }}>
+            Editando ingreso ID {editingIncome.id}
+          </Typography>
+        )}
+
+        <BulkIncomeForm
+          key={formKey}
+          onSubmit={handleBulkSubmit}
+          isLoading={createBulkMutation.isPending || updateMutation.isPending}
+          initialValues={bulkInitialValues}
+          disableAdd={!!editingIncome}
+          isEditMode={!!editingIncome}
+          onCancel={() => {
+            setEditingIncome(null);
+            setFormKey((prev) => prev + 1);
+          }}
+        />
+
+        {editingIncome && (
+          <Box mt={2}>
+            <Button
+              variant="outlined"
+              sx={{
+                backgroundColor: "error.main",
+                color: "white",
+                fontWeight: "bold",
+                ":hover": {
+                  backgroundColor: "error.light",
+                  color: "text.primary",
+                },
+              }}
+              color="error"
+              onClick={() => setEditingIncome(null)}
+              disabled={updateMutation.isPending}
+            >
+              Cancelar edición
+            </Button>
+          </Box>
         )}
       </Paper>
 
@@ -153,7 +257,10 @@ const IncomesPage: React.FC = () => {
           </Typography>
           <IncomeTable
             incomes={incomes}
-            onEdit={handleStartEdit}
+            onEdit={(income) => {
+              if (editingIncome) return;
+              handleStartEdit(income);
+            }}
             onDelete={handleDeleteIncome}
           />
         </Paper>
@@ -168,6 +275,20 @@ const IncomesPage: React.FC = () => {
           <Typography variant="body2">Mensaje: {error?.message}</Typography>
         </Box>
       )}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <MuiAlert
+          severity={snackbar.severity}
+          variant="filled"
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        >
+          {snackbar.message}
+        </MuiAlert>
+      </Snackbar>
     </Box>
   );
 };

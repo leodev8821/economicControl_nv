@@ -48,7 +48,7 @@ const BaseIncomeSchema = z.object({
     })
     .regex(
       /^\d{4}-\d{2}-\d{2}$/,
-      "El formato de fecha es inválido (debe ser AAAA-MM-DD)"
+      "El formato de fecha es inválido (debe ser AAAA-MM-DD)",
     ),
 
   // AMOUNT:
@@ -72,15 +72,17 @@ const BaseIncomeSchema = z.object({
 // ----------------------------------------------------------------------
 export const IncomeCreationSchema = BaseIncomeSchema.superRefine(
   (data, ctx) => {
-    // Regla: Si es "Diezmo", debe tener una persona asociada
-    if (data.source === "Diezmo" && !data.person_id) {
+    // Definimos qué fuentes requieren persona
+    const sourcesRequiringPerson: IncomeSource[] = ["Diezmo", "Primicia"];
+
+    if (sourcesRequiringPerson.includes(data.source) && !data.person_id) {
       ctx.addIssue({
         code: "custom",
-        message: "Un diezmo debe estar asociado a una persona.",
+        message: `Un(a) ${data.source.toLowerCase()} debe estar asociado(a) a una persona.`,
         path: ["person_id"],
       });
     }
-  }
+  },
 );
 
 // ----------------------------------------------------------------------
@@ -102,11 +104,16 @@ export type IncomeUpdateRequest = z.infer<typeof IncomeUpdateSchema>;
 export const BulkIncomeItemSchema = BaseIncomeSchema.omit({
   week_id: true,
 }).superRefine((data, ctx) => {
-  // Aplicamos la misma regla de negocio que en IncomeCreationSchema
-  if (data.source === "Diezmo" && !data.person_id) {
+  // Lista de fuentes obligatorias
+  const sourcesRequiringPerson: IncomeSource[] = ["Diezmo", "Primicia"];
+
+  if (
+    sourcesRequiringPerson.includes(data.source as IncomeSource) &&
+    !data.person_id
+  ) {
     ctx.addIssue({
       code: "custom",
-      message: "Un diezmo debe estar asociado a una persona.",
+      message: `El campo persona es obligatorio cuando la fuente es ${data.source}.`,
       path: ["person_id"],
     });
   }

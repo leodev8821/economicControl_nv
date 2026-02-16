@@ -15,9 +15,9 @@ import {
   Tooltip,
   InputAdornment,
   TableSortLabel,
-  Button, // Nuevo componente necesario
+  Button,
 } from "@mui/material";
-import { visuallyHidden } from "@mui/utils"; // Utilidad para accesibilidad
+import { visuallyHidden } from "@mui/utils";
 
 // Iconos
 import SearchIcon from "@mui/icons-material/Search";
@@ -28,22 +28,23 @@ import DownloadIcon from "@mui/icons-material/Download";
 
 // Tipos
 import type { Income } from "@modules/finance/types/income.type";
-import type { GridRowId } from "@mui/x-data-grid";
 
 interface IncomeTableProps {
   incomes: Income[];
+  highlightedRowId?: number | null;
   onEdit: (income: Income) => void;
-  onDelete: (id: GridRowId) => void;
+  onDelete: (id: number) => void;
 }
 
 // Tipos para la ordenación
 type Order = "asc" | "desc";
-type OrderBy = keyof Income | "weekString" | "personDni"; // Claves especiales para objetos anidados
+type OrderBy = keyof Income | "weekString" | "personDni";
 
 export default function IncomeTable({
   incomes,
   onEdit,
   onDelete,
+  highlightedRowId,
 }: IncomeTableProps) {
   // --- Estados ---
   const [page, setPage] = useState(0);
@@ -51,7 +52,7 @@ export default function IncomeTable({
   const [searchText, setSearchText] = useState("");
 
   // Estados para Sorting
-  const [order, setOrder] = useState<Order>("desc"); // Por defecto descendente (más recientes primero)
+  const [order, setOrder] = useState<Order>("desc");
   const [orderBy, setOrderBy] = useState<OrderBy>("date");
 
   // --- Handlers de Ordenación ---
@@ -84,7 +85,6 @@ export default function IncomeTable({
     const getValue = (item: Income, column: OrderBy) => {
       switch (column) {
         case "weekString":
-          // Ordenamos por ID de semana o fecha de inicio para que sea cronológico
           return item.Week ? new Date(item.Week.week_start).getTime() : 0;
         case "personDni":
           return item.Person?.dni || "";
@@ -111,12 +111,12 @@ export default function IncomeTable({
     });
   }, [filteredIncomes, order, orderBy]);
 
-  // --- Cálculo del Total (Usamos filtered, el orden no altera la suma) ---
+  // --- Cálculo del Total ---
   const totalAmount = useMemo(() => {
     return filteredIncomes.reduce((acc, curr) => acc + (curr.amount || 0), 0);
   }, [filteredIncomes]);
 
-  // --- 3. Paginación (Usamos sortedIncomes) ---
+  // --- 3. Paginación ---
   const paginatedIncomes = useMemo(() => {
     return sortedIncomes.slice(
       page * rowsPerPage,
@@ -138,7 +138,11 @@ export default function IncomeTable({
   };
 
   const formatDate = (date: Date | string) =>
-    new Date(date).toLocaleDateString();
+    new Date(date).toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
 
   // Helper para renderizar cabeceras ordenables
   const SortableHeader = ({
@@ -150,7 +154,10 @@ export default function IncomeTable({
     label: string;
     align?: "left" | "right" | "center";
   }) => (
-    <TableCell align={align} sx={{ fontWeight: "bold" }}>
+    <TableCell
+      align={align}
+      sx={{ fontWeight: "bold", color: "primary.contrastText" }}
+    >
       <TableSortLabel
         active={orderBy === id}
         direction={orderBy === id ? order : "asc"}
@@ -210,7 +217,7 @@ export default function IncomeTable({
         gap: 3,
       }}
     >
-      {/* Panel Superior (Igual que antes) */}
+      {/* Panel Superior */}
       <Paper
         elevation={3}
         sx={{
@@ -252,8 +259,22 @@ export default function IncomeTable({
             </Typography>
           </Box>
         </Box>
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            alignItems: "center",
+          }}
+        >
           <Button
+            sx={{
+              bgcolor: "success.main",
+              color: "success.contrastText",
+              ":hover": {
+                bgcolor: "success.light",
+                color: "success.contrastText",
+              },
+            }}
             variant="outlined"
             onClick={exportToCSV}
             startIcon={<DownloadIcon />}
@@ -280,7 +301,7 @@ export default function IncomeTable({
         </Box>
       </Paper>
 
-      {/* Tabla Manual */}
+      {/* Tabla */}
       <TableContainer component={Paper} elevation={1} sx={{ borderRadius: 2 }}>
         <Table sx={{ minWidth: 650 }} aria-label="income table">
           <TableHead sx={{ bgcolor: "primary.main" }}>
@@ -304,8 +325,13 @@ export default function IncomeTable({
               paginatedIncomes.map((row) => (
                 <TableRow
                   key={row.id}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                   hover
+                  sx={{
+                    "&:last-child td, &:last-child th": { border: 0 },
+                    backgroundColor:
+                      highlightedRowId === row.id ? "warning.light" : "inherit",
+                    transition: "background-color 0.2s ease",
+                  }}
                 >
                   <TableCell>{row.id}</TableCell>
                   <TableCell>
@@ -337,6 +363,7 @@ export default function IncomeTable({
                         color="error"
                         onClick={() => onDelete(row.id)}
                         size="small"
+                        disabled={highlightedRowId === row.id}
                       >
                         <DeleteIcon />
                       </IconButton>
