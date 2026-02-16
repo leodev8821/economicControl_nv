@@ -4,41 +4,69 @@ import {
   Typography,
   CircularProgress,
   Paper,
-  Tab,
-  Tabs,
   Alert,
+  Button,
+  Snackbar,
+  Alert as MuiAlert,
 } from "@mui/material";
-import type { GridRowId } from "@mui/x-data-grid";
 import { parseWithZod } from "@conform-to/zod/v4";
 import {
-  useCreateOutcome,
   useReadOutcomes,
   useUpdateOutcome,
   useDeleteOutcome,
   useCreateBulkOutcome,
 } from "@modules/finance/hooks/useOutcome";
 import OutcomeTable from "@modules/finance/components/tables/OutcomeTable";
-import OutcomeForm from "@modules/finance/components/forms/OutcomeForm";
 import BulkOutcomeForm from "@modules/finance/components/forms/BulkOutcomeForm";
-import * as SharedOutcomeSchemas from "@economic-control/shared";
 import type { Outcome } from "@modules/finance/types/outcome.type";
+import * as SharedOutcomeSchemas from "@economic-control/shared";
 
 const OutcomesPage: React.FC = () => {
+  const [formKey, setFormKey] = useState(0);
+  const [draft, setDraft] = useState<any>(null);
+  const [editingOutcome, setEditingOutcome] = useState<Outcome | null>(null);
+
   const { data: outcomes = [], isLoading, isError, error } = useReadOutcomes();
-  const createMutation = useCreateOutcome();
-  const updateMutation = useUpdateOutcome();
   const deleteMutation = useDeleteOutcome();
+  const updateMutation = useUpdateOutcome();
   const createBulkMutation = useCreateBulkOutcome();
 
-  const [editingOutcome, setEditingOutcome] = useState<Outcome | null>(null);
-  const [tabValue, setTabValue] = useState(0);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+  });
 
-  // --- Lógica de Bulk ---
+  const formRef = React.useRef<HTMLDivElement | null>(null);
+
+  // --- Lógica de Borrador ---
+  React.useEffect(() => {
+    const savedDraft = localStorage.getItem("bulk_outcome_draft");
+    if (savedDraft && !editingOutcome) {
+      setDraft(JSON.parse(savedDraft));
+      setFormKey((prev) => prev + 1);
+    }
+  }, [editingOutcome]);
+
+  const handleClearDraft = () => {
+    localStorage.removeItem("bulk_outcome_draft");
+    setDraft(null);
+    setFormKey((prev) => prev + 1);
+    showSnackbar("Borrador de egresos eliminado");
+  };
+
+  const showSnackbar = (
+    message: string,
+    severity: "success" | "error" = "success",
+  ) => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  // --- Manejo del Formulario ---
   const handleBulkSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
 
-    // Validamos con el schema de Bulk
     const submission = parseWithZod(formData, {
       schema: SharedOutcomeSchemas.BulkOutcomeSchema,
     });
@@ -47,100 +75,121 @@ const OutcomesPage: React.FC = () => {
 
     const payload = submission.value.outcomes.map((item) => ({
       ...item,
-      week_id: submission.value.common_week_id, // Inyectamos el ID global
+      week_id: submission.value.common_week_id,
     }));
+
+    if (editingOutcome) {
+      updateMutation.mutate(
+        { ...payload[0], id: editingOutcome.id },
+        {
+          onSuccess: () => {
+            setEditingOutcome(null);
+            setFormKey((prev) => prev + 1);
+            showSnackbar("Egreso actualizado correctamente");
+          },
+          onError: () => showSnackbar("Error al actualizar", "error"),
+        },
+      );
+      return;
+    }
 
     createBulkMutation.mutate(payload, {
       onSuccess: () => {
-        setTabValue(0); // Volver a la tabla tras éxito
+        localStorage.removeItem("bulk_outcome_draft");
+        setDraft(null);
+        setFormKey((prev) => prev + 1);
+        showSnackbar("Egresos registrados correctamente");
       },
+      onError: () => showSnackbar("Error al guardar", "error"),
     });
-  };
-
-  // --- Lógica Individual ---
-  const handleFormSubmit = (
-    data: SharedOutcomeSchemas.OutcomeCreationRequest,
-  ) => {
-    if (editingOutcome) {
-      updateMutation.mutate(
-        { ...data, id: editingOutcome.id },
-        {
-          onSuccess: () => setEditingOutcome(null),
-        },
-      );
-    } else {
-      createMutation.mutate(data);
-    }
   };
 
   const handleStartEdit = (outcome: Outcome) => {
     setEditingOutcome(outcome);
-    setTabValue(0); // Forzamos el tab individual al editar
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setFormKey((prev) => prev + 1);
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
   };
 
-  const handleDeleteOutcome = (id: GridRowId) => {
-    const outcomeId = parseInt(id.toString());
-    if (
-      window.confirm(`¿Está seguro de eliminar el Egreso con ID ${outcomeId}?`)
-    ) {
-      deleteMutation.mutate(outcomeId);
+  const handleDeleteOutcome = (id: number) => {
+    if (window.confirm(`¿Está seguro de eliminar el Egreso con ID ${id}?`)) {
+      deleteMutation.mutate(id, {
+        onSuccess: () => showSnackbar("Egreso eliminado"),
+        onError: () => showSnackbar("Error al eliminar", "error"),
+      });
     }
   };
 
-  // 1. Renderizado Principal (Siempre muestra el formulario)
+  const bulkInitialValues = editingOutcome
+    ? {
+        common_week_id: editingOutcome.week_id,
+        outcomes: [editingOutcome],
+      }
+    : draft || undefined;
+
   return (
     <Box p={3}>
-      {/* Indicador de que una mutación está en curso*/}
       {(deleteMutation.isPending || updateMutation.isPending) && (
-        <Typography color="primary">
-          Realizando acción en el servidor...
+        <Typography color="error" sx={{ mb: 1, fontWeight: "bold" }}>
+          Procesando cambio en el servidor...
         </Typography>
+      )}
+
+      {editingOutcome && (
+        <Alert
+          severity="info"
+          sx={{ mb: 3, position: "sticky", top: 0, zIndex: 10 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => setEditingOutcome(null)}
+            >
+              Cancelar
+            </Button>
+          }
+        >
+          Editando egreso ID {editingOutcome.id}
+        </Alert>
       )}
 
       <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
         Gestión de Egresos
       </Typography>
 
-      {/* Alertas de Error Consolidadas */}
-      {(deleteMutation.isError ||
-        updateMutation.isError ||
-        createMutation.isError ||
-        createBulkMutation.isError) && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          Hubo un problema al procesar la solicitud. Por favor, intente de
-          nuevo.
-        </Alert>
-      )}
-
-      <Paper sx={{ mb: 3 }}>
-        <Tabs value={tabValue} onChange={(_, val) => setTabValue(val)} centered>
-          <Tab label="Registro Individual" />
-          <Tab label="Carga Masiva" />
-        </Tabs>
-      </Paper>
-
-      <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: "background.paper" }}>
-        {tabValue === 0 ? (
-          <OutcomeForm
-            initialValues={editingOutcome}
-            onSubmit={handleFormSubmit}
-            isLoading={createMutation.isPending || updateMutation.isPending}
-            isUpdateMode={!!editingOutcome}
-            onCancel={() => setEditingOutcome(null)}
-          />
-        ) : (
-          <BulkOutcomeForm
-            onSubmit={handleBulkSubmit}
-            isLoading={createBulkMutation.isPending}
-          />
+      <Paper ref={formRef} elevation={3} sx={{ p: 3, mb: 4 }}>
+        {draft && !editingOutcome && (
+          <Alert
+            severity="warning"
+            sx={{ mb: 2 }}
+            action={
+              <Button color="inherit" size="small" onClick={handleClearDraft}>
+                Descartar
+              </Button>
+            }
+          >
+            Borrador de egresos recuperado.
+          </Alert>
         )}
+
+        <BulkOutcomeForm
+          key={formKey}
+          onSubmit={handleBulkSubmit}
+          isLoading={createBulkMutation.isPending || updateMutation.isPending}
+          initialValues={bulkInitialValues}
+          disableAdd={!!editingOutcome}
+          isEditMode={!!editingOutcome}
+          onCancel={() => {
+            setEditingOutcome(null);
+            setFormKey((prev) => prev + 1);
+          }}
+        />
       </Paper>
 
-      {/* Sección Condicional: Loading / Error / Tabla / Vacío */}
       {isLoading ? (
         <Box display="flex" flexDirection="column" alignItems="center" py={5}>
-          <CircularProgress />
+          <CircularProgress color="error" />
           <Typography variant="h6" mt={2}>
             Cargando listado de egresos...
           </Typography>
@@ -152,21 +201,31 @@ const OutcomesPage: React.FC = () => {
           </Typography>
           <OutcomeTable
             outcomes={outcomes}
-            onEdit={handleStartEdit}
-            onDelete={handleDeleteOutcome}
+            onEdit={(outcome) => {
+              if (editingOutcome) return;
+              handleStartEdit(outcome);
+            }}
+            onDelete={(id) => handleDeleteOutcome(Number(id))}
           />
         </Paper>
       )}
 
-      {/* Error real */}
       {isError && !isLoading && (
-        <Box p={3} color="error.main">
-          <Typography variant="h6" gutterBottom>
-            Error al cargar egresos
-          </Typography>
-          <Typography variant="body2">Mensaje: {error?.message}</Typography>
-        </Box>
+        <Alert severity="error" sx={{ mt: 2 }}>
+          Error al cargar egresos: {error?.message}
+        </Alert>
       )}
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <MuiAlert severity={snackbar.severity} variant="filled">
+          {snackbar.message}
+        </MuiAlert>
+      </Snackbar>
     </Box>
   );
 };

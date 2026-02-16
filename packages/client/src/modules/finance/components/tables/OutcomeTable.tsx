@@ -16,35 +16,184 @@ import {
   InputAdornment,
   TableSortLabel,
   Button,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Collapse,
+  Stack,
 } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
+
+// Iconos
 import SearchIcon from "@mui/icons-material/Search";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
-import TrendingDownIcon from "@mui/icons-material/TrendingDown";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import FilterListOffIcon from "@mui/icons-material/FilterListOff";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown"; // Icono para gastos
+
+import dayjs, { Dayjs } from "dayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+
+// Tipos
 import type { Outcome } from "@modules/finance/types/outcome.type";
-import type { GridRowId } from "@mui/x-data-grid";
+import { OUTCOME_CATEGORY } from "@modules/finance/types/outcome.type";
 
 interface OutcomeTableProps {
   outcomes: Outcome[];
+  highlightedRowId?: number | null; // Añadido para consistencia con IncomeTable
   onEdit: (outcome: Outcome) => void;
-  onDelete: (id: GridRowId) => void;
+  onDelete: (id: number) => void;
 }
 
+// Tipos para la ordenación
 type Order = "asc" | "desc";
-type OrderBy = keyof Outcome | "cashName" | "weekString";
+type OrderBy = keyof Outcome | "weekString" | "cashName";
 
 export default function OutcomeTable({
   outcomes,
   onEdit,
   onDelete,
+  highlightedRowId,
 }: OutcomeTableProps) {
+  // --- Estados ---
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchText, setSearchText] = useState("");
+
+  const initialFilters = {
+    global: "",
+    category: "all",
+    minAmount: "",
+    maxAmount: "",
+    startDate: null as Dayjs | null,
+    endDate: null as Dayjs | null,
+    weekId: "all",
+  };
+
+  const [filters, setFilters] = useState(initialFilters);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Estados para Sorting
   const [order, setOrder] = useState<Order>("desc");
   const [orderBy, setOrderBy] = useState<OrderBy>("date");
+
+  // --- Handlers de Ordenación ---
+  const handleRequestSort = (property: OrderBy) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
+  // Helper para limpiar filtros
+  const handleResetFilters = () => {
+    setFilters(initialFilters);
+    setPage(0);
+  };
+
+  // 1. Extraer Semanas Disponibles (Memoizado)
+  const availableWeeks = useMemo(() => {
+    const weeksMap = new Map();
+    outcomes.forEach((outcome) => {
+      if (outcome.Week) {
+        weeksMap.set(outcome.Week.id, outcome.Week);
+      }
+    });
+    return Array.from(weeksMap.values()).sort((a, b) => b.id - a.id);
+  }, [outcomes]);
+
+  // --- 3. Filtrado ---
+  const filteredOutcomes = useMemo(() => {
+    return outcomes.filter((outcome) => {
+      // A. Filtro Global (Texto)
+      if (filters.global) {
+        const lowerSearch = filters.global.toLowerCase();
+        const matchDesc = outcome.description
+          ?.toLowerCase()
+          .includes(lowerSearch);
+        const matchCat = outcome.category?.toLowerCase().includes(lowerSearch);
+        const matchId = outcome.id.toString().includes(lowerSearch);
+
+        if (!matchDesc && !matchCat && !matchId) return false;
+      }
+
+      // B. Filtro por Categoría
+      if (filters.category !== "all" && outcome.category !== filters.category) {
+        return false;
+      }
+
+      // C. Filtro por Rango de Montos
+      if (filters.minAmount && outcome.amount < Number(filters.minAmount))
+        return false;
+      if (filters.maxAmount && outcome.amount > Number(filters.maxAmount))
+        return false;
+
+      // D. Filtro por Rango de Fechas
+      const outcomeDate = dayjs(outcome.date);
+      if (filters.startDate && outcomeDate.isBefore(filters.startDate, "day"))
+        return false;
+      if (filters.endDate && outcomeDate.isAfter(filters.endDate, "day"))
+        return false;
+
+      // E. Filtro por Semana
+      if (
+        filters.weekId !== "all" &&
+        outcome.Week?.id !== Number(filters.weekId)
+      )
+        return false;
+
+      return true;
+    });
+  }, [outcomes, filters]);
+
+  // --- 4. Ordenación (Sorting) ---
+  const sortedOutcomes = useMemo(() => {
+    const getValue = (item: Outcome, column: OrderBy) => {
+      switch (column) {
+        case "weekString":
+          return item.Week ? new Date(item.Week.week_start).getTime() : 0;
+        case "cashName":
+          return item.Cash?.name || "";
+        case "date":
+          return new Date(item.date).getTime();
+        default:
+          return item[column as keyof Outcome];
+      }
+    };
+
+    return [...filteredOutcomes].sort((a, b) => {
+      const valueA = getValue(a, orderBy);
+      const valueB = getValue(b, orderBy);
+
+      if (!valueA || !valueB) return 0;
+
+      if (valueB < valueA) {
+        return order === "desc" ? -1 : 1;
+      }
+      if (valueB > valueA) {
+        return order === "desc" ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [filteredOutcomes, order, orderBy]);
+
+  // --- Cálculo del Total ---
+  const totalAmount = useMemo(() => {
+    return filteredOutcomes.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+  }, [filteredOutcomes]);
+
+  // --- 5. Paginación ---
+  const paginatedOutcomes = useMemo(() => {
+    return sortedOutcomes.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage,
+    );
+  }, [sortedOutcomes, page, rowsPerPage]);
 
   // --- Handlers Generales ---
   const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
@@ -60,9 +209,13 @@ export default function OutcomeTable({
   };
 
   const formatDate = (date: Date | string) =>
-    new Date(date).toLocaleDateString();
+    new Date(date).toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
 
-  // Helper para renderizar cabeceras ordenables
+  // Helper para cabeceras
   const SortableHeader = ({
     id,
     label,
@@ -91,25 +244,7 @@ export default function OutcomeTable({
     </TableCell>
   );
 
-  const handleRequestSort = (property: OrderBy) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
-  const filteredData = useMemo(() => {
-    if (!searchText) return outcomes;
-    const s = searchText.toLowerCase();
-    return outcomes.filter(
-      (o) =>
-        o.description?.toLowerCase().includes(s) ||
-        o.category?.toLowerCase().includes(s) ||
-        o.Cash?.name.toLowerCase().includes(s),
-    );
-  }, [outcomes, searchText]);
-
   const exportToCSV = () => {
-    // 1. Definimos las cabeceras
     const headers = [
       "ID",
       "Semana",
@@ -119,21 +254,16 @@ export default function OutcomeTable({
       "Descripción",
     ];
 
-    // 2. Mapeamos los datos ORDENADOS Y FILTRADOS (lo que el usuario ve)
-    const rows = sortedData.map((outcome) => [
+    const rows = sortedOutcomes.map((outcome) => [
       outcome.id,
-      `S${outcome.Week?.id} (${formatDate(outcome.Week?.week_start)} - ${formatDate(outcome.Week?.week_end)})` ||
-        "-",
+      outcome.Week ? `S${outcome.Week.id}` : "-",
       new Date(outcome.date).toLocaleDateString(),
       outcome.amount,
       outcome.category || "",
       outcome.description || "",
     ]);
 
-    // 3. Unimos todo con puntos y comas (típico para Excel en español) o comas
     const csvContent = [headers, ...rows].map((e) => e.join(";")).join("\n");
-
-    // 4. Creamos el archivo y disparamos la descarga
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
@@ -148,43 +278,28 @@ export default function OutcomeTable({
     document.body.removeChild(link);
   };
 
-  const sortedData = useMemo(() => {
-    const getValue = (item: Outcome, col: OrderBy) => {
-      if (col === "id") return item.id;
-      if (col === "weekString")
-        return item.Week ? new Date(item.Week.week_start).getTime() : 0;
-      if (col === "date") return new Date(item.date).getTime();
-      if (col === "amount") return item.amount;
-      if (col === "category") return item.category;
-      if (col === "description") return item.description;
-      return item[col as keyof Outcome] ?? "";
-    };
-    return [...filteredData].sort((a, b) => {
-      const vA = getValue(a, orderBy);
-      const vB = getValue(b, orderBy);
-      return order === "asc" ? (vA < vB ? -1 : 1) : vB < vA ? -1 : 1;
-    });
-  }, [filteredData, order, orderBy]);
-
-  const total = useMemo(
-    () => filteredData.reduce((acc, curr) => acc + (curr.amount || 0), 0),
-    [filteredData],
-  );
-
-  const paginated = sortedData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage,
-  );
-
   return (
-    <Box sx={{ p: 4, display: "flex", flexDirection: "column", gap: 3 }}>
+    <Box
+      sx={{
+        p: 4,
+        width: "100%",
+        maxWidth: "1200px",
+        mx: "auto",
+        display: "flex",
+        flexDirection: "column",
+        gap: 3,
+      }}
+    >
+      {/* Panel Superior */}
       <Paper
         elevation={3}
         sx={{
           p: 3,
           display: "flex",
+          flexWrap: "wrap",
           justifyContent: "space-between",
           alignItems: "center",
+          gap: 2,
           borderRadius: 2,
         }}
       >
@@ -203,13 +318,20 @@ export default function OutcomeTable({
         >
           <TrendingDownIcon fontSize="large" />
           <Box>
-            <Typography variant="caption">TOTAL GASTOS FILTRADOS</Typography>
+            <Typography
+              variant="caption"
+              sx={{ opacity: 0.9, letterSpacing: 1 }}
+            >
+              TOTAL GASTOS FILTRADOS
+            </Typography>
             <Typography variant="h4" fontWeight="bold">
-              {total.toFixed(2)} €
+              {totalAmount.toLocaleString("es-ES", {
+                style: "currency",
+                currency: "EUR",
+              })}
             </Typography>
           </Box>
         </Box>
-
         <Box
           sx={{
             display: "flex",
@@ -238,7 +360,7 @@ export default function OutcomeTable({
             size="small"
             value={searchText}
             onChange={handleSearchChange}
-            sx={{ minWidth: 300, color: "text.secondary" }}
+            sx={{ minWidth: 300 }}
             slotProps={{
               input: {
                 startAdornment: (
@@ -252,8 +374,166 @@ export default function OutcomeTable({
         </Box>
       </Paper>
 
-      <TableContainer component={Paper}>
-        <Table>
+      {/* PANEL DE FILTROS AVANZADOS */}
+      <Paper elevation={1} sx={{ p: 2, borderRadius: 2 }}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2}
+        >
+          <Button
+            startIcon={showFilters ? <FilterListOffIcon /> : <FilterListIcon />}
+            onClick={() => setShowFilters(!showFilters)}
+            color="primary"
+          >
+            {showFilters
+              ? "Ocultar Filtros Avanzados"
+              : "Mostrar Filtros Avanzados"}
+          </Button>
+
+          {/* Búsqueda Global Rápida vinculada al filtro global */}
+          <TextField
+            placeholder="Búsqueda rápida (Desc, Cat...)"
+            variant="outlined"
+            size="small"
+            value={filters.global}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, global: e.target.value }))
+            }
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            sx={{ width: 300 }}
+          />
+        </Stack>
+
+        <Collapse in={showFilters}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Grid container spacing={2} alignItems="center">
+              {/* Filtro: Categoría (Equivalente a Fuente en Income) */}
+              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Categoría</InputLabel>
+                  <Select
+                    value={filters.category}
+                    label="Categoría"
+                    onChange={(e) =>
+                      setFilters({ ...filters, category: e.target.value })
+                    }
+                  >
+                    <MenuItem value="all">
+                      <em>Todas</em>
+                    </MenuItem>
+                    {OUTCOME_CATEGORY.map((c) => (
+                      <MenuItem key={c} value={c}>
+                        {c}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Filtro Semana */}
+              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Semana</InputLabel>
+                  <Select
+                    value={filters.weekId}
+                    label="Semana"
+                    onChange={(e) => {
+                      setFilters((prev) => ({
+                        ...prev,
+                        weekId: e.target.value,
+                      }));
+                      setPage(0);
+                    }}
+                  >
+                    <MenuItem value="all">
+                      <em>Todas las semanas</em>
+                    </MenuItem>
+                    {availableWeeks.map((w) => (
+                      <MenuItem key={w.id} value={w.id}>
+                        S{w.id} ({dayjs(w.week_start).format("DD/MM")} -{" "}
+                        {dayjs(w.week_end).format("DD/MM")})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Filtro: Rango Fechas */}
+              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+                <DatePicker
+                  label="Desde"
+                  value={filters.startDate}
+                  onChange={(val) => setFilters({ ...filters, startDate: val })}
+                  slotProps={{ textField: { size: "small", fullWidth: true } }}
+                />
+              </Grid>
+              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+                <DatePicker
+                  label="Hasta"
+                  value={filters.endDate}
+                  onChange={(val) => setFilters({ ...filters, endDate: val })}
+                  slotProps={{ textField: { size: "small", fullWidth: true } }}
+                />
+              </Grid>
+
+              {/* Filtro: Rango Montos */}
+              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+                <TextField
+                  label="Min €"
+                  type="number"
+                  size="small"
+                  fullWidth
+                  value={filters.minAmount}
+                  onChange={(e) =>
+                    setFilters({ ...filters, minAmount: e.target.value })
+                  }
+                />
+              </Grid>
+              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+                <TextField
+                  label="Max €"
+                  type="number"
+                  size="small"
+                  fullWidth
+                  value={filters.maxAmount}
+                  onChange={(e) =>
+                    setFilters({ ...filters, maxAmount: e.target.value })
+                  }
+                />
+              </Grid>
+
+              {/* Botón Reset */}
+              <Grid
+                sx={{ xs: 12, sm: 6, md: 3 }}
+                display="flex"
+                justifyContent="flex-end"
+              >
+                <Button
+                  color="inherit"
+                  onClick={handleResetFilters}
+                  size="small"
+                >
+                  Limpiar Filtros
+                </Button>
+              </Grid>
+            </Grid>
+          </LocalizationProvider>
+        </Collapse>
+      </Paper>
+
+      {/* Tabla */}
+      <TableContainer component={Paper} elevation={1} sx={{ borderRadius: 2 }}>
+        <Table sx={{ minWidth: 650 }} aria-label="outcome table">
           <TableHead sx={{ bgcolor: "info.main" }}>
             <TableRow>
               <SortableHeader id="id" label="ID" />
@@ -261,26 +541,25 @@ export default function OutcomeTable({
               <SortableHeader id="date" label="Fecha" />
               <SortableHeader id="amount" label="Monto" align="right" />
               <SortableHeader id="category" label="Categoría" />
-              <TableCell
-                sx={{ color: "primary.contrastText", fontWeight: "bold" }}
-              >
-                Descripción
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ color: "primary.contrastText", fontWeight: "bold" }}
-              >
+              <SortableHeader id="description" label="Descripción" />
+
+              <TableCell sx={{ fontWeight: "bold" }} align="center">
                 Acciones
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginated.length > 0 ? (
-              paginated.map((row) => (
+            {paginatedOutcomes.length > 0 ? (
+              paginatedOutcomes.map((row) => (
                 <TableRow
                   key={row.id}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                   hover
+                  sx={{
+                    "&:last-child td, &:last-child th": { border: 0 },
+                    backgroundColor:
+                      highlightedRowId === row.id ? "warning.light" : "inherit",
+                    transition: "background-color 0.2s ease",
+                  }}
                 >
                   <TableCell>{row.id}</TableCell>
                   <TableCell>
@@ -312,6 +591,7 @@ export default function OutcomeTable({
                         color="error"
                         onClick={() => onDelete(row.id)}
                         size="small"
+                        disabled={highlightedRowId === row.id}
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -330,10 +610,11 @@ export default function OutcomeTable({
             )}
           </TableBody>
         </Table>
+
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={filteredData.length}
+          count={filteredOutcomes.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
