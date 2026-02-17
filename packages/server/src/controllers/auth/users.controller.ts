@@ -255,6 +255,24 @@ export const usersController = {
         }
       }
 
+      // --- RESTRICCIÓN DE SEGURIDAD PARA VISIBILIDAD ---
+      if (updateData.is_visible !== undefined) {
+        const requester = (req as any).user;
+        // Verificamos si es SuperUser o si tiene la App ID 1 (Global)
+        const isGlobalMaster =
+          requester?.role_name === ROLE_TYPES.SUPER_USER ||
+          requester?.permissions?.some(
+            (p: any) => p.application_id === APP_IDS.ALL,
+          );
+
+        if (!isGlobalMaster) {
+          return res.status(403).json({
+            ok: false,
+            message: "No tienes permisos para cambiar el estado de visibilidad",
+          });
+        }
+      }
+
       const updatedUser = await UserActions.update(
         userId,
         updateData as Partial<UserCreationAttributes>,
