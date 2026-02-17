@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, CircularProgress, Paper, Alert } from "@mui/material";
-import type { GridRowId } from "@mui/x-data-grid";
 import {
   useUsers,
   useCreateUser,
@@ -47,7 +46,6 @@ const UserPage: React.FC = () => {
     try {
       await createMutation.mutateAsync(data);
     } catch (error) {
-      //console.error("Error en Create:", error);
       throw error;
     }
   };
@@ -58,7 +56,6 @@ const UserPage: React.FC = () => {
       await updateMutation.mutateAsync(data);
       setEditingUser(null);
     } catch (error) {
-      //console.error("Error en Update:", error);
       throw error;
     }
   };
@@ -72,9 +69,7 @@ const UserPage: React.FC = () => {
       const payload = { ...data, id: editingUser.id };
 
       if (isEditingSelf) {
-        // Eliminamos role_name del payload para evitar error 403/400 del backend
         delete payload.role_name;
-        // console.log("Self-edit detectado: role_name omitido del payload.");
       }
 
       return await handleUpdateUser(payload);
@@ -95,21 +90,35 @@ const UserPage: React.FC = () => {
   };
 
   // Eliminar
-  const handleDeleteUser = (id: GridRowId) => {
-    const userId = parseInt(id.toString());
+  const handleToggleUserStatus = (user: User) => {
+    const userId = user.id;
+    const actualUser = users.find((user) => user.id === userId);
+    const isCurrentlyVisible = actualUser?.is_visible;
 
     // Evitar que uno se borre a sí mismo (seguridad extra visual)
-    if (userId === authUser?.id) {
-      alert("No puedes eliminar tu propio usuario.");
-      return;
-    }
-
-    if (
-      window.confirm(
-        `¿Está seguro de eliminar al Usuario con ID ${userId}? Esta acción es irreversible.`,
-      )
-    ) {
-      deleteMutation.mutate(userId);
+    if (isCurrentlyVisible) {
+      // CASO: ELIMINAR (Ocultar)
+      if (
+        window.confirm(
+          `¿Está seguro de eliminar a ${actualUser?.first_name}? Este usuario será desactivado y no podrá iniciar sesión hasta que un administrador lo restaure.`,
+        )
+      ) {
+        deleteMutation.mutate(userId);
+      }
+    } else {
+      // CASO: RESTAURAR
+      if (
+        window.confirm(
+          `¿Desea restaurar el acceso para ${actualUser?.first_name}?`,
+        )
+      ) {
+        // Usamos la mutación de update para volver a poner is_visible en true
+        if (!actualUser) return;
+        updateMutation.mutate({
+          ...actualUser,
+          is_visible: true,
+        });
+      }
     }
   };
 
@@ -210,7 +219,7 @@ const UserPage: React.FC = () => {
             users={users}
             currentUser={authUser}
             onEdit={handleStartEdit}
-            onDelete={handleDeleteUser}
+            onToggleVisibility={handleToggleUserStatus}
             isLoading={isLoading}
           />
         </Paper>

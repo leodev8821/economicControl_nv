@@ -29,7 +29,7 @@ import SecurityIcon from "@mui/icons-material/Security";
 import AdminIcon from "@mui/icons-material/AdminPanelSettings";
 import PersonIcon from "@mui/icons-material/Person";
 import SupervisorIcon from "@mui/icons-material/SupervisorAccount";
-import AppsIcon from "@mui/icons-material/Apps";
+import RestoreFromTrashIcon from "@mui/icons-material/RestoreFromTrash";
 
 // Tipos e Importaciones
 import type { User } from "../../types/user.type";
@@ -39,7 +39,7 @@ interface UserTableProps {
   users: User[];
   currentUser: User;
   onEdit: (user: User) => void;
-  onDelete: (id: number) => void;
+  onToggleVisibility: (user: User) => void;
   isLoading?: boolean;
 }
 
@@ -59,23 +59,35 @@ const getInitials = (firstName: string, lastName: string) => {
 
 const getRoleConfig = (role: string) => {
   switch (role) {
-    case "ADMIN":
+    case "SuperUser":
       return {
         color: "error" as const,
         icon: <AdminIcon fontSize="small" />,
-        label: "Admin",
+        label: "SuperUsuario",
       };
-    case "SUPERVISOR":
+    case "Administrador":
+      return {
+        color: "error" as const,
+        icon: <AdminIcon fontSize="small" />,
+        label: "Administrador",
+      };
+    case "Leader":
       return {
         color: "warning" as const,
         icon: <SupervisorIcon fontSize="small" />,
-        label: "Sup.",
+        label: "Líder",
+      };
+    case "Miembro":
+      return {
+        color: "info" as const,
+        icon: <PersonIcon fontSize="small" />,
+        label: "Miembro",
       };
     default:
       return {
         color: "info" as const,
         icon: <PersonIcon fontSize="small" />,
-        label: "User",
+        label: role || "Desconocido",
       };
   }
 };
@@ -84,7 +96,7 @@ export default function UserTable({
   users,
   currentUser,
   onEdit,
-  onDelete,
+  onToggleVisibility,
   isLoading,
 }: UserTableProps) {
   // --- Estados de Paginación y Orden ---
@@ -171,6 +183,59 @@ export default function UserTable({
     </TableCell>
   );
 
+  // FUNCIÓN HELPER PARA VERIFICAR PERMISOS DE EDICIÓN/BORRADO
+  const canManageUser = (targetUser: User) => {
+    // 1. Nadie (ni SuperUser) se borra a sí mismo desde la tabla (prevención de accidentes)
+    if (targetUser.id === currentUser.id) return false;
+
+    // 2. Determinar poder del usuario ACTUAL
+    const amISuperUser = currentUser.role_name === "SuperUser";
+    const doIHaveGlobalAccess = currentUser.permissions?.some(
+      (p: any) => p.application_id === APPS.ALL,
+    );
+
+    // 3. Determinar poder del usuario OBJETIVO (Target)
+    const isTargetSuperUser = targetUser.role_name === "SuperUser";
+    const isTargetGlobalAdmin = targetUser.permissions?.some(
+      (p: any) => p.application_id === APPS.ALL,
+    );
+
+    // --- REGLAS ---
+
+    // A. SuperUser puede con todo
+    if (amISuperUser) return true;
+
+    // B. Si el objetivo es SuperUser, nadie más puede tocarlo
+    if (isTargetSuperUser) return false;
+
+    // C. Si soy Admin Global (App 1)
+    if (doIHaveGlobalAccess) {
+      // Puedo editar a cualquiera que NO sea SuperUser
+      return true;
+    }
+
+    // D. Si soy Admin de App Específica (ej. Finance)
+    // Solo puedo editar si:
+    // 1. El objetivo NO es Admin Global
+    if (isTargetGlobalAdmin) return false;
+
+    // 2. Compartimos la misma aplicación
+    const myApps = (currentUser.permissions || []).map(
+      (p: any) => p.application_id,
+    );
+    const targetApps = (targetUser.permissions || []).map(
+      (p: any) => p.application_id,
+    );
+    const shareApp = myApps.some((myAppId) => targetApps.includes(myAppId));
+
+    if (!shareApp) return false; // No es de mi departamento
+
+    // 3. El objetivo tiene un rol inferior (Lider o Miembro)
+    if (targetUser.role_name === "Administrador") return false;
+
+    return true;
+  };
+
   return (
     <Box
       sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 2 }}
@@ -189,12 +254,14 @@ export default function UserTable({
             setSearchText(e.target.value);
             setPage(0);
           }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon color="action" />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+            },
           }}
           sx={{ maxWidth: 500, bgcolor: "white" }}
         />
@@ -233,21 +300,28 @@ export default function UserTable({
             ) : paginatedUsers.length > 0 ? (
               paginatedUsers.map((user) => {
                 const role = getRoleConfig(user.role_name);
-                const isSelf = currentUser.id === user.id;
-                const canEdit =
-                  !isSelf ||
-                  currentUser.role_name === "Administrador" ||
-                  currentUser.role_name === "SuperUser";
-                const canDelete = !isSelf;
+                const hasPermission = canManageUser(user);
+                const isSelf = user.id === currentUser.id;
+                const canEdit = hasPermission || isSelf;
+                const canDelete = hasPermission;
+                const isHidden = !user.is_visible;
 
                 return (
-                  <TableRow key={user.id} hover>
+                  <TableRow
+                    key={user.id}
+                    hover
+                    sx={{
+                      opacity: isHidden ? 0.6 : 1,
+                      bgcolor: isHidden ? "action.hover" : "inherit",
+                    }}
+                  >
                     {/* Celda con Avatar e Iniciales */}
                     <TableCell>
                       <Stack direction="row" spacing={2} alignItems="center">
                         <Avatar
                           sx={{
                             bgcolor: role.color + ".main",
+                            opacity: isHidden ? 0.5 : 1,
                             width: 32,
                             height: 32,
                             fontSize: "0.8rem",
@@ -256,13 +330,21 @@ export default function UserTable({
                           {getInitials(user.first_name, user.last_name)}
                         </Avatar>
                         <Box>
-                          <Typography variant="body2" fontWeight="bold">
+                          <Typography
+                            variant="body2"
+                            fontWeight="bold"
+                            component="span"
+                          >
                             {user.first_name} {user.last_name}
                           </Typography>
-                          {user.id === currentUser.id && (
-                            <Typography variant="caption" color="primary">
-                              (Tú)
-                            </Typography>
+
+                          {isHidden && (
+                            <Chip
+                              label="ELIMINADO"
+                              size="small"
+                              color="error"
+                              sx={{ ml: 1, height: 16, fontSize: "0.6rem" }}
+                            />
                           )}
                         </Box>
                       </Stack>
@@ -286,21 +368,24 @@ export default function UserTable({
                     <TableCell>
                       <Stack direction="row" spacing={0.5} flexWrap="wrap">
                         {(() => {
-                          // 1. Fuentes posibles según tus archivos:
-                          // En UserForm usas 'permissions' y cada item tiene 'application_id'
                           const rawPermissions =
                             user.permissions ||
                             (user as any).allowed_apps ||
                             [];
 
-                          // 2. Lógica de Oro: Si el rol es Administrador o SuperUser, tiene TODO.
-                          // Basado en tu UsersPage.tsx, usas "role_name" para validar.
-                          const isAdmin =
-                            user.role_name === "Administrador" ||
-                            user.role_name === "SuperUser";
-                          if (isAdmin) {
+                          // 1. Verificamos si tiene la App ID 1 (ALL) en sus permisos
+                          const hasGlobalPermission = rawPermissions.some(
+                            (p: any) => (p.application_id ?? p) === APPS.ALL,
+                          );
+
+                          // 2. CASO: SUPER ACCESO (SuperUser O Administrador con App ALL)
+                          if (
+                            user.role_name === "SuperUser" ||
+                            (user.role_name === "Administrador" &&
+                              hasGlobalPermission)
+                          ) {
                             return (
-                              <Tooltip title="Este usuario tiene acceso a todas las aplicaciones por su rol">
+                              <Tooltip title="Este usuario tiene facultades de gestión global">
                                 <Chip
                                   icon={
                                     <SecurityIcon style={{ fontSize: 14 }} />
@@ -321,37 +406,75 @@ export default function UserTable({
                             );
                           }
 
-                          // 3. Si no es admin y no hay nada en la lista
-                          if (rawPermissions.length === 0) {
-                            return (
-                              <Typography
-                                variant="caption"
-                                color="text.disabled"
-                                sx={{ fontStyle: "italic" }}
-                              >
-                                Sin accesos específicos
-                              </Typography>
-                            );
+                          // 3. CASO: ACCESOS ESPECÍFICOS (Admin de una app, Líder o Miembro)
+                          if (rawPermissions.length > 0) {
+                            return rawPermissions.map((p: any, idx: number) => {
+                              const appId = p.application_id ?? p;
+
+                              // Si por error alguien tiene ID 1 pero no entró en el IF de arriba (casos borde)
+                              const isAll = appId === APPS.ALL;
+
+                              return (
+                                <Tooltip
+                                  key={idx}
+                                  title={
+                                    isAll
+                                      ? "Acceso Global"
+                                      : `Administrador de ${APP_LABELS[appId] || "Aplicación"}`
+                                  }
+                                >
+                                  <Chip
+                                    icon={
+                                      isAll ? (
+                                        <SecurityIcon
+                                          style={{ fontSize: 14 }}
+                                        />
+                                      ) : (
+                                        <AdminIcon style={{ fontSize: 14 }} />
+                                      )
+                                    }
+                                    label={APP_LABELS[appId] || `App ${appId}`}
+                                    size="small"
+                                    // Si es Admin, usamos un color más fuerte y variante filled
+                                    variant={
+                                      user.role_name === "Administrador"
+                                        ? "filled"
+                                        : "outlined"
+                                    }
+                                    color={
+                                      user.role_name === "Administrador"
+                                        ? "primary"
+                                        : "default"
+                                    }
+                                    sx={{
+                                      fontSize: "0.7rem",
+                                      height: 20,
+                                      fontWeight:
+                                        user.role_name === "Administrador"
+                                          ? "bold"
+                                          : "normal",
+                                      // Un pequeño sombreado si es admin
+                                      boxShadow:
+                                        user.role_name === "Administrador"
+                                          ? 1
+                                          : 0,
+                                    }}
+                                  />
+                                </Tooltip>
+                              );
+                            });
                           }
 
-                          // 4. Renderizado normal para usuarios estándar
-                          return rawPermissions.map((p: any, idx: number) => {
-                            const appId = p.application_id ?? p;
-                            return (
-                              <Tooltip
-                                key={idx}
-                                title={APP_LABELS[appId] || "Aplicación"}
-                              >
-                                <Chip
-                                  icon={<AppsIcon style={{ fontSize: 14 }} />}
-                                  label={APP_LABELS[appId] || `App ${appId}`}
-                                  size="small"
-                                  variant="outlined"
-                                  sx={{ fontSize: "0.7rem", height: 20 }}
-                                />
-                              </Tooltip>
-                            );
-                          });
+                          // 4. FALLBACK: Sin permisos
+                          return (
+                            <Typography
+                              variant="caption"
+                              color="text.disabled"
+                              sx={{ fontStyle: "italic" }}
+                            >
+                              Sin accesos específicos
+                            </Typography>
+                          );
                         })()}
                       </Stack>
                     </TableCell>
@@ -378,25 +501,32 @@ export default function UserTable({
                         </span>
                       </Tooltip>
 
-                      {/* BOTÓN ELIMINAR (Mantenemos el bloqueo por seguridad propia) */}
-                      <Tooltip
-                        title={
-                          canDelete
-                            ? "Eliminar"
-                            : "No puedes eliminar tu propia cuenta"
-                        }
-                      >
-                        <span>
-                          <IconButton
-                            color="error"
-                            size="small"
-                            onClick={() => onDelete(user.id)}
-                            disabled={!canDelete}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
+                      {/* Botón para Restaurar o Ocultar */}
+                      {currentUser.role_name === "SuperUser" && isHidden ? (
+                        <Tooltip title="Restaurar Usuario">
+                          <span>
+                            <IconButton
+                              color="success"
+                              size="small"
+                              onClick={() => onToggleVisibility(user)}
+                            >
+                              <RestoreFromTrashIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip title="Eliminar (Ocultar)">
+                          <span>
+                            <IconButton
+                              color="error"
+                              onClick={() => onToggleVisibility(user)}
+                              disabled={!canDelete}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      )}
                     </TableCell>
                   </TableRow>
                 );

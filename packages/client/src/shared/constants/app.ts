@@ -4,3 +4,11 @@ export const APPS = {
   FINANCE: 2,
   CONSOLIDATION: 3,
 } as const;
+
+// 1. Definimos los pesos de los roles para filtrar
+export const ROLE_WEIGHTS: Record<string, number> = {
+  SuperUser: 99,
+  Administrador: 40,
+  Lider: 20,
+  Miembro: 10,
+};

@@ -45,7 +45,7 @@ export const usersController = {
       const isSuperUser = requester.role_name === sudoRole;
       const permissions = requester.permissions || [];
 
-      const hasGlobalAccess = permissions.some(
+      const hasGlobalAccess: boolean = permissions.some(
         (p: any) => p.application_id === APP_IDS.ALL,
       );
 
@@ -60,7 +60,10 @@ export const usersController = {
         appIdToFilter = permissions[0]?.application_id;
       }
 
-      const users = await UserActions.getAll(appIdToFilter);
+      const users = await UserActions.getAll(
+        appIdToFilter,
+        hasGlobalAccess || isSuperUser,
+      );
 
       return res.status(200).json({
         ok: true,

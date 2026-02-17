@@ -192,11 +192,16 @@ export class UserActions {
    * Obtiene todas las usuarios de la base de datos.
    * @returns promise con un array de objetos UserAttributes.
    */
-  public static async getAll(appId?: number): Promise<UserAttributes[]> {
+  public static async getAll(
+    appId?: number,
+    includeHidden: boolean = false,
+  ): Promise<UserAttributes[]> {
     try {
+      const whereClause: any = includeHidden ? {} : { is_visible: true };
+
       const permissionsInclude: any = {
         model: UserPermissionModel,
-        as: "Permissions",
+        as: "permissions",
         required: false,
       };
 
@@ -205,12 +210,8 @@ export class UserActions {
         permissionsInclude.required = true;
       }
 
-      /* const users = await UserModel.scope("visible").findAll({
-        include: [permissionsInclude],
-      }); */
-
       const users = await UserModel.findAll({
-        where: { is_visible: true },
+        where: whereClause,
         include: [permissionsInclude],
         attributes: { exclude: ["password"] },
       });

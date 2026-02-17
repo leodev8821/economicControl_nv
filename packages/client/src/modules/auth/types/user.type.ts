@@ -5,12 +5,13 @@ import type { UserPermissionType } from "@economic-control/shared";
 export interface User {
   id: number;
   username: string;
-  role_name: "Administrador" | "SuperUser" | "Leader" | "Usuario";
+  role_name: "Administrador" | "SuperUser" | "Líder" | "Miembro";
   first_name: string;
   last_name: string;
   email?: string;
   phone?: string;
   permissions: UserPermissionType[];
+  is_visible: boolean;
 }
 
 export type UserAttributes = User;

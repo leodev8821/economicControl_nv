@@ -6,8 +6,8 @@ import { z } from "zod";
 export const ROLE_TYPES = {
   ADMINISTRADOR: "Administrador",
   SUPER_USER: "SuperUser",
-  LEADER: "Leader",
-  USUARIO: "Usuario",
+  LIDER: "Líder",
+  MIEMBRO: "Miembro",
 } as const;
 
 export const ROLE_VALUES = Object.values(ROLE_TYPES) as [string, ...string[]];

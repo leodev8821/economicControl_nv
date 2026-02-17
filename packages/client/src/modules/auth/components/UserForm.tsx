@@ -31,7 +31,7 @@ import { ROLE_VALUES } from "@economic-control/shared";
 import { useAuth } from "../hooks/useAuth";
 import { useApplications } from "../hooks/useApplications";
 import { useRoles } from "../hooks/useRoles";
-import { APPS } from "@shared/constants/app";
+import { APPS, ROLE_WEIGHTS } from "@shared/constants/app";
 
 // Constantes para MUI Select
 const ITEM_HEIGHT = 48;
@@ -67,6 +67,7 @@ interface UserFormProps {
   isLoading?: boolean;
   isUpdateMode?: boolean;
 }
+
 export default function UserForm({
   initialValues,
   onSubmit,
@@ -90,34 +91,53 @@ export default function UserForm({
   const { data: allApplications = [] } = useApplications();
   const { data: roles = [] } = useRoles();
 
-  // A. ¿Es SuperUsuario o Admin con APPS.ALL?
-  const hasGlobalAdminPrivileges = React.useMemo(() => {
-    return (
-      currentUser?.role_name === "SuperUser" ||
-      currentUser?.permissions?.some((p: any) => p.application_id === APPS.ALL)
+  // A. Determinar el nivel del usuario ACTUAL (el que está logueado)
+  const currentUserLevel = React.useMemo(() => {
+    if (currentUser?.role_name === "SuperUser") return 99;
+
+    // Si tiene permiso para la APP 1 (ALL), es un Admin Global
+    const hasGlobalAccess = currentUser?.permissions?.some(
+      (p: any) => p.application_id === APPS.ALL,
     );
+    if (hasGlobalAccess && currentUser?.role_name === "Administrador")
+      return 50;
+
+    // Admin de App específica
+    if (currentUser?.role_name === "Administrador") return 40;
+
+    return 0; // Otros
   }, [currentUser]);
 
-  // B. Aplicaciones que este usuario puede asignar
+  // B. Filtrar qué APLICACIONES puede asignar
   const assignableApplications = React.useMemo(() => {
-    if (hasGlobalAdminPrivileges) return allApplications;
-    // Si no es global, solo puede asignar las apps a las que él mismo tiene acceso
+    // Si es SuperUser o Admin Global (Nivel >= 50), puede asignar CUALQUIER app
+    if (currentUserLevel >= 50) return allApplications;
+
+    // Si es Admin de App (Nivel 40), solo puede asignar SU propia app
     const myAppIds =
       currentUser?.permissions?.map((p: any) => p.application_id) || [];
     return allApplications.filter((app) => myAppIds.includes(app.id));
-  }, [allApplications, hasGlobalAdminPrivileges, currentUser]);
+  }, [allApplications, currentUserLevel, currentUser]);
 
-  // C. Roles que este usuario puede asignar
+  // C. Filtrar qué ROLES puede asignar
   const filteredRoles = React.useMemo(() => {
     if (!currentUser) return [];
 
-    return ROLE_VALUES.filter((role) => {
-      if (currentUser.role_name === "SuperUser") return true;
-      if (role === "SuperUser") return false;
+    return ROLE_VALUES.filter((roleName) => {
+      // 1. Nadie puede crear un SuperUser excepto otro SuperUser
+      if (roleName === "SuperUser" && currentUserLevel < 99) return false;
+
+      // 2. Un Admin de App (Nivel 40) no debería poder crear otros "Administrador"
+      if (currentUserLevel === 40 && roleName === "Administrador") return false;
+
+      // 3. Regla general: No puedes crear a alguien con más o igual rango que tú
+      // (Excepto SuperUser que puede crear otros SuperUsers)
+      const roleWeight = ROLE_WEIGHTS[roleName] || 0;
+      if (currentUserLevel < 99 && roleWeight >= currentUserLevel) return false;
 
       return true;
     });
-  }, [currentUser]);
+  }, [currentUser, currentUserLevel]);
 
   // Detectar si se está editando a sí mismo
   const isEditingSelf = React.useMemo(() => {
@@ -144,18 +164,34 @@ export default function UserForm({
     ? SharedUserSchema.UserUpdateSchema
     : SharedUserSchema.UserCreationSchema;
 
-  // Efecto para resetear el estado local cuando cambia el usuario a editar
+  // Efecto para inicializar selectedApps
   React.useEffect(() => {
-    if (sanitizedValues?.permissions) {
+    // CASO 1: EDICIÓN (Cargar permisos existentes)
+    if (
+      sanitizedValues?.permissions &&
+      sanitizedValues.permissions.length > 0
+    ) {
       setSelectedApps(
         sanitizedValues.permissions.map((p: any) => ({
           application_id: p.application_id,
         })),
       );
+      return;
+    }
+
+    // CASO 2: CREACIÓN (Valores por defecto)
+    // Si NO es edición y NO soy Admin Global (es decir, soy Admin de App única)
+    // Pre-cargamos mi única app disponible para ahorrar clics y errores.
+    if (
+      !isUpdateMode &&
+      !currentUserLevel &&
+      assignableApplications.length === 1
+    ) {
+      setSelectedApps([{ application_id: assignableApplications[0].id }]);
     } else {
       setSelectedApps([]);
     }
-  }, [sanitizedValues]);
+  }, [sanitizedValues, isUpdateMode, currentUserLevel, assignableApplications]);
 
   const [form, fields] = useForm({
     onValidate({ formData }) {
@@ -178,7 +214,7 @@ export default function UserForm({
   const addApp = () => {
     // Si el admin normal solo tiene acceso a una app y ya está asignada, no permitir añadir más
     if (
-      !hasGlobalAdminPrivileges &&
+      !currentUserLevel &&
       selectedApps.length >= assignableApplications.length
     )
       return;
@@ -269,6 +305,7 @@ export default function UserForm({
       setFeedback({ open: true, message: errorMessage, severity: "error" });
     }
   };
+  const isAppLocked = !currentUserLevel && assignableApplications.length === 1;
 
   return (
     <form
@@ -469,7 +506,7 @@ export default function UserForm({
               size="small"
               variant="outlined"
               disabled={
-                !hasGlobalAdminPrivileges &&
+                !currentUserLevel &&
                 selectedApps.length >= assignableApplications.length
               }
             >
@@ -491,6 +528,7 @@ export default function UserForm({
                   value={appItem.application_id || ""}
                   label="Aplicación"
                   MenuProps={MenuProps}
+                  disabled={isAppLocked}
                   onChange={(e) => updateApp(index, Number(e.target.value))}
                 >
                   {assignableApplications.map((app) => (
@@ -512,7 +550,11 @@ export default function UserForm({
                 Rol: (Heredado)
               </Typography>
 
-              <IconButton color="error" onClick={() => removeApp(index)}>
+              <IconButton
+                color="error"
+                onClick={() => removeApp(index)}
+                disabled={isAppLocked}
+              >
                 <Delete />
               </IconButton>
             </Stack>

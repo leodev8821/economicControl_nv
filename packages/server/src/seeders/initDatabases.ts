@@ -63,8 +63,8 @@ const databaseSeeder: DatabaseSeeder = {
         const rolesToCreate = [
           { role_name: ROLE_TYPES.ADMINISTRADOR },
           { role_name: ROLE_TYPES.SUPER_USER },
-          { role_name: ROLE_TYPES.LEADER },
-          { role_name: ROLE_TYPES.USUARIO },
+          { role_name: ROLE_TYPES.LIDER },
+          { role_name: ROLE_TYPES.MIEMBRO },
         ]; //
 
         for (const roleData of rolesToCreate) {
