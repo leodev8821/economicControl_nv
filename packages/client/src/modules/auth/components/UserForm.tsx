@@ -243,6 +243,11 @@ export default function UserForm({
 
     const formElement = event.currentTarget;
     const formData = new FormData(formElement);
+
+    if (!formData.has("role_name") && initialValues?.role_name) {
+      formData.append("role_name", initialValues.role_name);
+    }
+
     const submission = parseWithZod(formData, { schema });
 
     if (submission.status !== "success") return;
