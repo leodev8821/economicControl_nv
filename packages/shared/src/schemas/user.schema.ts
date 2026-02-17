@@ -16,8 +16,8 @@ const BaseUserSchema = z.object({
 
   first_name: z.string().min(1, "El nombre es obligatorio").max(50),
   last_name: z.string().min(1, "El apellido es obligatorio").max(50),
-  email: z.email("Email inválido").optional(),
-  phone: z.string().optional(),
+  email: z.email("Email inválido").nullable().optional(),
+  phone: z.string().nullable().optional(),
   is_visible: z.boolean().default(true).optional(),
 });
 
