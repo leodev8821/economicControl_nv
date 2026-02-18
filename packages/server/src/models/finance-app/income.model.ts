@@ -1,9 +1,10 @@
-import { DataTypes, Model, type Optional } from "sequelize";
+import { DataTypes, Model, fn, col, type Optional, Op } from "sequelize";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import { PersonModel } from "./person.model.js";
 import { WeekModel } from "./week.model.js";
 import { CashModel, CashActions } from "./cash.model.js";
 import { INCOME_SOURCES, type IncomeSource } from "@economic-control/shared";
+import { DashboardFilter } from "../../shared/dashboard.types.js";
 
 const connection = getSequelizeConfig();
 
@@ -48,7 +49,7 @@ export class IncomeModel
 }
 
 // 💡 Constante para la configuración de inclusión (JOINs)
-const INCOME_INCLUDE_CONFIG = [
+/* const INCOME_INCLUDE_CONFIG = [
   {
     model: PersonModel,
     as: "Person",
@@ -67,7 +68,7 @@ const INCOME_INCLUDE_CONFIG = [
     attributes: ["id", "week_start", "week_end"],
     required: true,
   },
-];
+]; */
 
 // Inicialización del modelo
 IncomeModel.init(
@@ -141,12 +142,32 @@ const normalizeIncomeSource = (source: string): IncomeSource => {
 
 export class IncomeActions {
   /**
+   * Helper privado para evitar dependencias circulares en la inicialización
+   */
+  private static getIncludeConfig() {
+    return [
+      {
+        model: CashModel,
+        as: "Cash",
+        attributes: ["id", "name", "actual_amount"],
+        required: true,
+      },
+      {
+        model: WeekModel,
+        as: "Week",
+        attributes: ["id", "week_start", "week_end"],
+        required: true,
+      },
+    ];
+  }
+
+  /**
    * Obtiene todas las ingresos de la base de datos.
    * @returns promise con un array de objetos IncomeAttributes.
    */
   public static async getAll(): Promise<IncomeAttributes[]> {
     const incomes = await IncomeModel.findAll({
-      include: INCOME_INCLUDE_CONFIG,
+      include: this.getIncludeConfig(),
     });
     return incomes.map((income) => income.get({ plain: true }));
   }
@@ -161,7 +182,7 @@ export class IncomeActions {
   ): Promise<IncomeAttributes | null> {
     const income = await IncomeModel.findOne({
       where: data,
-      include: INCOME_INCLUDE_CONFIG,
+      include: this.getIncludeConfig(),
     });
     return income ? income.get({ plain: true }) : null;
   }
@@ -342,7 +363,7 @@ export class IncomeActions {
     }
     const incomes = await IncomeModel.findAll({
       where: { person_id: person.id, source: "Diezmo" },
-      include: INCOME_INCLUDE_CONFIG,
+      include: this.getIncludeConfig(),
     });
     return incomes.map((income) => income.get({ plain: true }));
   }
@@ -355,7 +376,7 @@ export class IncomeActions {
   ): Promise<IncomeAttributes[]> {
     const incomes = await IncomeModel.findAll({
       where: { date },
-      include: INCOME_INCLUDE_CONFIG,
+      include: this.getIncludeConfig(),
     });
     return incomes.map((income) => income.get({ plain: true }));
   }
@@ -368,7 +389,7 @@ export class IncomeActions {
   ): Promise<IncomeAttributes[]> {
     const incomes = await IncomeModel.findAll({
       where: { week_id: weekId },
-      include: INCOME_INCLUDE_CONFIG,
+      include: this.getIncludeConfig(),
     });
     return incomes.map((income) => income.get({ plain: true }));
   }
@@ -416,6 +437,32 @@ export class IncomeActions {
       }
 
       return newIncomes.map((income) => income.get({ plain: true }));
+    });
+  }
+
+  /**
+   * Obtiene el resumen de ingresos agrupado por caja y fuente.
+   */
+  public static async getSummaryByCash(
+    filters: DashboardFilter = {},
+  ): Promise<any[]> {
+    const where: any = {};
+
+    if (filters.week_id) {
+      where.week_id = filters.week_id;
+    } else if (filters.startDate && filters.endDate) {
+      where.date = { [Op.between]: [filters.startDate, filters.endDate] };
+    }
+
+    return await IncomeModel.findAll({
+      attributes: [
+        "cash_id",
+        "source",
+        [fn("SUM", col("amount")), "total_amount"],
+      ],
+      where, // Aplicamos el filtro aquí
+      group: ["cash_id", "source"],
+      raw: true,
     });
   }
 }

@@ -119,6 +119,7 @@ export const outcomesController = {
 
       const newOutcome = await OutcomeActions.create({
         ...outcomeData,
+        amount: parseFloat(String(outcomeData.amount)),
         date: new Date(outcomeData.date),
       });
 
@@ -159,7 +160,7 @@ export const outcomesController = {
         const newOutcomeData: OutcomeCreationAttributes = {
           cash_id: outcomeItem.cash_id,
           week_id: outcomeItem.week_id,
-          amount: outcomeItem.amount,
+          amount: parseFloat(String(outcomeItem.amount)),
           description: outcomeItem.description,
           category: outcomeItem.category,
           date: new Date(outcomeItem.date),
@@ -222,7 +223,7 @@ export const outcomesController = {
       if (updateData.week_id !== undefined)
         updatePayload.week_id = updateData.week_id;
       if (updateData.amount !== undefined)
-        updatePayload.amount = updateData.amount;
+        updatePayload.amount = parseFloat(String(updateData.amount));
       if (updateData.description !== undefined)
         updatePayload.description = updateData.description;
       if (updateData.category !== undefined)

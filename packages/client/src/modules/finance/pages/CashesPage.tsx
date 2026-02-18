@@ -7,6 +7,8 @@ import {
   Grid,
   Divider,
   Alert,
+  Tab,
+  Tabs,
 } from "@mui/material";
 import PriceCheckIcon from "@mui/icons-material/PriceCheck";
 import CalculateIcon from "@mui/icons-material/Calculate";
@@ -37,71 +39,70 @@ import type { CashUpdateData } from "@modules/finance/api/cashApi";
 import * as SharedCashSchemas from "@economic-control/shared";
 
 const CashesPage: React.FC = () => {
-  // --- 1. Lógica de CASHES (Listado de Cajas) ---
+  // --- 1. Estado para la Caja Seleccionada ---
+  // Por defecto empezamos con la caja 1 (General)
+  const [selectedCashId, setSelectedCashId] = useState<number>(1);
+  const [editingCash, setEditingCash] = useState<Cash | null>(null);
+
+  // --- 2. Lógica de CASHES (Listado) ---
   const {
     data: cashes = [],
     isLoading: isLoadingCashes,
     isError: isErrorCashes,
-    //error: errorCashes,
   } = useCashes();
+
   const createCashMutation = useCreateCash();
   const updateCashMutation = useUpdateCash();
   const deleteCashMutation = useDeleteCash();
 
-  const [editingCash, setEditingCash] = useState<Cash | null>(null);
-
-  // --- 2. Lógica de DENOMINATIONS (Arqueo) ---
-  // NOTA: En el futuro, aquí pasarías el ID de la caja seleccionada: useReadCashDenominations(selectedCashId)
+  // --- 3. Lógica de DENOMINATIONS (Arqueo) ---
+  // Pasamos el selectedCashId al hook
   const {
     data: denominations = [],
     isLoading: isLoadingDenom,
     isError: isErrorDenom,
     error: errorDenom,
-  } = useReadCashDenominations();
-
-  /* TODO: Cuando actualice el backend, solo tendré que añadir un estado 
-  const [selectedCashId, setSelectedCashId] = useState(...).
-  Pasaré ese ID al hook: useReadCashDenominations(selectedCashId).
-  La UI ya estará lista y no tendré que tocar el maquetado, solo la lógica de selección
-  */
+  } = useReadCashDenominations(selectedCashId); // <-- Hook actualizado
 
   const updateDenomMutation = useUpdateCashDenomination();
 
-  // 2.1 Procesamiento de datos de Arqueo (Billetes vs Monedas)
+  // 3.1 Procesamiento robusto: Filtramos por valor, no por ID
   const bills = useMemo(
     () =>
       denominations
-        .filter((d) => d.id >= 1 && d.id <= 7)
-        .sort((a, b) => a.id - b.id),
+        .filter((d) => d.denomination_value >= 5)
+        .sort((a, b) => b.denomination_value - a.denomination_value), // Mayor a menor
     [denominations],
   );
 
   const coins = useMemo(
     () =>
       denominations
-        .filter((d) => d.id >= 8 && d.id <= 15)
-        .sort((a, b) => a.id - b.id),
+        .filter((d) => d.denomination_value < 5)
+        .sort((a, b) => b.denomination_value - a.denomination_value),
     [denominations],
   );
 
-  const grandTotal = useMemo(() => {
-    return denominations.reduce((acc, curr) => {
-      const val = parseFloat(curr.denomination_value) || 0;
-      return acc + val * curr.quantity;
-    }, 0);
-  }, [denominations]);
+  // 3.2 Total del sistema SOLO de la caja seleccionada
+  const selectedCashSystemTotal = useMemo(() => {
+    const activeCash = cashes.find((c) => c.id === selectedCashId);
+    return Number(activeCash?.actual_amount) || 0;
+  }, [cashes, selectedCashId]);
 
-  // 1. Calculamos cuánto dice el sistema que hay en total
-  const systemTotal = useMemo(() => {
-    return cashes.reduce(
-      (acc, curr) => acc + (Number(curr.actual_amount) || 0),
+  const grandTotal = useMemo(() => {
+    return denominations.reduce(
+      (acc, curr) => acc + curr.denomination_value * curr.quantity,
       0,
     );
-  }, [cashes]);
+  }, [denominations]);
 
-  // 2. Calculamos la diferencia
-  const difference = grandTotal - systemTotal;
-  const isBalanced = Math.abs(difference) < 0.01; // Usamos un margen pequeño por decimales
+  const difference = grandTotal - selectedCashSystemTotal;
+  const isBalanced = Math.abs(difference) < 0.01;
+
+  // --- Handlers ---
+  const handleCashChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setSelectedCashId(newValue);
+  };
 
   const handleUpdateDenominationQty = (id: number, quantity: number) => {
     updateDenomMutation.mutate({ id, quantity });
@@ -216,6 +217,8 @@ const CashesPage: React.FC = () => {
               cashes={cashes}
               onEdit={handleStartEdit}
               onDelete={handleDeleteCash}
+              selectedCashId={selectedCashId} // <-- El estado del arqueo
+              onSelect={(id) => setSelectedCashId(id)} // <-- Cambiar caja desde la tabla
             />
           </Paper>
         )}
@@ -237,78 +240,121 @@ const CashesPage: React.FC = () => {
             <Typography variant="h4" fontWeight="bold" color="primary.main">
               Arqueo de Efectivo
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Control de billetes y monedas físico (Caja Activa)
-            </Typography>
+            {/* Selector de Caja para el Arqueo */}
+            <Paper sx={{ mb: 3 }}>
+              <Tabs
+                value={selectedCashId}
+                onChange={handleCashChange}
+                indicatorColor="primary"
+                textColor="primary"
+                variant="fullWidth"
+              >
+                {cashes.map((cash) => (
+                  <Tab
+                    key={cash.id}
+                    value={cash.id}
+                    label={cash.name.toUpperCase()}
+                    icon={<PriceCheckIcon />}
+                    iconPosition="start"
+                  />
+                ))}
+              </Tabs>
+            </Paper>
+
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={3}
+              flexWrap="wrap"
+              gap={2}
+            >
+              {/* Aquí usa selectedCashSystemTotal en lugar de systemTotal global */}
+              <Paper
+                elevation={2}
+                sx={{ px: 3, py: 1, borderRadius: 2, bgcolor: "grey.100" }}
+              >
+                <Typography variant="caption" color="text.secondary">
+                  TOTAL SISTEMA (
+                  {cashes.find((c) => c.id === selectedCashId)?.name})
+                </Typography>
+                <Typography variant="h5" fontWeight="bold">
+                  {selectedCashSystemTotal.toLocaleString("es-ES", {
+                    style: "currency",
+                    currency: "EUR",
+                  })}
+                </Typography>
+              </Paper>
+
+              {/* Cuadro: Total Sistema (Lo que debería haber) */}
+              <Paper
+                elevation={2}
+                sx={{ px: 3, py: 1, borderRadius: 2, bgcolor: "grey.100" }}
+              >
+                <Typography variant="caption" color="text.secondary">
+                  TOTAL CAJA
+                </Typography>
+                <Typography variant="h5" fontWeight="bold">
+                  {selectedCashSystemTotal.toLocaleString("es-ES", {
+                    style: "currency",
+                    currency: "EUR",
+                  })}
+                </Typography>
+              </Paper>
+
+              {/* Cuadro: Diferencia (El "Chivato") */}
+              <Paper
+                elevation={4}
+                sx={{
+                  px: 3,
+                  py: 1,
+                  borderRadius: 2,
+                  bgcolor: isBalanced ? "success.main" : "error.main",
+                  color: "white",
+                  minWidth: "200px",
+                  transition: "all 0.3s ease", // Animación suave al cambiar de color
+                }}
+              >
+                <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                  {isBalanced ? "ESTADO: CUADRADO" : "DIFERENCIA (DESCUADRE)"}
+                </Typography>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Typography variant="h4" fontWeight="bold">
+                    {difference === 0 ? (
+                      <PriceCheckIcon />
+                    ) : (
+                      `${difference.toFixed(2)} €`
+                    )}
+                  </Typography>
+                </Box>
+              </Paper>
+
+              {/* Total Flotante */}
+              <Paper
+                elevation={4}
+                sx={{
+                  px: 3,
+                  py: 1,
+                  bgcolor: "primary.dark",
+                  color: "white",
+                  borderRadius: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <CalculateIcon fontSize="large" />
+                <Box textAlign="right">
+                  <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                    TOTAL FÍSICO
+                  </Typography>
+                  <Typography variant="h4" fontWeight="bold" lineHeight={1}>
+                    {grandTotal.toFixed(2)} €
+                  </Typography>
+                </Box>
+              </Paper>
+            </Box>
           </Box>
-
-          {/* Cuadro: Total Sistema (Lo que debería haber) */}
-          <Paper
-            elevation={2}
-            sx={{ px: 3, py: 1, borderRadius: 2, bgcolor: "grey.100" }}
-          >
-            <Typography variant="caption" color="text.secondary">
-              TOTAL CAJA
-            </Typography>
-            <Typography variant="h5" fontWeight="bold">
-              {systemTotal.toLocaleString("es-ES", {
-                style: "currency",
-                currency: "EUR",
-              })}
-            </Typography>
-          </Paper>
-
-          {/* Cuadro: Diferencia (El "Chivato") */}
-          <Paper
-            elevation={4}
-            sx={{
-              px: 3,
-              py: 1,
-              borderRadius: 2,
-              bgcolor: isBalanced ? "success.main" : "error.main",
-              color: "white",
-              minWidth: "200px",
-              transition: "all 0.3s ease", // Animación suave al cambiar de color
-            }}
-          >
-            <Typography variant="caption" sx={{ opacity: 0.9 }}>
-              {isBalanced ? "ESTADO: CUADRADO" : "DIFERENCIA (DESCUADRE)"}
-            </Typography>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Typography variant="h4" fontWeight="bold">
-                {difference === 0 ? (
-                  <PriceCheckIcon />
-                ) : (
-                  `${difference.toFixed(2)} €`
-                )}
-              </Typography>
-            </Box>
-          </Paper>
-
-          {/* Total Flotante */}
-          <Paper
-            elevation={4}
-            sx={{
-              px: 3,
-              py: 1,
-              bgcolor: "primary.dark",
-              color: "white",
-              borderRadius: 2,
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <CalculateIcon fontSize="large" />
-            <Box textAlign="right">
-              <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                TOTAL FÍSICO
-              </Typography>
-              <Typography variant="h4" fontWeight="bold" lineHeight={1}>
-                {grandTotal.toFixed(2)} €
-              </Typography>
-            </Box>
-          </Paper>
         </Box>
 
         {updateDenomMutation.isError && (

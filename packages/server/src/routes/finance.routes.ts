@@ -1,4 +1,10 @@
 import { Router } from "express";
+import {
+  CashDenominationBodySchema,
+  CashDenominationUpdateSchema,
+} from "@economic-control/shared";
+import { validate } from "../middleware/validate.middleware.js";
+
 import { cashesController } from "../controllers/finance-app/cashes.controller.js";
 import { dashboardController } from "../controllers/finance-app/dashboard.controller.js";
 import { incomesController } from "../controllers/finance-app/incomes.controller.js";
@@ -7,8 +13,20 @@ import { personsController } from "../controllers/finance-app/persons.controller
 import { reportsController } from "../controllers/finance-app/reports.controller.js";
 import { weeksController } from "../controllers/finance-app/weeks.controller.js";
 import { cashDenominationController } from "../controllers/finance-app/cash-denomination.controller.js";
+import { adminController } from "../controllers/finance-app/admin.controller.js";
+import { decodeAccessToken, requireRole } from "src/auth/auth.middleware.js";
 
 const router: Router = Router();
+
+// =================================================================
+// 💰 ADMIN
+// =================================================================
+router.get(
+  "/admin/sync-balances",
+  decodeAccessToken,
+  requireRole("SuperUser"),
+  adminController.syncBalances,
+);
 
 // =================================================================
 // 💰 CAJAS (CASHES)
@@ -74,23 +92,29 @@ router.get("/balance", dashboardController.getBalance);
 // 💰 MONEDAS (CASH DENOMINATIONS)
 // =================================================================
 router.get(
-  "/cash-denominations",
+  "/cashes/cash-denominations",
   cashDenominationController.allCashDenominations,
 );
 router.get(
-  "/cash-denominations/:id",
-  cashDenominationController.oneCashDenomination,
+  "/cashes/cash-denominations/:denomination_id",
+  cashDenominationController.oneCashDenominationById,
+);
+router.get(
+  "/cashes/:cash_id/denominations",
+  cashDenominationController.oneCashDenominationByCash,
 );
 router.post(
-  "/cash-denominations/new-cash-denomination",
-  cashDenominationController.createCashDenomination,
+  "/cashes/:cash_id/denominations",
+  validate(CashDenominationBodySchema),
+  cashDenominationController.create,
 );
 router.put(
-  "/cash-denominations/:id",
+  "/cashes/cash-denominations/:denomination_id",
+  validate(CashDenominationUpdateSchema),
   cashDenominationController.updateCashDenomination,
 );
 router.delete(
-  "/cash-denominations/:id",
+  "/cashes/cash-denominations/:denomination_id",
   cashDenominationController.deleteCashDenomination,
 );
 

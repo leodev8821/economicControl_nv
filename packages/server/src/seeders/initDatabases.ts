@@ -7,6 +7,7 @@ import {
   UserPermission,
   CashDenomination,
   sequelizeInstance,
+  Cash,
 } from "../models/index.js";
 import { ROLE_TYPES } from "@economic-control/shared";
 import {
@@ -16,13 +17,6 @@ import {
 import { env } from "../config/env.js";
 import { fileURLToPath } from "url";
 import { WeekActions } from "../models/finance-app/week.model.js";
-
-// type RoleType = (typeof ROLE_TYPES)[keyof typeof ROLE_TYPES];
-// type UserRole = typeof ROLE_TYPES.ADMINISTRADOR | typeof ROLE_TYPES.SUPER_USER;
-// type ApplicationType =
-//   (typeof APPLICATION_TYPES)[keyof typeof APPLICATION_TYPES];
-// type ApplicationDescription =
-//   (typeof APPLICATION_DESCRIPTIONS)[keyof typeof APPLICATION_DESCRIPTIONS];
 
 interface DatabaseSeeder {
   run: () => Promise<void>;
@@ -105,34 +99,49 @@ const databaseSeeder: DatabaseSeeder = {
         console.log("✅ Aplicaciones verificadas/creadas");
 
         /* ===========================
-         * Seed cash denominations
+         * Seed cash
          * =========================== */
-        const denominationsToCreate = [
-          "500",
-          "200",
-          "100",
-          "50",
-          "20",
-          "10",
-          "5",
-          "2",
-          "1",
-          "0.5",
-          "0.2",
-          "0.1",
-          "0.05",
-          "0.02",
-          "0.01",
-        ].map((val) => ({ denomination_value: val, quantity: 0 })); //
+        const cashToSeed = [
+          { cash_name: "GENERAL" },
+          { cash_name: "CAFETERIA" },
+        ];
 
-        for (const denom of denominationsToCreate) {
-          await CashDenomination.findOrCreate({
-            where: { denomination_value: denom.denomination_value },
-            defaults: denom,
+        for (const cash of cashToSeed) {
+          await Cash.findOrCreate({
+            where: { name: cash.cash_name },
             transaction,
           });
-        } //
-        console.log("✅ Denominaciones verificadas/creadas");
+        }
+        console.log("✅ Cajas verificadas/creadas");
+
+        /* ===========================
+         * Seed cash denominations
+         * =========================== */
+        const cashIds = [1, 2]; // IDs de 'General' y 'CAFETERIA'
+        const values = [
+          500, 200, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01,
+        ];
+
+        for (const cash_id of cashIds) {
+          for (const val of values) {
+            await CashDenomination.findOrCreate({
+              // Ahora buscamos por la combinación de caja y valor
+              where: {
+                cash_id: cash_id,
+                denomination_value: val,
+              },
+              defaults: {
+                cash_id: cash_id,
+                denomination_value: val,
+                quantity: 0,
+              },
+              transaction,
+            });
+          }
+        }
+        console.log(
+          `✅ Denominaciones verificadas/creadas para ${cashIds.length} cajas`,
+        );
 
         /* ===========================
          * Seed super user

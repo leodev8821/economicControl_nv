@@ -59,7 +59,8 @@ export default function BulkOutcomeForm({
   const [globalWeekId, setGlobalWeekId] = React.useState(
     initialValues?.common_week_id?.toString() ?? "",
   );
-  const { data: availableWeeks = [] } = useWeeks();
+  const { data: weeksResponse } = useWeeks();
+  const availableWeeks = weeksResponse?.data ?? [];
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const LOCAL_STORAGE_KEY = "bulk_outcome_draft";

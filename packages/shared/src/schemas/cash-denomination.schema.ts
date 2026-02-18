@@ -6,7 +6,14 @@ import { z } from "zod";
 const BaseCashDenominationSchema = z.object({
   id: z.number().int().positive().optional(),
 
-  denomination_value: z.string().min(1, "El valor no puede estar vacío"),
+  cash_id: z
+    .number({ message: "El ID de la caja es obligatorio" })
+    .int()
+    .positive(),
+
+  denomination_value: z
+    .number({ message: "El valor es obligatorio" })
+    .positive(),
 
   quantity: z.coerce
     .number({ message: "La cantidad es obligatoria" })
@@ -20,6 +27,11 @@ const BaseCashDenominationSchema = z.object({
 // ----------------------------------------------------------------------
 export const CashDenominationCreationSchema = BaseCashDenominationSchema;
 
+// Schema para recibir datos del Body (sin cash_id porque viene por URL)
+export const CashDenominationBodySchema = BaseCashDenominationSchema.omit({
+  cash_id: true,
+});
+
 // ----------------------------------------------------------------------
 // 3. ESQUEMA de Actualización
 // ----------------------------------------------------------------------
@@ -29,10 +41,10 @@ export const CashDenominationUpdateSchema =
 // ----------------------------------------------------------------------
 // 4. EXPORTACIÓN DE TIPOS E INTERFACES
 // ----------------------------------------------------------------------
-export type CashDenominationCreationRequest = z.infer<
+export type CashDenominationCreationDTO = z.infer<
   typeof CashDenominationCreationSchema
 >;
-export type CashDenominationUpdateRequest = z.infer<
+export type CashDenominationUpdateDTO = z.infer<
   typeof CashDenominationUpdateSchema
 >;
 

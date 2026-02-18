@@ -1,9 +1,24 @@
 import React from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
-import { Paper, Grid, Typography, Box, Card, CardContent } from "@mui/material";
+import {
+  Paper,
+  Grid,
+  Typography,
+  Box,
+  Card,
+  CardContent,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControl,
+} from "@mui/material";
 import type { PieValueType } from "@mui/x-charts";
 import { useAuth } from "@modules/auth/hooks/useAuth";
 import { useBalance } from "@modules/finance/hooks/useBalance";
+import { WeekSelector } from "@modules/finance/components/selectors/WeekSelector";
+import { Button, Tooltip, CircularProgress } from "@mui/material";
+import SyncIcon from "@mui/icons-material/Sync";
+import { useSyncBalances } from "../hooks/useSyncBalances";
 
 // Helper para transformar el objeto Record<string, number> al formato del PieChart
 const transformToPieData = (
@@ -18,10 +33,26 @@ const transformToPieData = (
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const { data: apiResponse, isLoading, isError, error } = useBalance();
+  const [filterType, setFilterType] = React.useState<"all" | "week">("all");
+  const [selectedWeek, setSelectedWeek] = React.useState<number | "">("");
+
+  const {
+    data: apiResponse,
+    isLoading,
+    isError,
+    error,
+  } = useBalance({
+    week_id:
+      filterType === "week" && selectedWeek !== "" ? selectedWeek : undefined,
+  });
 
   const balanceData = apiResponse?.data;
   const apiResponseMessage = apiResponse?.message;
+
+  // Verificamos si es SuperUser
+  const isSuperUser = user?.role_name === "SuperUser";
+
+  const { mutate: executeSync, isPending } = useSyncBalances();
 
   if (isLoading) {
     return <Box p={3}>Cargando datos del balance...</Box>;
@@ -51,9 +82,71 @@ const DashboardPage: React.FC = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         Bienvenido, {user?.username}
       </Typography>
-      <Typography variant="subtitle1" gutterBottom color="textSecondary">
-        Resumen financiero por Caja
-      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 4,
+        }}
+      >
+        <Typography variant="h4">Resumen Financiero</Typography>
+
+        <Grid container spacing={2} alignItems="center" sx={{ mb: 4 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Typography variant="h4">Dashboard Financiero</Typography>
+          </Grid>
+
+          {/* Renderizado Condicional: Solo si es SuperUser */}
+          {isSuperUser && (
+            <Tooltip title="Recalcular saldos desde el historial de movimientos (Admin Only)">
+              <Button
+                variant="outlined"
+                color="warning"
+                startIcon={
+                  isPending ? <CircularProgress size={20} /> : <SyncIcon />
+                }
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "¿Deseas recalcular los saldos de todas las cajas? Esta acción no se puede deshacer.",
+                    )
+                  ) {
+                    executeSync();
+                  }
+                }}
+                disabled={isPending}
+                sx={{ fontWeight: "bold" }}
+              >
+                {isPending ? "Sincronizando..." : "Sincronizar Saldos"}
+              </Button>
+            </Tooltip>
+          )}
+
+          <Grid size={{ xs: 12, md: 3 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Ver por</InputLabel>
+              <Select
+                value={filterType}
+                label="Ver por"
+                onChange={(e) => setFilterType(e.target.value as any)}
+              >
+                <MenuItem value="all">Histórico (Total)</MenuItem>
+                <MenuItem value="week">Por Semana</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 3 }}>
+            {filterType === "week" && (
+              <WeekSelector
+                selectedWeek={selectedWeek}
+                onChange={(id) => setSelectedWeek(id)}
+              />
+            )}
+          </Grid>
+        </Grid>
+      </Box>
 
       {balanceData.map((cash) => {
         const incomePieData = transformToPieData(
@@ -85,9 +178,11 @@ const DashboardPage: React.FC = () => {
                   sx={{
                     height: "100%",
                     display: "flex",
+                    flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
                     bgcolor: "#f5f5f5",
+                    position: "relative",
                   }}
                 >
                   <CardContent sx={{ textAlign: "center" }}>
@@ -107,6 +202,26 @@ const DashboardPage: React.FC = () => {
                     >
                       {cash.cash_actual_amount.toFixed(2)}€
                     </Typography>
+
+                    {/* Alerta de Desfase (Drift) */}
+                    {Math.abs(cash.drift) > 0.01 && (
+                      <Box
+                        sx={{
+                          mt: 1,
+                          p: 0.5,
+                          bgcolor: "warning.light",
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          color="warning.contrastText"
+                          fontWeight="bold"
+                        >
+                          ⚠️ Desfase detectado: {cash.drift.toFixed(2)}€
+                        </Typography>
+                      </Box>
+                    )}
                   </CardContent>
                 </Card>
               </Grid>

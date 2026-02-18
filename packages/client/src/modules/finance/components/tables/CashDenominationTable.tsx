@@ -71,7 +71,7 @@ export default function CashDenominationTable({
 
   // Calcular total de la tabla actual para mostrar en el pie (opcional)
   const tableTotal = data.reduce(
-    (acc, row) => acc + parseFloat(row.denomination_value) * row.quantity,
+    (acc, row) => acc + row.denomination_value * row.quantity,
     0,
   );
 
@@ -117,8 +117,7 @@ export default function CashDenominationTable({
         <TableBody>
           {data.map((row) => {
             const isEditing = editId === row.id;
-            const totalValue =
-              parseFloat(row.denomination_value) * row.quantity;
+            const totalValue = row.denomination_value * row.quantity;
 
             return (
               <TableRow
@@ -132,9 +131,9 @@ export default function CashDenominationTable({
                 <TableCell component="th" scope="row">
                   <Typography fontWeight="medium">
                     {
-                      parseFloat(row.denomination_value) >= 5
+                      row.denomination_value >= 5
                         ? `${row.denomination_value} €` // Billetes suelen no llevar decimales visuales si son enteros
-                        : `${parseFloat(row.denomination_value).toFixed(2)} €` // Monedas
+                        : `${row.denomination_value.toFixed(2)} €` // Monedas
                     }
                   </Typography>
                 </TableCell>

@@ -69,7 +69,19 @@ Role.hasMany(User, {
   as: "Users",
 });
 
+// --- User <-> UserPermission ---
 User.hasMany(UserPermission, { foreignKey: "user_id", as: "permissions" });
+
+// --- Cash <-> CashDenomination ---
+Cash.hasMany(CashDenomination, {
+  foreignKey: "cash_id",
+  as: "denominations",
+});
+
+CashDenomination.belongsTo(Cash, {
+  foreignKey: "cash_id",
+  as: "cash",
+});
 
 // =================================================================
 // Consolidation App

@@ -1,5 +1,5 @@
 // models/outcome.ts
-import { DataTypes, Model, type Optional } from "sequelize";
+import { col, DataTypes, fn, Model, Op, type Optional } from "sequelize";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import { CashModel, CashActions } from "./cash.model.js";
 import { WeekModel } from "./week.model.js";
@@ -7,6 +7,7 @@ import {
   OUTCOME_CATEGORIES,
   type OutcomeCategories,
 } from "@economic-control/shared";
+import { DashboardFilter } from "../../shared/dashboard.types.js";
 
 const connection = getSequelizeConfig();
 
@@ -49,7 +50,7 @@ export class OutcomeModel
 }
 
 // 💡 Constante para la configuración de inclusión (JOINs)
-const OUTCOME_INCLUDE_CONFIG = [
+/* const OUTCOME_INCLUDE_CONFIG = [
   {
     model: CashModel,
     as: "Cash",
@@ -62,7 +63,7 @@ const OUTCOME_INCLUDE_CONFIG = [
     attributes: ["id", "week_start", "week_end"],
     required: true,
   },
-];
+]; */
 
 /** Inicialización del modelo */
 OutcomeModel.init(
@@ -132,12 +133,32 @@ const normalizeOutcomeCategory = (category: string): OutcomeCategories => {
 
 export class OutcomeActions {
   /**
+   * Helper privado para evitar dependencias circulares en la inicialización
+   */
+  private static getIncludeConfig() {
+    return [
+      {
+        model: CashModel,
+        as: "Cash",
+        attributes: ["id", "name", "actual_amount"],
+        required: true,
+      },
+      {
+        model: WeekModel,
+        as: "Week",
+        attributes: ["id", "week_start", "week_end"],
+        required: true,
+      },
+    ];
+  }
+
+  /**
    * Obtiene todas las egresos de la base de datos.
    * @returns promise con un array de objetos OutcomeAttributes.
    */
   public static async getAll(): Promise<OutcomeAttributes[]> {
     const outcomes = await OutcomeModel.findAll({
-      include: OUTCOME_INCLUDE_CONFIG,
+      include: this.getIncludeConfig(),
     });
     return outcomes.map((outcome) => outcome.get({ plain: true }));
   }
@@ -152,7 +173,7 @@ export class OutcomeActions {
   ): Promise<OutcomeAttributes | null> {
     const outcome = await OutcomeModel.findOne({
       where: data,
-      include: OUTCOME_INCLUDE_CONFIG,
+      include: this.getIncludeConfig(),
     });
     return outcome ? outcome.get({ plain: true }) : null;
   }
@@ -323,7 +344,7 @@ export class OutcomeActions {
   ): Promise<OutcomeAttributes[]> {
     const outcomes = await OutcomeModel.findAll({
       where: { cash_id: cashId },
-      include: OUTCOME_INCLUDE_CONFIG,
+      include: this.getIncludeConfig(),
     });
     return outcomes.map((outcome) => outcome.get({ plain: true }));
   }
@@ -336,7 +357,7 @@ export class OutcomeActions {
   ): Promise<OutcomeAttributes[]> {
     const outcomes = await OutcomeModel.findAll({
       where: { date },
-      include: OUTCOME_INCLUDE_CONFIG,
+      include: this.getIncludeConfig(),
     });
     return outcomes.map((outcome) => outcome.get({ plain: true }));
   }
@@ -349,7 +370,7 @@ export class OutcomeActions {
   ): Promise<OutcomeAttributes[]> {
     const outcomes = await OutcomeModel.findAll({
       where: { week_id: weekId },
-      include: OUTCOME_INCLUDE_CONFIG,
+      include: this.getIncludeConfig(),
     });
     return outcomes.map((outcome) => outcome.get({ plain: true }));
   }
@@ -363,32 +384,27 @@ export class OutcomeActions {
     dataList: OutcomeCreationAttributes[],
   ): Promise<OutcomeAttributes[]> {
     return connection.transaction(async (t) => {
-      // 1. Validar categorias de egreso para todos
       const normalizedData = dataList.map((item) => ({
         ...item,
         category: normalizeOutcomeCategory(item.category),
       }));
 
-      // 2. Inserción masiva en la tabla outcomes
       const newOutcomes = await OutcomeModel.bulkCreate(normalizedData, {
         transaction: t,
         validate: true,
       });
 
-      // 3. Agrupar montos por cash_id para minimizar updates a la base de datos
       const cashTotals = new Map<number, number>();
-
       for (const { cash_id, amount } of dataList) {
         const value = Number(amount);
         if (!Number.isFinite(value)) continue;
-
         cashTotals.set(cash_id, (cashTotals.get(cash_id) ?? 0) + value);
       }
 
-      // 4. Actualizar cada caja afectada
+      // ERROR CORREGIDO: Usamos decrement para que reste del saldo
       for (const [cashId, totalAmount] of cashTotals) {
-        await CashModel.increment(
-          { actual_amount: totalAmount },
+        await CashModel.decrement(
+          { actual_amount: totalAmount }, // Sequelize restará este valor
           {
             where: { id: cashId },
             transaction: t,
@@ -397,6 +413,32 @@ export class OutcomeActions {
       }
 
       return newOutcomes.map((outcome) => outcome.get({ plain: true }));
+    });
+  }
+
+  /**
+   * Obtiene el resumen de egresos agrupado por caja y categoría.
+   */
+  public static async getSummaryByCash(
+    filters: DashboardFilter = {},
+  ): Promise<any[]> {
+    const where: any = {};
+
+    if (filters.week_id) {
+      where.week_id = filters.week_id;
+    } else if (filters.startDate && filters.endDate) {
+      where.date = { [Op.between]: [filters.startDate, filters.endDate] };
+    }
+
+    return await OutcomeModel.findAll({
+      attributes: [
+        "cash_id",
+        "category",
+        [fn("SUM", col("amount")), "total_amount"],
+      ],
+      where, // Aplicamos el filtro aquí
+      group: ["cash_id", "category"],
+      raw: true,
     });
   }
 }

@@ -8,40 +8,65 @@ export type CashDenominationUpdateData = {
 } & Partial<CashDenomination>;
 
 /**
- * Función que realiza la petición GET al backend para obtener todos las denominaciones de monedas.
- * Ruta: GET /ec/api/v1/cash-denominations
- * @returns Promesa que resuelve en un array de objetos CashDenomination.
+ * Obtiene todas las denominaciones (global).
+ * Ruta: GET /cashes/cash-denominations
  */
 export const getAllCashDenominations = async (): Promise<
   CashDenomination[]
 > => {
   try {
     const response = await apiClient.get<ApiResponse<CashDenomination>>(
-      `${API_ROUTES_PATH.FINANCE}/cash-denominations`,
+      `${API_ROUTES_PATH.FINANCE}/cashes/cash-denominations`,
     );
     const denominationsArray = response.data.data as any[];
-    const cleanDenominations = denominationsArray.map((denomination) => ({
+    return denominationsArray.map((denomination) => ({
       ...denomination,
+      denomination_value: parseFloat(
+        denomination.denomination_value.toString(),
+      ),
       quantity: parseFloat(denomination.quantity.toString()),
-    }));
-    return cleanDenominations as CashDenomination[];
+    })) as CashDenomination[];
   } catch (error) {
     throw error;
   }
 };
 
 /**
- * Función que realiza la petición POST al backend para crear una nueva denominación de monedas.
- * Ruta: POST /ec/api/v1/cash-denominations/new-cash-denomination
- * @param data Los datos de la denominación de monedas.
- * @returns Promesa que resuelve en el objeto CashDenomination creado.
+ * Obtiene las denominaciones de una caja específica.
+ * Ruta: GET /cashes/:cash_id/denominations
+ */
+export const getCashDenominationsByCashId = async (
+  cashId: number,
+): Promise<CashDenomination[]> => {
+  try {
+    const response = await apiClient.get<ApiResponse<CashDenomination>>(
+      `${API_ROUTES_PATH.FINANCE}/cashes/${cashId}/denominations`,
+    );
+    const denominationsArray = response.data.data as any[];
+
+    return denominationsArray.map((denomination) => ({
+      ...denomination,
+      denomination_value: parseFloat(
+        denomination.denomination_value.toString(),
+      ),
+      quantity: parseFloat(denomination.quantity.toString()),
+    })) as CashDenomination[];
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Crea una nueva denominación asignada a una caja.
+ * Ruta: POST /cashes/:cash_id/denominations
  */
 export const createCashDenomination = async (
-  data: any,
+  cashId: number,
+  data: Partial<CashDenomination>,
 ): Promise<CashDenomination> => {
   try {
     const response = await apiClient.post<ApiResponseData<CashDenomination>>(
-      `${API_ROUTES_PATH.FINANCE}/cash-denominations/new-cash-denomination`,
+      `${API_ROUTES_PATH.FINANCE}/cashes/${cashId}/denominations`,
       data,
     );
     return response.data.data;
@@ -51,10 +76,8 @@ export const createCashDenomination = async (
 };
 
 /**
- * Función que realiza la petición PUT al backend para actualizar una denominación de monedas.
- * Ruta: PUT /ec/api/v1/cash-denominations/:id
- * @param data El objeto con el ID y los datos de la denominación de monedas a actualizar.
- * @returns Promesa que resuelve en el objeto CashDenomination actualizado.
+ * Actualiza una denominación por su ID.
+ * Ruta: PUT /cashes/cash-denominations/:denomination_id
  */
 export const updateCashDenomination = async (
   data: CashDenominationUpdateData,
@@ -62,7 +85,7 @@ export const updateCashDenomination = async (
   try {
     const { id, ...updatePayload } = data;
     const response = await apiClient.put<ApiResponseData<CashDenomination>>(
-      `${API_ROUTES_PATH.FINANCE}/cash-denominations/${id}`,
+      `${API_ROUTES_PATH.FINANCE}/cashes/cash-denominations/${id}`,
       updatePayload,
     );
     return response.data.data;
@@ -72,15 +95,13 @@ export const updateCashDenomination = async (
 };
 
 /**
- * Función que realiza la petición DELETE al backend para eliminar una denominación de monedas.
- * Ruta: DELETE /ec/api/v1/cash-denominations/:id
- * @param id El ID de la denominación de monedas a eliminar.
- * @returns Promesa que resuelve en un booleano.
+ * Elimina una denominación por su ID.
+ * Ruta: DELETE /cashes/cash-denominations/:denomination_id
  */
 export const deleteCashDenomination = async (id: number): Promise<boolean> => {
   try {
     const response = await apiClient.delete<ApiResponseData<boolean>>(
-      `${API_ROUTES_PATH.FINANCE}/cash-denominations/${id}`,
+      `${API_ROUTES_PATH.FINANCE}/cashes/cash-denominations/${id}`,
     );
     return response.data.data;
   } catch (error) {

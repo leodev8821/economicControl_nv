@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import {
   getAllCashDenominations,
+  getCashDenominationsByCashId,
   updateCashDenomination,
   type CashDenominationUpdateData,
 } from "@modules/finance/api/cash-denominationApi";
@@ -11,13 +12,13 @@ import type { CashDenomination } from "@modules/finance/types/cash-denomination.
 const CASH_DENOMINATIONS_QUERY_KEY = "cash-denominations";
 
 // Hook para obtener el listado de denominaciones (Billetes y Monedas).
-export const useReadCashDenominations = (): UseQueryResult<
-  CashDenomination[],
-  Error
-> => {
+export const useReadCashDenominations = (
+  cashId?: number,
+): UseQueryResult<CashDenomination[], Error> => {
   return useQuery<CashDenomination[], Error>({
-    queryKey: [CASH_DENOMINATIONS_QUERY_KEY],
-    queryFn: getAllCashDenominations,
+    queryKey: [CASH_DENOMINATIONS_QUERY_KEY, cashId],
+    queryFn: () =>
+      cashId ? getCashDenominationsByCashId(cashId) : getAllCashDenominations(),
     staleTime: 5 * 60 * 1000, // 5 min
   });
 };

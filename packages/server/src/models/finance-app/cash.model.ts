@@ -1,5 +1,6 @@
 import { DataTypes, Model, type Optional, type Transaction } from "sequelize";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
+import { CashDenominationModel } from "./cash-denomination.model.js";
 
 const connection = getSequelizeConfig();
 
@@ -8,6 +9,7 @@ export interface CashAttributes {
   id: number;
   name: string;
   actual_amount: number;
+  denominations?: CashDenominationModel[];
 }
 
 // Tipo para criterios de búsqueda simple
@@ -29,6 +31,7 @@ export class CashModel
   declare id: number;
   declare name: string;
   declare actual_amount: number;
+  declare denominations?: CashDenominationModel[];
 }
 
 // Inicialización del modelo
@@ -47,6 +50,10 @@ CashModel.init(
       type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
       defaultValue: 0.0,
+      set(value) {
+        // Forzamos que siempre se guarde como número
+        this.setDataValue("actual_amount", parseFloat(String(value)));
+      },
     },
   },
   {
@@ -85,6 +92,12 @@ export class CashActions {
     const cash = await CashModel.findOne({
       where: data,
       transaction: t ?? null,
+      include: [
+        {
+          model: CashDenominationModel,
+          as: "denominations",
+        },
+      ],
     });
     return cash ? cash.get({ plain: true }) : null;
   }
@@ -98,8 +111,30 @@ export class CashActions {
     data: CashCreationAttributes,
   ): Promise<CashAttributes> {
     return connection.transaction(async (t) => {
+      //crear caja
       const newCash = await CashModel.create(data, { transaction: t });
-      return newCash.get({ plain: true });
+
+      //denominaciones por defecto (euros)
+      const defaultDenominations = [
+        500, 200, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01,
+      ];
+
+      //crear arqueo inicial
+      await CashDenominationModel.bulkCreate(
+        defaultDenominations.map((value) => ({
+          cash_id: newCash.id,
+          denomination_value: value,
+          quantity: 0,
+        })),
+        { transaction: t },
+      );
+
+      const createdCash = await CashModel.findByPk(newCash.id, {
+        include: [{ model: CashDenominationModel, as: "denominations" }],
+        transaction: t,
+      });
+
+      return createdCash!.get({ plain: true });
     });
   }
 

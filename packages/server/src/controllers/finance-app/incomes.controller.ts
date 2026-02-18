@@ -162,7 +162,7 @@ export const incomesController = {
       const newIncomeData: IncomeCreationAttributes = {
         cash_id: incomeData.cash_id,
         week_id: incomeData.week_id,
-        amount: incomeData.amount,
+        amount: parseFloat(String(incomeData.amount)),
         source: incomeData.source,
         date: new Date(incomeData.date),
       };
@@ -210,7 +210,7 @@ export const incomesController = {
         const newIncomeData: IncomeCreationAttributes = {
           cash_id: incomeItem.cash_id,
           week_id: incomeItem.week_id,
-          amount: incomeItem.amount,
+          amount: parseFloat(String(incomeItem.amount)),
           source: incomeItem.source,
           date: new Date(incomeItem.date),
         };
@@ -280,7 +280,7 @@ export const incomesController = {
       if (updateData.week_id !== undefined)
         updatePayload.week_id = updateData.week_id;
       if (updateData.amount !== undefined)
-        updatePayload.amount = updateData.amount;
+        updatePayload.amount = parseFloat(String(updateData.amount));
       if (updateData.source !== undefined)
         updatePayload.source = updateData.source;
       if (updateData.person_id !== undefined && updateData.person_id !== null) {

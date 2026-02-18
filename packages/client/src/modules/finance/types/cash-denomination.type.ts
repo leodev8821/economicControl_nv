@@ -1,6 +1,6 @@
-import type { CashDenominationCreationRequest } from "@economic-control/shared";
+import type { CashDenominationCreationDTO } from "@economic-control/shared";
 
-export interface CashDenomination extends CashDenominationCreationRequest {
+export interface CashDenomination extends CashDenominationCreationDTO {
   id: number;
 }
 

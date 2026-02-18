@@ -6,10 +6,9 @@ export interface Week extends WeekCreationRequest {
 
 export type WeekAttributes = Week;
 
-/*export interface WeekAttributes {
+export interface Week {
   id: number;
   week_start: string;
   week_end: string;
+  is_closed: boolean;
 }
-
-export type Week = WeekAttributes;*/
