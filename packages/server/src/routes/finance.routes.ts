@@ -14,7 +14,7 @@ import { reportsController } from "../controllers/finance-app/reports.controller
 import { weeksController } from "../controllers/finance-app/weeks.controller.js";
 import { cashDenominationController } from "../controllers/finance-app/cash-denomination.controller.js";
 import { adminController } from "../controllers/finance-app/admin.controller.js";
-import { decodeAccessToken, requireRole } from "src/auth/auth.middleware.js";
+import { decodeAccessToken, requireRole } from "../auth/auth.middleware.js";
 
 const router: Router = Router();
 
