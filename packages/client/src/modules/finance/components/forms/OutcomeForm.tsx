@@ -72,10 +72,11 @@ export default function OutcomeForm({
   } = useCashes();
 
   const {
-    data: availableWeeks = [],
+    data: weeksResponse,
     isLoading: isLoadingWeeks,
     isError: isErrorWeeks,
   } = useWeeks();
+  const availableWeeks = weeksResponse?.data ?? [];
 
   // Local state for MUI Selects
   // Initialize with default values if provided
