@@ -3,10 +3,12 @@ import {
   Box,
   Typography,
   Paper,
-  Divider,
   CircularProgress,
   Alert,
+  Grid, // Usamos Grid para el layout horizontal
+  Divider,
 } from "@mui/material";
+import CalculateIcon from "@mui/icons-material/Calculate"; // Icono decorativo
 import {
   useReadCashDenominations,
   useUpdateCashDenomination,
@@ -22,7 +24,7 @@ const CashDenominationPage: React.FC = () => {
   } = useReadCashDenominations();
   const updateMutation = useUpdateCashDenomination();
 
-  // Filtrado por rangos de ID según requerimiento
+  // Filtrado por rangos de ID
   const bills = useMemo(
     () =>
       denominations
@@ -30,6 +32,7 @@ const CashDenominationPage: React.FC = () => {
         .sort((a, b) => a.id - b.id),
     [denominations],
   );
+
   const coins = useMemo(
     () =>
       denominations
@@ -38,7 +41,7 @@ const CashDenominationPage: React.FC = () => {
     [denominations],
   );
 
-  // Cálculo del Gran Total sumando (valor * cantidad) de todos los elementos
+  // Cálculo del Gran Total
   const grandTotal = useMemo(() => {
     return denominations.reduce((acc, curr) => {
       const val = parseFloat(curr.denomination_value) || 0;
@@ -58,6 +61,7 @@ const CashDenominationPage: React.FC = () => {
         justifyContent="center"
         alignItems="center"
         flexDirection="column"
+        minHeight="50vh"
       >
         <CircularProgress />
         <Typography mt={2}>Cargando datos del arqueo...</Typography>
@@ -74,10 +78,43 @@ const CashDenominationPage: React.FC = () => {
     );
 
   return (
-    <Box p={3}>
-      <Typography variant="h4" mb={3} fontWeight="bold">
-        Arqueo de Caja
-      </Typography>
+    <Box p={3} sx={{ maxWidth: "1400px", mx: "auto" }}>
+      {/* Cabecera de Página */}
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+      >
+        <Typography variant="h4" fontWeight="bold" color="text.primary">
+          Arqueo de Caja
+        </Typography>
+
+        {/* Total Flotante Superior (Visible si hay scroll en pantallas pequeñas) */}
+        <Paper
+          elevation={3}
+          sx={{
+            px: 3,
+            py: 1,
+            bgcolor: "primary.dark",
+            color: "white",
+            borderRadius: 2,
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
+          <CalculateIcon />
+          <Box textAlign="right">
+            <Typography variant="caption" sx={{ opacity: 0.8 }}>
+              TOTAL FINAL
+            </Typography>
+            <Typography variant="h5" fontWeight="bold" lineHeight={1}>
+              {grandTotal.toFixed(2)} €
+            </Typography>
+          </Box>
+        </Paper>
+      </Box>
 
       {updateMutation.isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -85,59 +122,39 @@ const CashDenominationPage: React.FC = () => {
         </Alert>
       )}
 
-      <Paper
-        elevation={3}
-        sx={{
-          p: 4,
-          borderRadius: 2,
-          width: "100%",
-          maxWidth: "1200px",
-          mx: "auto",
-        }}
-      >
-        {/* TABLA 1: BILLETES */}
-        <Typography variant="h6" color="primary.main" gutterBottom>
-          💵 Billetes
-        </Typography>
-        <CashDenominationTable
-          data={bills}
-          onSave={handleUpdateQuantity}
-          isLoading={updateMutation.isPending}
-        />
+      {/* LAYOUT PRINCIPAL: GRID */}
+      <Grid container spacing={3}>
+        {/* Columna Izquierda: BILLETES */}
+        <Grid sx={{ xs: 12, md: 6 }}>
+          <CashDenominationTable
+            title="💵 Billetes"
+            data={bills}
+            onSave={handleUpdateQuantity}
+            isLoading={updateMutation.isPending}
+            headerColor="success.main" // Color Verde para dinero/billetes
+          />
+        </Grid>
 
         <Divider sx={{ my: 4, borderBottomWidth: 2 }} />
 
-        {/* TABLA 2: MONEDAS */}
-        <Typography variant="h6" color="secondary.main" gutterBottom>
-          🪙 Monedas
-        </Typography>
-        <CashDenominationTable
-          data={coins}
-          onSave={handleUpdateQuantity}
-          isLoading={updateMutation.isPending}
-        />
+        {/* Columna Derecha: MONEDAS */}
+        <Grid sx={{ xs: 12, md: 6 }}>
+          <CashDenominationTable
+            title="🪙 Monedas"
+            data={coins}
+            onSave={handleUpdateQuantity}
+            isLoading={updateMutation.isPending}
+            headerColor="secondary.main" // Color distinto para separar visualmente
+          />
+        </Grid>
+      </Grid>
 
-        {/* SECCIÓN DE GRAN TOTAL */}
-        <Box
-          mt={4}
-          p={3}
-          display="flex"
-          justifyContent="flex-end"
-          alignItems="center"
-          sx={{
-            bgcolor: "primary.light",
-            color: "primary.contrastText",
-            borderRadius: 1,
-          }}
-        >
-          <Typography variant="h5" fontWeight="bold" mr={2}>
-            TOTAL ARQUEO:
-          </Typography>
-          <Typography variant="h3" fontWeight="black">
-            {grandTotal.toFixed(2)} €
-          </Typography>
-        </Box>
-      </Paper>
+      {/* Resumen Final Grande (Opcional si ya está arriba, pero bueno para imprimir) */}
+      <Box mt={4} display="flex" justifyContent="flex-end">
+        <Typography variant="body2" color="text.secondary">
+          * Recuerda verificar el conteo físico antes de cerrar caja.
+        </Typography>
+      </Box>
     </Box>
   );
 };
