@@ -19,6 +19,7 @@ import ColorModeSelect from "@core/theme/shared-theme/ColorModeSelect";
 import { NVIcon } from "@shared/components/ui/CustomIcons";
 import { useAuth } from "@modules/auth/hooks/useAuth";
 import type { LoginCredentials } from "@modules/auth/types/user.type";
+import { PERMISSION_REDIRECTS } from "@/core/api/appsApiRoute";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -200,6 +201,27 @@ export default function SignIn() {
                 disabled={isLoading}
               />
             </FormControl>
+
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: -1 }}>
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => navigate(PERMISSION_REDIRECTS.FORGOT_PASSWORD)}
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 500,
+                  fontSize: "0.8125rem",
+                  color: "text.secondary",
+                  "&:hover": {
+                    textDecoration: "underline",
+                    bgcolor: "transparent",
+                    color: "primary.main",
+                  },
+                }}
+              >
+                ¿Olvidaste tu contraseña?
+              </Button>
+            </Box>
 
             {localError && (
               <Alert severity="error" variant="filled" sx={{ py: 0 }}>

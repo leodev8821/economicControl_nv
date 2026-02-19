@@ -18,6 +18,12 @@ const AdminPage = lazy(() => import("@shared/components/pages/AdminPage"));
 // --- AUTH MODULE ---
 const SignIn = lazy(() => import("@modules/auth/pages/SignIn"));
 const UsersPage = lazy(() => import("@modules/auth/pages/UsersPage"));
+const ForgotPasswordPage = lazy(
+  () => import("@modules/auth/pages/ForgotPasswordPage"),
+);
+const ResetPasswordPage = lazy(
+  () => import("@modules/auth/pages/ResetPasswordPage"),
+);
 
 // --- FINANCE MODULE ---
 const DashboardPage = lazy(
@@ -60,6 +66,14 @@ export const AppRouter = () => {
             🔓 RUTAS PÚBLICAS
            ================================================================= */}
         <Route path={`${API_ROUTES_PATH.AUTH}/login`} element={<SignIn />} />
+        <Route
+          path={`${API_ROUTES_PATH.AUTH}/forgot-password`}
+          element={<ForgotPasswordPage />}
+        />
+        <Route
+          path={`${API_ROUTES_PATH.AUTH}/reset-password`}
+          element={<ResetPasswordPage />}
+        />
 
         {/* Redirección EntryRoute*/}
         <Route path="/" element={<EntryRoute />} />

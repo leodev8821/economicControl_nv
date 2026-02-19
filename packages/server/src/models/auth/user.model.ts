@@ -25,6 +25,8 @@ export interface UserAttributes {
   email: string;
   phone: string;
   is_visible: boolean;
+  reset_token?: string | null;
+  reset_token_expires?: Date | null;
 }
 
 export type LoginPayload = {
@@ -70,6 +72,8 @@ export class UserModel
   declare email: string;
   declare phone: string;
   declare is_visible: boolean;
+  declare reset_token: string | null;
+  declare reset_token_expires: Date | null;
 
   // Método auxiliar para verificar la contraseña
   public async comparePassword(candidatePassword: string): Promise<boolean> {
@@ -117,6 +121,14 @@ UserModel.init(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
       field: "is_visible",
+    },
+    reset_token: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    reset_token_expires: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
   },
   {
@@ -327,7 +339,10 @@ export class UserActions {
     id: number,
     data: Partial<UserCreationAttributes>,
   ): Promise<UserAttributes | null> {
-    const [count] = await UserModel.update(data, { where: { id } });
+    const [count] = await UserModel.update(data, {
+      where: { id },
+      individualHooks: true,
+    });
     if (!count) return null;
 
     const updated = await UserModel.findByPk(id);

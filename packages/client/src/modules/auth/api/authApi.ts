@@ -34,3 +34,30 @@ export const login = async (
     throw new Error("Error de conexión con el servidor.");
   }
 };
+
+/**
+ * Función que realiza la petición POST al backend para solicitar la recuperación de la contraseña.
+ * @param email - Correo electrónico del usuario.
+ * @returns Promesa que resuelve en un objeto con el mensaje de respuesta.
+ */
+export const forgotPassword = async (email: string) => {
+  const response = await apiClient.post(
+    `${API_ROUTES_PATH.AUTH}/forgot-password`,
+    { email },
+  );
+  return response.data;
+};
+
+/**
+ * Función que realiza la petición POST al backend para aplicar la nueva contraseña.
+ * @param token - Token de recuperación.
+ * @param newPassword - Nueva contraseña.
+ * @returns Promesa que resuelve en un objeto con el mensaje de respuesta.
+ */
+export const resetPassword = async (token: string, newPassword: string) => {
+  const response = await apiClient.post(
+    `${API_ROUTES_PATH.AUTH}/reset-password`,
+    { token, newPassword },
+  );
+  return response.data;
+};

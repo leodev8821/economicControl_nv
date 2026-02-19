@@ -22,6 +22,8 @@ authRouter.post(
   authController.refreshToken,
 );
 authRouter.post("/logout", authController.logoutUser);
+authRouter.post("/forgot-password", authController.forgotPassword);
+authRouter.post("/reset-password", authController.resetPassword);
 authRouter.get("/profile", decodeAccessToken, (req, res) => {
   res.json({
     id: req.id,
