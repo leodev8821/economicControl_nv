@@ -36,9 +36,17 @@ const DashboardPage: React.FC = () => {
   const [filterType, setFilterType] = React.useState<"all" | "week">("all");
   const [selectedWeek, setSelectedWeek] = React.useState<number | "">("");
 
+  // Efecto para limpiar o inicializar la semana cuando cambias el tipo de filtro
+  React.useEffect(() => {
+    if (filterType === "all") {
+      setSelectedWeek("");
+    }
+  }, [filterType]);
+
   const {
     data: apiResponse,
     isLoading,
+    isFetching,
     isError,
     error,
   } = useBalance({
@@ -78,9 +86,37 @@ const DashboardPage: React.FC = () => {
   }
 
   return (
-    <Box className="dashboard-container" sx={{ p: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Bienvenido, {user?.username}
+    <Box
+      className="dashboard-container"
+      sx={{ p: 3, position: "relative", minHeight: "400px" }}
+    >
+      {isFetching && !isLoading && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            bgcolor: "rgba(255,255,255,0.6)",
+            zIndex: 10,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 2,
+            backdropFilter: "blur(2px)", // Efecto visual moderno
+          }}
+        >
+          <CircularProgress size={60} thickness={4} />
+          <Typography sx={{ mt: 2, fontWeight: "bold", color: "primary.main" }}>
+            Actualizando datos...
+          </Typography>
+        </Box>
+      )}
+
+      <Typography variant="h2" component="h1" gutterBottom>
+        Bienvenido, {user?.first_name} {user?.last_name}
       </Typography>
       <Box
         sx={{
@@ -90,14 +126,12 @@ const DashboardPage: React.FC = () => {
           mb: 4,
         }}
       >
-        <Typography variant="h4">Resumen Financiero</Typography>
-
         <Grid container spacing={2} alignItems="center" sx={{ mb: 4 }}>
           <Grid size={{ xs: 12, md: 6 }}>
             <Typography variant="h4">Dashboard Financiero</Typography>
           </Grid>
 
-          {/* Renderizado Condicional: Solo si es SuperUser */}
+          {/* Renderizado Botón Condicional: Solo si es SuperUser */}
           {isSuperUser && (
             <Tooltip title="Recalcular saldos desde el historial de movimientos (Admin Only)">
               <Button
@@ -260,7 +294,7 @@ const DashboardPage: React.FC = () => {
                       ]}
                       width={300}
                       height={200}
-                      slotProps={{ legend: { sx: { display: "none" } } }} // Ocultamos leyenda si ocupa mucho espacio, o usa 'direction: row'
+                      slotProps={{ legend: { sx: { display: "none" } } }}
                     />
                   ) : (
                     <Box
@@ -300,7 +334,7 @@ const DashboardPage: React.FC = () => {
 
                   {outcomePieData.length > 0 ? (
                     <PieChart
-                      colors={["#ef5350", "#ab003c", "#ff7961"]} // Paleta rojiza para egresos
+                      colors={["#ef5350", "#ab003c", "#ff7961"]}
                       series={[
                         {
                           data: outcomePieData,

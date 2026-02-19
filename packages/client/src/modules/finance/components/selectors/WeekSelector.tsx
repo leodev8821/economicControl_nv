@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   FormControl,
   InputLabel,
@@ -8,6 +8,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useWeeks } from "@modules/finance/hooks/useWeek";
+import dayjs from "dayjs";
 
 interface WeekSelectorProps {
   selectedWeek: number | "";
@@ -21,20 +22,16 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({
   disabled,
 }) => {
   const { data: response, isLoading } = useWeeks();
-  const weeks = response?.data || [];
+
+  // 1. Usamos useMemo para ordenar las semanas de forma ascendente (1, 2, 3...)
+  const sortedWeeks = useMemo(() => {
+    const data = response?.data || [];
+    return [...data].sort((a, b) => a.id - b.id);
+  }, [response]);
 
   const handleSelect = (event: SelectChangeEvent<number | "">) => {
     const value = event.target.value;
     if (value !== "") onChange(Number(value));
-  };
-
-  // Helper para formatear la fecha
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit",
-      month: "short",
-    }).format(date);
   };
 
   return (
@@ -51,10 +48,10 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({
             : undefined
         }
       >
-        {weeks.map((week) => (
+        {sortedWeeks.map((week) => (
           <MenuItem key={week.id} value={week.id}>
-            Semana del {formatDate(week.week_start)} al{" "}
-            {formatDate(week.week_end)}
+            S{week.id} ({dayjs(week.week_start).format("DD/MM")} -{" "}
+            {dayjs(week.week_end).format("DD/MM")})
             {week.is_closed && " (Cerrada)"}
           </MenuItem>
         ))}

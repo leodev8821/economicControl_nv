@@ -1,6 +1,7 @@
 import type { IncomeCreationRequest } from "@economic-control/shared";
 import type { Person } from "./person.type";
 import type { Week } from "./week.type";
+import type { Cash } from "./cash.type";
 
 export { INCOME_SOURCES, type IncomeSource } from "@economic-control/shared";
 
@@ -8,6 +9,7 @@ export interface Income extends IncomeCreationRequest {
   id: number;
   Person: Person | null;
   Week: Week;
+  Cash: Cash;
   amount: number;
 }
 

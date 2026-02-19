@@ -20,8 +20,8 @@ export const dashboardController = {
       // 1. Obtener cajas
       const [cashes, incomeSummaries, outcomeSummaries] = await Promise.all([
         CashActions.getAll(),
-        IncomeActions.getSummaryByCash(), // Usando el método optimizado con SUM/GROUP BY
-        OutcomeActions.getSummaryByCash(), // Usando el método optimizado con SUM/GROUP BY
+        IncomeActions.getSummaryByCash(filters), // Usando el método optimizado con SUM/GROUP BY
+        OutcomeActions.getSummaryByCash(filters), // Usando el método optimizado con SUM/GROUP BY
       ]);
 
       if (!cashes || cashes.length === 0) {

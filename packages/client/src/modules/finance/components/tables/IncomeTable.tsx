@@ -75,6 +75,7 @@ export default function IncomeTable({
     endDate: null as Dayjs | null,
     personDni: "",
     weekId: "all",
+    cashId: "all",
   };
 
   const [filters, setFilters] = useState(initialFilters);
@@ -106,6 +107,17 @@ export default function IncomeTable({
     });
     // Retornamos array ordenado por ID de semana
     return Array.from(weeksMap.values()).sort((a, b) => b.id - a.id);
+  }, [incomes]);
+
+  const availableCashes = useMemo(() => {
+    const cashesMap = new Map();
+    incomes.forEach((income) => {
+      // Intentamos obtener de la relación Cash o usamos el ID
+      const id = income.cash_id;
+      const name = income.Cash?.name || `Caja ${id}`;
+      cashesMap.set(id, { id, name });
+    });
+    return Array.from(cashesMap.values());
   }, [incomes]);
 
   // --- 1. Filtrado ---
@@ -148,6 +160,14 @@ export default function IncomeTable({
       if (filters.weekId !== "all" && income.week_id !== Number(filters.weekId))
         return false;
 
+      // 7. Filtro por Caja
+      if (
+        filters.cashId !== "all" &&
+        income.cash_id !== Number(filters.cashId)
+      ) {
+        return false;
+      }
+
       return true;
     });
   }, [incomes, filters]);
@@ -157,6 +177,8 @@ export default function IncomeTable({
     // Función helper para obtener el valor primitivo a comparar
     const getValue = (item: Income, column: OrderBy) => {
       switch (column) {
+        case "cash_id":
+          return item.Cash?.name || "";
         case "weekString":
           return item.Week ? new Date(item.Week.week_start).getTime() : 0;
         case "personDni":
@@ -248,11 +270,20 @@ export default function IncomeTable({
 
   const exportToCSV = () => {
     // 1. Definimos las cabeceras
-    const headers = ["ID", "Semana", "Fecha", "Monto", "Fuente", "NIF Persona"];
+    const headers = [
+      "ID",
+      "Caja",
+      "Semana",
+      "Fecha",
+      "Monto",
+      "Fuente",
+      "NIF Persona",
+    ];
 
     // 2. Mapeamos los datos ORDENADOS Y FILTRADOS (lo que el usuario ve)
     const rows = sortedIncomes.map((income) => [
       income.id,
+      income.Cash?.name || "-",
       income.Week ? `S${income.Week.id}` : "-",
       new Date(income.date).toLocaleDateString(),
       income.amount,
@@ -392,7 +423,7 @@ export default function IncomeTable({
               : "Mostrar Filtros Avanzados"}
           </Button>
 
-          {/* Búsqueda Global Rápida (Mantenemos la existente pero ligada a filters.global) */}
+          {/* Búsqueda Global Rápida */}
           <TextField
             placeholder="Búsqueda rápida (ID, NIF...)"
             variant="outlined"
@@ -435,6 +466,33 @@ export default function IncomeTable({
                     {INCOME_SOURCES.map((s) => (
                       <MenuItem key={s} value={s}>
                         {s}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Filtro Caja */}
+              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Caja</InputLabel>
+                  <Select
+                    value={filters.cashId}
+                    label="Caja"
+                    onChange={(e) => {
+                      setFilters((prev) => ({
+                        ...prev,
+                        cashId: e.target.value,
+                      }));
+                      setPage(0);
+                    }}
+                  >
+                    <MenuItem value="all">
+                      <em>Todas las cajas</em>
+                    </MenuItem>
+                    {availableCashes.map((c) => (
+                      <MenuItem key={c.id} value={c.id}>
+                        📦 {c.name}
                       </MenuItem>
                     ))}
                   </Select>
@@ -565,6 +623,7 @@ export default function IncomeTable({
             <TableRow>
               {/* Cabeceras Ordenables */}
               <SortableHeader id="id" label="ID" />
+              <SortableHeader id="cash_id" label="Caja" />
               <SortableHeader id="weekString" label="Semana" />
               <SortableHeader id="date" label="Fecha" />
               <SortableHeader id="amount" label="Monto" align="right" />
@@ -591,6 +650,17 @@ export default function IncomeTable({
                   }}
                 >
                   <TableCell>{row.id}</TableCell>
+                  <TableCell>
+                    <Tooltip title={`ID de Caja: ${row.cash_id}`}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {row.Cash?.name || `Caja ${row.cash_id}`}
+                        </Typography>
+                      </Box>
+                    </Tooltip>
+                  </TableCell>
                   <TableCell>
                     {row.Week
                       ? `S${row.Week.id} (${formatDate(row.Week.week_start)} - ${formatDate(row.Week.week_end)})`

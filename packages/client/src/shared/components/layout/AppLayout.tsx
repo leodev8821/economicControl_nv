@@ -10,6 +10,10 @@ import {
   CssBaseline,
   AppBar,
   Toolbar,
+  Tooltip,
+  tooltipClasses,
+  type TooltipProps,
+  styled,
   Typography,
   Drawer,
   Divider,
@@ -24,9 +28,8 @@ import {
   Euro,
   Home,
   Menu as MenuIcon,
-  FindInPage,
   PeopleAlt,
-  DateRange, // Para Semanas
+  //DateRange, // Para Semanas
   Handshake, // Para Consolidación
 } from "@mui/icons-material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -59,6 +62,23 @@ interface DashboardShellProps {
   userRole?: string;
   onLogout: () => void;
 }
+
+// Estilo personalizado para el Tooltip
+const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+    boxShadow: theme.shadows[1],
+    fontSize: 13,
+    fontWeight: 500,
+    padding: "8px 12px",
+    "& .MuiTooltip-arrow": {
+      color: theme.palette.primary.main,
+    },
+  },
+}));
 
 const DashboardShell: React.FC<DashboardShellProps> = ({
   children,
@@ -126,42 +146,60 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
       ? location.pathname.startsWith(item.segment)
       : false;
 
+    const showTooltip = collapsed && !isMobile;
+
     return (
       <ListItem
         key={item.title || index}
         disablePadding
-        sx={{ display: "block" }}
+        sx={{ display: "block", overflow: "hidden" }}
       >
-        <ListItemButton
-          selected={isSelected}
-          onClick={() => handleItemClick(item.segment, item.onClick)}
-          sx={{
-            minHeight: 48,
-            justifyContent: collapsed && !isMobile ? "center" : "initial",
-            px: 2.5,
-          }}
+        {/* Agregamos el Tooltip aquí */}
+        <StyledTooltip
+          title={showTooltip ? item.title : ""}
+          placement="right"
+          arrow
+          disableHoverListener={!showTooltip}
         >
-          <ListItemIcon
+          <ListItemButton
+            selected={isSelected}
+            onClick={() => handleItemClick(item.segment, item.onClick)}
             sx={{
-              minWidth: 0,
-              mr: collapsed && !isMobile ? 0 : 2,
-              justifyContent: "center",
-              color: isSelected ? "primary.main" : "inherit",
+              minHeight: 48,
+              justifyContent: collapsed && !isMobile ? "center" : "initial",
+              px: 2.5,
+              transition: theme.transitions.create("padding", {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.shorter,
+              }),
             }}
           >
-            {item.icon}
-          </ListItemIcon>
-          <ListItemText
-            primary={item.title}
-            sx={{ opacity: collapsed && !isMobile ? 0 : 1 }}
-            slotProps={{
-              primary: {
-                fontSize: "0.9rem",
-                fontWeight: isSelected ? 600 : 400,
-              },
-            }}
-          />
-        </ListItemButton>
+            <ListItemIcon
+              sx={{
+                minWidth: 0,
+                mr: collapsed && !isMobile ? 0 : 2,
+                justifyContent: "center",
+                color: isSelected ? "primary.main" : "inherit",
+              }}
+            >
+              {item.icon}
+            </ListItemIcon>
+
+            {/* Ocultamos físicamente el texto cuando está colapsado */}
+            {(!collapsed || isMobile) && (
+              <ListItemText
+                primary={item.title}
+                slotProps={{
+                  primary: {
+                    fontSize: "0.9rem",
+                    fontWeight: isSelected ? 600 : 400,
+                    noWrap: true,
+                  },
+                }}
+              />
+            )}
+          </ListItemButton>
+        </StyledTooltip>
       </ListItem>
     );
   };
@@ -216,6 +254,7 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
         sx={{
           width: collapsed ? drawerWidthClose : drawerWidthOpen,
           flexShrink: 0,
+          whiteSpace: "nowrap",
           "& .MuiDrawer-paper": {
             width: collapsed ? drawerWidthClose : drawerWidthOpen,
             boxSizing: "border-box",
@@ -306,12 +345,7 @@ const AppLayout: React.FC = () => {
         },
         { title: "Ingresos", segment: "/finance/incomes", icon: <Euro /> },
         { title: "Egresos", segment: "/finance/outcomes", icon: <Payments /> },
-        {
-          title: "Arqueo",
-          segment: "/finance/cash-denominations",
-          icon: <FindInPage />,
-        },
-        { title: "Semanas", segment: "/finance/weeks", icon: <DateRange /> },
+        /*{ title: "Semanas", segment: "/finance/weeks", icon: <DateRange /> },*/
         { kind: "divider" },
         { kind: "header", title: "Gestión" },
         { title: "Personas", segment: "/finance/persons", icon: <People /> },

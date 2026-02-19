@@ -8,9 +8,9 @@ export {
 } from "@economic-control/shared";
 
 export interface Outcome extends OutcomeCreationRequest {
-  id: number; // Agregamos el ID que viene de la BD
-  Cash: Cash; // Relación anidada (ORM)
-  Week: Week; // Relación anidada (ORM)
+  id: number;
+  Cash: Cash;
+  Week: Week;
 }
 
 export type OutcomeAttributes = Outcome;

@@ -74,6 +74,7 @@ export default function OutcomeTable({
     startDate: null as Dayjs | null,
     endDate: null as Dayjs | null,
     weekId: "all",
+    cashId: "all",
   };
 
   const [filters, setFilters] = useState(initialFilters);
@@ -105,6 +106,17 @@ export default function OutcomeTable({
       }
     });
     return Array.from(weeksMap.values()).sort((a, b) => b.id - a.id);
+  }, [outcomes]);
+
+  const availableCashes = useMemo(() => {
+    const cashesMap = new Map();
+    outcomes.forEach((outcome) => {
+      // Intentamos obtener de la relación Cash o usamos el ID
+      const id = outcome.cash_id;
+      const name = outcome.Cash?.name || `Caja ${id}`;
+      cashesMap.set(id, { id, name });
+    });
+    return Array.from(cashesMap.values());
   }, [outcomes]);
 
   // --- 3. Filtrado ---
@@ -147,6 +159,14 @@ export default function OutcomeTable({
       )
         return false;
 
+      // F. Filtro por Caja
+      if (
+        filters.cashId !== "all" &&
+        outcome.cash_id !== Number(filters.cashId)
+      ) {
+        return false;
+      }
+
       return true;
     });
   }, [outcomes, filters]);
@@ -155,6 +175,8 @@ export default function OutcomeTable({
   const sortedOutcomes = useMemo(() => {
     const getValue = (item: Outcome, column: OrderBy) => {
       switch (column) {
+        case "cash_id":
+          return item.Cash?.name || "";
         case "weekString":
           return item.Week ? new Date(item.Week.week_start).getTime() : 0;
         case "cashName":
@@ -247,6 +269,7 @@ export default function OutcomeTable({
   const exportToCSV = () => {
     const headers = [
       "ID",
+      "Caja",
       "Semana",
       "Fecha",
       "Monto",
@@ -256,6 +279,7 @@ export default function OutcomeTable({
 
     const rows = sortedOutcomes.map((outcome) => [
       outcome.id,
+      outcome.Cash?.name || "-",
       outcome.Week ? `S${outcome.Week.id}` : "-",
       new Date(outcome.date).toLocaleDateString(),
       outcome.amount,
@@ -440,6 +464,33 @@ export default function OutcomeTable({
                 </FormControl>
               </Grid>
 
+              {/* Filtro Caja */}
+              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Caja</InputLabel>
+                  <Select
+                    value={filters.cashId}
+                    label="Caja"
+                    onChange={(e) => {
+                      setFilters((prev) => ({
+                        ...prev,
+                        cashId: e.target.value,
+                      }));
+                      setPage(0);
+                    }}
+                  >
+                    <MenuItem value="all">
+                      <em>Todas las cajas</em>
+                    </MenuItem>
+                    {availableCashes.map((c) => (
+                      <MenuItem key={c.id} value={c.id}>
+                        📦 {c.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
               {/* Filtro Semana */}
               <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
@@ -537,6 +588,7 @@ export default function OutcomeTable({
           <TableHead sx={{ bgcolor: "info.main" }}>
             <TableRow>
               <SortableHeader id="id" label="ID" />
+              <SortableHeader id="cash_id" label="Caja" />
               <SortableHeader id="weekString" label="Semana" />
               <SortableHeader id="date" label="Fecha" />
               <SortableHeader id="amount" label="Monto" align="right" />
@@ -562,6 +614,17 @@ export default function OutcomeTable({
                   }}
                 >
                   <TableCell>{row.id}</TableCell>
+                  <TableCell>
+                    <Tooltip title={`ID de Caja: ${row.cash_id}`}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {row.Cash?.name || `Caja ${row.cash_id}`}
+                        </Typography>
+                      </Box>
+                    </Tooltip>
+                  </TableCell>
                   <TableCell>
                     {row.Week
                       ? `S${row.Week.id} (${formatDate(row.Week.week_start)} - ${formatDate(row.Week.week_end)})`
