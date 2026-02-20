@@ -299,8 +299,16 @@ export default function BulkOutcomeForm({
 
             <Button
               type="submit"
-              variant="contained"
+              variant="outlined"
               size="large"
+              sx={{
+                bgcolor: "success.main",
+                color: "success.contrastText",
+                ":hover": {
+                  bgcolor: "success.light",
+                  color: "success.contrastText",
+                },
+              }}
               disabled={isLoading || !globalWeekId}
               fullWidth={isMobile}
             >

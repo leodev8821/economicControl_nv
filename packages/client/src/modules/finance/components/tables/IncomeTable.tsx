@@ -53,7 +53,12 @@ interface IncomeTableProps {
 
 // Tipos para la ordenación
 type Order = "asc" | "desc";
-type OrderBy = keyof Income | "weekString" | "personDni";
+type OrderBy =
+  | keyof Income
+  | "weekString"
+  | "personDni"
+  | "personName"
+  | "personLastName";
 
 export default function IncomeTable({
   incomes,
@@ -73,6 +78,8 @@ export default function IncomeTable({
     maxAmount: "",
     startDate: null as Dayjs | null,
     endDate: null as Dayjs | null,
+    personName: "",
+    personLastName: "",
     personDni: "",
     weekId: "all",
     cashId: "all",
@@ -156,6 +163,18 @@ export default function IncomeTable({
       if (filters.personDni && income.Person?.dni !== filters.personDni)
         return false;
 
+      if (
+        filters.personName &&
+        income.Person?.first_name !== filters.personName
+      )
+        return false;
+
+      if (
+        filters.personLastName &&
+        income.Person?.last_name !== filters.personLastName
+      )
+        return false;
+
       // 6. Filtro por Semana
       if (filters.weekId !== "all" && income.week_id !== Number(filters.weekId))
         return false;
@@ -183,6 +202,10 @@ export default function IncomeTable({
           return item.Week ? new Date(item.Week.week_start).getTime() : 0;
         case "personDni":
           return item.Person?.dni || "";
+        case "personName":
+          return item.Person?.first_name || "";
+        case "personLastName":
+          return item.Person?.last_name || "";
         case "date":
           return new Date(item.date).getTime();
         default:
@@ -277,7 +300,9 @@ export default function IncomeTable({
       "Fecha",
       "Monto",
       "Fuente",
-      "NIF Persona",
+      "Nombre",
+      "Apellido",
+      "NIF",
     ];
 
     // 2. Mapeamos los datos ORDENADOS Y FILTRADOS (lo que el usuario ve)
@@ -288,6 +313,8 @@ export default function IncomeTable({
       new Date(income.date).toLocaleDateString(),
       income.amount,
       income.source || "",
+      income.Person?.first_name || "",
+      income.Person?.last_name || "",
       income.Person?.dni || "",
     ]);
 
@@ -584,6 +611,30 @@ export default function IncomeTable({
                 />
               </Grid>
 
+              <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
+                <TextField
+                  label="Nombre"
+                  size="small"
+                  fullWidth
+                  value={filters.personName}
+                  onChange={(e) =>
+                    setFilters({ ...filters, personName: e.target.value })
+                  }
+                />
+              </Grid>
+
+              <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
+                <TextField
+                  label="Apellido"
+                  size="small"
+                  fullWidth
+                  value={filters.personLastName}
+                  onChange={(e) =>
+                    setFilters({ ...filters, personLastName: e.target.value })
+                  }
+                />
+              </Grid>
+
               {/* Filtro: Semana */}
               <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
                 <TextField
@@ -628,7 +679,9 @@ export default function IncomeTable({
               <SortableHeader id="date" label="Fecha" />
               <SortableHeader id="amount" label="Monto" align="right" />
               <SortableHeader id="source" label="Fuente" />
-              <SortableHeader id="personDni" label="NIF Persona" />
+              <SortableHeader id="personName" label="Nombre" />
+              <SortableHeader id="personLastName" label="Apellido" />
+              <SortableHeader id="personDni" label="NIF" />
 
               {/* Columna de Acciones (No ordenable) */}
               <TableCell sx={{ fontWeight: "bold" }} align="center">
@@ -674,6 +727,8 @@ export default function IncomeTable({
                     {row.amount.toFixed(2)} €
                   </TableCell>
                   <TableCell>{row.source || "-"}</TableCell>
+                  <TableCell>{row.Person?.first_name || "-"}</TableCell>
+                  <TableCell>{row.Person?.last_name || "-"}</TableCell>
                   <TableCell>{row.Person?.dni || "-"}</TableCell>
                   <TableCell align="center">
                     <Tooltip title="Editar">

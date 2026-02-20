@@ -158,6 +158,12 @@ export class IncomeActions {
         attributes: ["id", "week_start", "week_end"],
         required: true,
       },
+      {
+        model: PersonModel,
+        as: "Person",
+        attributes: ["id", "dni", "first_name", "last_name"],
+        required: false,
+      },
     ];
   }
 

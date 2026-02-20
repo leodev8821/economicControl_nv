@@ -305,8 +305,16 @@ export default function BulkIncomeForm({
 
             <Button
               type="submit"
-              variant="contained"
+              variant="outlined"
               size="large"
+              sx={{
+                bgcolor: "success.main",
+                color: "success.contrastText",
+                ":hover": {
+                  bgcolor: "success.light",
+                  color: "success.contrastText",
+                },
+              }}
               disabled={isLoading || !globalWeekId}
               fullWidth={isMobile}
             >
