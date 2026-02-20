@@ -18,7 +18,12 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { Delete, AddCircleOutline } from "@mui/icons-material";
+import {
+  Visibility,
+  VisibilityOff,
+  Delete,
+  AddCircleOutline,
+} from "@mui/icons-material";
 import { AxiosError } from "axios";
 
 /** Schemas de validación */
@@ -248,6 +253,21 @@ export default function UserForm({
       formData.append("role_name", initialValues.role_name);
     }
 
+    // Validar contraseñas (solo si se está creando o si se escribió password en update)
+    const password = formData.get("password") as string;
+
+    if (password && password !== confirmPassword) {
+      setPasswordMismatch(true);
+      setFeedback({
+        open: true,
+        message: "Las contraseñas no coinciden",
+        severity: "error",
+      });
+      return;
+    }
+
+    setPasswordMismatch(false);
+
     const submission = parseWithZod(formData, { schema });
 
     if (submission.status !== "success") return;
@@ -311,6 +331,20 @@ export default function UserForm({
     }
   };
   const isAppLocked = !currentUserLevel && assignableApplications.length === 1;
+
+  // Mostrar / ocultar contraseña
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+
+  // Confirmación password
+  const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [passwordMismatch, setPasswordMismatch] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!confirmPassword) return;
+    const currentPassword = (form.value as any)?.password || "";
+    setPasswordMismatch(confirmPassword !== currentPassword);
+  }, [confirmPassword, (form.value as any)?.password]);
 
   return (
     <form
@@ -481,15 +515,61 @@ export default function UserForm({
             <InputLabel htmlFor={fields.password.id}>
               Contraseña {isUpdateMode ? "(Opcional)" : "*"}
             </InputLabel>
+
             <OutlinedInput
-              {...getInputProps(fields.password, { type: "password" })}
+              {...getInputProps(fields.password, {
+                type: showPassword ? "text" : "password",
+              })}
               label={`Contraseña ${isUpdateMode ? "(Opcional)" : "*"}`}
               disabled={isLoading}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
             />
+
             <FormHelperText>
               {fields.password.errors ||
                 (isUpdateMode && "Dejar en blanco para no cambiar")}
             </FormHelperText>
+          </FormControl>
+        </Grid>
+
+        {/* Confirm Password */}
+        <Grid size={{ xs: 12 }}>
+          <FormControl fullWidth error={passwordMismatch}>
+            <InputLabel>Confirmar contraseña</InputLabel>
+
+            <OutlinedInput
+              type={showConfirmPassword ? "text" : "password"}
+              label="Confirmar contraseña"
+              value={confirmPassword}
+              disabled={isLoading}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                setPasswordMismatch(false);
+              }}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    edge="end"
+                  >
+                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+            />
+
+            {passwordMismatch && (
+              <FormHelperText>Las contraseñas no coinciden</FormHelperText>
+            )}
           </FormControl>
         </Grid>
 
