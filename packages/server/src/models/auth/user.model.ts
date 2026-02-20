@@ -3,6 +3,7 @@ import {
   Model as SequelizeModel,
   type Optional,
   Op,
+  Transaction,
 } from "sequelize";
 import bcrypt from "bcryptjs";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
@@ -333,19 +334,54 @@ export class UserActions {
    * Actualiza un usuario existente en la base de datos.
    * @param id ID de la usuario a actualizar.
    * @param data datos a actualizar.
-   * @returns promise con un booleano que indica si la actualización fue exitosa.
+   * @param transaction Transacción de Sequelize.
+   * @returns promise con el objeto UserAttributes actualizado o null si no se encuentra ningun usuario.
    */
   public static async update(
     id: number,
     data: Partial<UserCreationAttributes>,
+    transaction?: Transaction,
   ): Promise<UserAttributes | null> {
     const [count] = await UserModel.update(data, {
       where: { id },
       individualHooks: true,
+      transaction,
     });
+
     if (!count) return null;
 
-    const updated = await UserModel.findByPk(id);
+    const updated = await UserModel.findByPk(id, { transaction });
+
     return updated ? updated.get({ plain: true }) : null;
+  }
+
+  /**
+   * Reemplaza todos los permisos de un usuario.
+   * @param userId ID del usuario.
+   * @param permissions Array de permisos.
+   * @param transaction Transacción de Sequelize.
+   */
+  public static async replaceUserPermissions(
+    userId: number,
+    permissions: any[],
+    transaction?: any,
+  ) {
+    // borrar permisos actuales
+    await UserPermissionModel.destroy({
+      where: { user_id: userId },
+      transaction,
+    });
+
+    if (!permissions.length) return;
+
+    // crear nuevos
+    await UserPermissionModel.bulkCreate(
+      permissions.map((p) => ({
+        user_id: userId,
+        application_id: p.application_id,
+        role_id: p.role_id,
+      })),
+      { transaction },
+    );
   }
 }

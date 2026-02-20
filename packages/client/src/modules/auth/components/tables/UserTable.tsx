@@ -420,7 +420,7 @@ export default function UserTable({
                                   title={
                                     isAll
                                       ? "Acceso Global"
-                                      : `Administrador de ${APP_LABELS[appId] || "Aplicación"}`
+                                      : `${user.role_name} de ${APP_LABELS[appId] || "Aplicación"}`
                                   }
                                 >
                                   <Chip

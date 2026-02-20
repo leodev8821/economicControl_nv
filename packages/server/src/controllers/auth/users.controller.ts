@@ -16,6 +16,7 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { UniqueConstraintError } from "sequelize";
 import { APP_IDS } from "../../shared/app.constants.js";
+import { withTransaction } from "../../utils/withTransaction.js";
 
 // Tipos auxiliares
 export type LoginResult = { token: string; message: string };
@@ -212,7 +213,6 @@ export const usersController = {
         });
       }
 
-      // evitar cambiar tu propio rol (recomendado)
       if (userId === currentUserId && req.body.role_name) {
         return res.status(403).json({
           ok: false,
@@ -220,7 +220,7 @@ export const usersController = {
         });
       }
 
-      // ✅ VALIDACIÓN CON ZOD
+      // VALIDACIÓN ZOD
       const parsed = UserUpdateSchema.safeParse(req.body);
 
       if (!parsed.success) {
@@ -231,17 +231,16 @@ export const usersController = {
         });
       }
 
-      const updateData = parsed.data;
+      const { permissions, ...updateData } = parsed.data;
 
-      // evitar update vacío
-      if (Object.keys(updateData).length === 0) {
+      if (Object.keys(updateData).length === 0 && !permissions) {
         return res.status(400).json({
           ok: false,
           message: "No se proporcionaron datos para actualizar",
         });
       }
 
-      // validar username duplicado
+      // username duplicado
       if (updateData.username) {
         const existingUser = await UserActions.getOne({
           username: updateData.username,
@@ -255,10 +254,10 @@ export const usersController = {
         }
       }
 
-      // --- RESTRICCIÓN DE SEGURIDAD PARA VISIBILIDAD ---
+      // seguridad visibilidad
       if (updateData.is_visible !== undefined) {
         const requester = (req as any).user;
-        // Verificamos si es SuperUser o si tiene la App ID 1 (Global)
+
         const isGlobalMaster =
           requester?.role_name === ROLE_TYPES.SUPER_USER ||
           requester?.permissions?.some(
@@ -273,11 +272,7 @@ export const usersController = {
         }
       }
 
-      const updatedUser = await UserActions.update(
-        userId,
-        updateData as Partial<UserCreationAttributes>,
-      );
-
+      // seguridad rol superuser
       if (
         updateData.role_name === ROLE_TYPES.SUPER_USER &&
         req.userRole !== ROLE_TYPES.SUPER_USER
@@ -288,18 +283,41 @@ export const usersController = {
         });
       }
 
-      if (!updatedUser) {
+      // actualizar usuario base
+      const result = await withTransaction(async (transaction) => {
+        const updated = await UserActions.update(
+          userId,
+          updateData as Partial<UserCreationAttributes>,
+          transaction,
+        );
+
+        if (!updated) {
+          throw new Error("USER_NOT_FOUND");
+        }
+
+        // ACTUALIZAR PERMISOS SI VIENEN
+        if (permissions) {
+          await UserActions.replaceUserPermissions(
+            userId,
+            permissions,
+            transaction,
+          );
+        }
+
+        return updated;
+      });
+
+      return res.json({
+        ok: true,
+        data: result,
+      });
+    } catch (error: any) {
+      if (error.message === "USER_NOT_FOUND") {
         return res.status(404).json({
           ok: false,
           message: "Usuario no encontrado",
         });
       }
-
-      return res.json({
-        ok: true,
-        data: updatedUser,
-      });
-    } catch (error) {
       return ControllerErrorHandler(res, error, "Error al actualizar usuario");
     }
   },
