@@ -3,7 +3,8 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".tsbuildinfo"],
+      //"outputs": ["dist/**", ".tsbuildinfo"],
+      "outputs": ["dist/**"],
       "env": [
         "SERVER_HOST",
         "SERVER_PORT",
