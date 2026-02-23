@@ -482,7 +482,6 @@ export default function MemberTable({
         <Table sx={{ minWidth: 650 }} aria-label="member table">
           <TableHead sx={{ bgcolor: "primary.main" }}>
             <TableRow>
-              <SortableHeader id="id" label="ID" />
               <SortableHeader id="first_name" label="Nombre" />
               <SortableHeader id="last_name" label="Apellido" />
               <SortableHeader id="phone" label="Teléfono" />
@@ -512,16 +511,21 @@ export default function MemberTable({
                     transition: "background-color 0.2s ease",
                   }}
                 >
-                  <TableCell>{row.id}</TableCell>
                   <TableCell>{row.first_name || "-"}</TableCell>
                   <TableCell>{row.last_name || "-"}</TableCell>
                   <TableCell>{row.phone ? `+34 ${row.phone}` : "-"}</TableCell>
                   <TableCell>{row.gender || "-"}</TableCell>
-                  <TableCell>{row.birth_date || "-"}</TableCell>
+                  <TableCell>
+                    {dayjs(row.birth_date).isValid()
+                      ? dayjs(row.birth_date).format("DD-MM-YYYY")
+                      : "-"}
+                  </TableCell>
+
                   <TableCell sx={{ fontWeight: "bold" }}>
                     {calculateAge(row.birth_date) ?? "-"}
                   </TableCell>
                   <TableCell>{row.status || "-"}</TableCell>
+
                   <TableCell align="center">
                     <Tooltip title="Editar">
                       <IconButton

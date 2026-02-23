@@ -18,16 +18,16 @@ export type GenderType = (typeof GENDER)[number];
 // 2. DEFINICIÓN BASE (Campos comunes y limpieza de datos)
 // ----------------------------------------------------------------------
 const BaseMemberSchema = z.object({
-  id: z.number().int().positive().optional(),
-  first_name: z.string().min(1, "El nombre es obligatorio").max(50),
-  last_name: z.string().min(1, "El apellido es obligatorio").max(50),
-  phone: z.string().min(1, "El teléfono es obligatorio").max(15),
+  id: z.coerce.number().int().positive().optional(),
+  first_name: z.string({ message: "El nombre es obligatorio" }).min(1).max(50),
+  last_name: z.string({ message: "El apellido es obligatorio" }).min(1).max(50),
+  phone: z.string({ message: "El teléfono es obligatorio" }).min(1).max(15),
   gender: z.enum(GENDER, {
-    message: "El género no es válido",
+    message: "El género es obligatorio",
   }),
   birth_date: z
-    .string()
-    .min(1, "La fecha de nacimiento es obligatoria")
+    .string({ message: "La fecha de nacimiento es obligatoria" })
+    .min(1)
     .max(10),
   status: z.enum(STATUS, {
     message: "El estado civil no es válido",

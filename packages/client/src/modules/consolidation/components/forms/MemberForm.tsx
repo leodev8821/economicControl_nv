@@ -13,7 +13,6 @@ import {
   TextField,
   Box,
   Divider,
-  InputAdornment,
   useMediaQuery,
   useTheme,
   Fade,
@@ -89,8 +88,8 @@ export default function MemberForm({
           last_name: "",
           phone: "",
           gender: "",
-          birth_date: dayjs().format("DD-MM-YYYY"),
-          status: "Soltero/a",
+          birth_date: "",
+          status: "",
         },
       ],
     },
@@ -121,11 +120,9 @@ export default function MemberForm({
           birth_date:
             nestedFields.birth_date.value ??
             nestedFields.birth_date.initialValue ??
-            dayjs().format("DD-MM-YYYY"),
+            "",
           status:
-            nestedFields.status.value ??
-            nestedFields.status.initialValue ??
-            "Soltero/a",
+            nestedFields.status.value ?? nestedFields.status.initialValue ?? "",
         };
       }),
     };
@@ -145,8 +142,8 @@ export default function MemberForm({
           last_name: "",
           phone: "",
           gender: "",
-          birth_date: dayjs().format("DD-MM-YYYY"),
-          status: "Soltero/a",
+          birth_date: "",
+          status: "",
         },
       ],
     });
@@ -199,7 +196,7 @@ export default function MemberForm({
           {memberList.map((member, index) => (
             <Fade in={true} key={member.key} timeout={400}>
               <Box>
-                <IncomeRow
+                <MemberRow
                   field={member}
                   removeProps={{
                     onClick: () =>
@@ -231,8 +228,8 @@ export default function MemberForm({
                     last_name: "",
                     phone: "",
                     gender: "",
-                    birth_date: dayjs().format("DD-MM-YYYY"),
-                    status: "Soltero/a",
+                    birth_date: "",
+                    status: "",
                   },
                 })
               }
@@ -290,7 +287,7 @@ export default function MemberForm({
   );
 }
 
-function IncomeRow({
+function MemberRow({
   field,
   removeProps,
   isDisableDelete,
@@ -303,7 +300,7 @@ function IncomeRow({
     React.useState<Dayjs | null>(
       rowFields.birth_date.initialValue
         ? dayjs(rowFields.birth_date.initialValue)
-        : dayjs(),
+        : null,
     );
 
   React.useEffect(() => {
@@ -368,19 +365,12 @@ function IncomeRow({
           <TextField
             key={rowFields.phone.key}
             label="Teléfono"
-            type="number"
+            type="string"
             name={rowFields.phone.name}
             defaultValue={rowFields.phone.initialValue}
             fullWidth
             size="small"
             disabled={isLoading}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">+34</InputAdornment>
-                ),
-              },
-            }}
             error={!!rowFields.phone.errors}
             helperText={rowFields.phone.errors?.join(", ")}
           />
@@ -393,7 +383,7 @@ function IncomeRow({
               key={rowFields.gender.key}
               label="Género"
               name={rowFields.gender.name}
-              defaultValue={rowFields.gender.initialValue ?? "Masculino"}
+              defaultValue={rowFields.gender.initialValue ?? ""}
               disabled={isLoading}
             >
               {SharedMemberSchemas.GENDER.map((s) => (
@@ -402,6 +392,11 @@ function IncomeRow({
                 </MenuItem>
               ))}
             </Select>
+            {rowFields.gender.errors && (
+              <Typography variant="caption" color="error" sx={{ ml: 1.5 }}>
+                {rowFields.gender.errors.join(", ")}
+              </Typography>
+            )}
           </FormControl>
         </Grid>
 
@@ -412,6 +407,7 @@ function IncomeRow({
             value={selectedBirthDate}
             onChange={(val) => setSelectedBirthDate(val)}
             disabled={isLoading}
+            format="DD-MM-YYYY"
             slotProps={{
               textField: {
                 fullWidth: true,
@@ -426,7 +422,7 @@ function IncomeRow({
             name={rowFields.birth_date.name}
             value={
               selectedBirthDate?.isValid()
-                ? selectedBirthDate.format("DD-MM-YYYY")
+                ? selectedBirthDate.format("YYYY-MM-DD")
                 : ""
             }
           />
@@ -448,6 +444,11 @@ function IncomeRow({
                 </MenuItem>
               ))}
             </Select>
+            {rowFields.status.errors && (
+              <Typography variant="caption" color="error" sx={{ ml: 1.5 }}>
+                {rowFields.status.errors.join(", ")}
+              </Typography>
+            )}
           </FormControl>
         </Grid>
 
