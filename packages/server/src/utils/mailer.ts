@@ -1,10 +1,5 @@
 import nodemailer from "nodemailer";
 
-console.log("Configuración de Mail:", {
-  user: process.env.EMAIL_USER,
-  pass: process.env.EMAIL_PASS ? "****" : "VACÍO",
-});
-
 // Configuramos el "transporte" (el servidor que envía el correo)
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",

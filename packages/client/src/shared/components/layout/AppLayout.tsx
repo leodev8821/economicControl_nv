@@ -26,6 +26,7 @@ import {
   AccountBalance,
   Payments,
   Euro,
+  HowToReg,
   Home,
   Menu as MenuIcon,
   PeopleAlt,
@@ -361,6 +362,11 @@ const AppLayout: React.FC = () => {
           title: "Consolidación",
           segment: "/consolidation",
           icon: <Handshake />,
+        },
+        {
+          title: "Miembros",
+          segment: "/consolidation/members",
+          icon: <HowToReg />,
         },
       );
     }

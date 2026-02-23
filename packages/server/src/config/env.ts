@@ -1,22 +1,18 @@
 import { envSchema } from "@economic-control/shared";
 import z from "zod";
-import path from "node:path";
 
-if (process.env.NODE_ENV !== "production") {
-  console.log("🔍 Cargando variables de entorno...");
-  //import("dotenv").then((dotenv) => dotenv.config());
-  // 1. Importamos dinámicamente (Node no buscará el módulo en Producción)
+// Si usas Turbo en desarrollo, las variables ya estarán en process.env
+// Solo mantenemos la carga manual si quieres ejecutar el script de forma aislada
+/* if (process.env.NODE_ENV !== "production" && !process.env.SERVER_PORT) {
   const dotenv = await import("dotenv");
-
-  // 2. Configuramos (esperando a que termine antes de seguir)
-  dotenv.config({ path: path.resolve(process.cwd(), ".env") });
-}
+  dotenv.config(); // Buscará el .env más cercano (si existe)
+} */
 
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  console.error("❌ Variables de entorno inválidas");
-  console.error(z.treeifyError(parsed.error));
+  console.error("❌ Error de validación en variables de entorno:");
+  console.error(JSON.stringify(z.treeifyError(parsed.error), null, 2));
   process.exit(1);
 }
 

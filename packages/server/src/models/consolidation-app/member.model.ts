@@ -2,13 +2,13 @@ import { DataTypes, Model as SequelizeModel, type Optional } from "sequelize";
 
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
 
-import { STATUS, type StatusType } from "@economic-control/shared";
+import { GENDER, STATUS, type StatusType } from "@economic-control/shared";
 
 const connection = getSequelizeConfig();
 
 /** Tipos del modelo */
 
-export interface MemberRegisterAttributes {
+export interface MemberAttributes {
   id: number;
   first_name: string;
   last_name: string;
@@ -19,7 +19,7 @@ export interface MemberRegisterAttributes {
   is_visible: boolean;
 }
 
-export type MemberRegisterSearchData = {
+export type MemberSearchData = {
   id?: number;
   first_name?: string;
   last_name?: string;
@@ -32,18 +32,15 @@ export type MemberRegisterSearchData = {
 
 /** Campos opcionales al crear (id autoincremental, is_visible tiene un valor por defecto) */
 
-export interface MemberRegisterCreationAttributes extends Optional<
-  MemberRegisterAttributes,
+export interface MemberCreationAttributes extends Optional<
+  MemberAttributes,
   "id" | "is_visible"
 > {}
 
 /** Clase tipada de Sequelize */
-export class MemberRegisterModel
-  extends SequelizeModel<
-    MemberRegisterAttributes,
-    MemberRegisterCreationAttributes
-  >
-  implements MemberRegisterAttributes
+export class MemberModel
+  extends SequelizeModel<MemberAttributes, MemberCreationAttributes>
+  implements MemberAttributes
 {
   declare id: number;
   declare first_name: string;
@@ -57,7 +54,7 @@ export class MemberRegisterModel
 
 /** Inicialización del modelo */
 
-MemberRegisterModel.init(
+MemberModel.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -82,17 +79,17 @@ MemberRegisterModel.init(
     },
 
     gender: {
-      type: DataTypes.STRING(1),
-      allowNull: false,
-    },
-
-    birth_date: {
-      type: DataTypes.DATE,
+      type: DataTypes.ENUM(...GENDER),
       allowNull: false,
     },
 
     status: {
       type: DataTypes.ENUM(...STATUS),
+      allowNull: false,
+    },
+
+    birth_date: {
+      type: DataTypes.DATE,
       allowNull: false,
     },
 
@@ -116,14 +113,14 @@ MemberRegisterModel.init(
   },
 );
 
-export class MemberRegisterActions {
+export class MemberActions {
   /**
    * Obtiene todas las personas de la base de datos.
    * @returns promise con un array de objetos PersonAttributes.
    */
 
-  public static async getAll(): Promise<MemberRegisterAttributes[]> {
-    const persons = await MemberRegisterModel.findAll();
+  public static async getAll(): Promise<MemberAttributes[]> {
+    const persons = await MemberModel.findAll();
 
     return persons.map((person) => person.get({ plain: true }));
   }
@@ -135,9 +132,9 @@ export class MemberRegisterActions {
    */
 
   public static async getOne(
-    data: MemberRegisterSearchData,
-  ): Promise<MemberRegisterAttributes | null> {
-    const person = await MemberRegisterModel.scope("visible").findOne({
+    data: MemberSearchData,
+  ): Promise<MemberAttributes | null> {
+    const person = await MemberModel.scope("visible").findOne({
       where: data,
     });
 
@@ -151,14 +148,53 @@ export class MemberRegisterActions {
    */
 
   public static async create(
-    data: MemberRegisterCreationAttributes,
-  ): Promise<MemberRegisterAttributes> {
+    data: MemberCreationAttributes,
+  ): Promise<MemberAttributes> {
     return await connection.transaction(async (t) => {
-      const newPerson = await MemberRegisterModel.create(data, {
+      const newPerson = await MemberModel.create(data, {
         transaction: t,
       });
 
       return newPerson.get({ plain: true });
+    });
+  }
+
+  /**
+   * Crea múltiples miembros en una sola transacción.
+   * @param dataList Arreglo de datos de miembros a crear.
+   * @returns Promise con el array de miembros creados.
+   */
+  public static async createMultipleMembers(
+    dataList: MemberCreationAttributes[],
+  ): Promise<MemberAttributes[]> {
+    return await connection.transaction(async (t) => {
+      // Transformamos la data antes de insertar (ej. formatear la fecha)
+      const normalizedData = dataList.map((item) => {
+        // Convierte "DD-MM-YYYY" a "YYYY-MM-DD" para que SQL lo entienda sin problemas
+        let formattedDate = item.birth_date;
+        if (
+          typeof item.birth_date === "string" &&
+          item.birth_date.includes("-")
+        ) {
+          const parts = item.birth_date.split("-");
+          if (parts[0].length === 2) {
+            // Asume que si empieza por 2 dígitos es DD-MM-YYYY
+            formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+          }
+        }
+
+        return {
+          ...item,
+          birth_date: formattedDate,
+        };
+      });
+
+      const newMembers = await MemberModel.bulkCreate(normalizedData, {
+        transaction: t,
+        validate: true,
+      });
+
+      return newMembers.map((member) => member.get({ plain: true }));
     });
   }
 
@@ -169,7 +205,7 @@ export class MemberRegisterActions {
    */
 
   public static async delete(id: number): Promise<boolean> {
-    const [count] = await MemberRegisterModel.update(
+    const [count] = await MemberModel.update(
       { is_visible: false },
       { where: { id } },
     );
@@ -186,17 +222,17 @@ export class MemberRegisterActions {
 
   public static async update(
     id: number,
-    data: Partial<MemberRegisterCreationAttributes>,
-  ): Promise<MemberRegisterAttributes | null> {
+    data: Partial<MemberCreationAttributes>,
+  ): Promise<MemberAttributes | null> {
     return await connection.transaction(async (t) => {
-      const [count] = await MemberRegisterModel.update(data, {
+      const [count] = await MemberModel.update(data, {
         where: { id },
         transaction: t,
       });
 
       if (!count) return null;
 
-      const updatedPerson = await MemberRegisterModel.findByPk(id, {
+      const updatedPerson = await MemberModel.findByPk(id, {
         transaction: t,
       });
 

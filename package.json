@@ -5,16 +5,17 @@
   "description": "Configuration root package for Economic Control monorepo",
   "scripts": {
     "install:all": "pnpm install",
-    "db:setup": "turbo run db:setup --filter=@economic-control/server",
-    "initial": "pnpm install && turbo run build && pnpm db:setup && pnpm dev",
-    "dev": "turbo dev",
-    "build": "turbo build",
+    "db:setup": "dotenv -e .env -- turbo run db:setup --filter=@economic-control/server",
+    "initial": "pnpm install && dotenv -e .env -- turbo run build && pnpm db:setup",
+    "dev": "dotenv -e .env -- turbo dev",
+    "build": "dotenv -e .env -- turbo build",
     "clean": "turbo clean && rm -rf node_modules .turbo packages/**/node_modules",
     "lint": "turbo lint",
     "lint:fix": "turbo lint -- --fix"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
+    "dotenv-cli": "^11.0.0",
     "sequelize-cli": "^6.6.5",
     "turbo": "^2.8.10",
     "typescript": "^5.9.3"

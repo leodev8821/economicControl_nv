@@ -3,31 +3,31 @@ import { Request, Response } from "express";
 import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
 
 import {
-  MemberRegisterActions,
-  MemberRegisterAttributes,
-  MemberRegisterCreationAttributes,
-  MemberRegisterSearchData,
-} from "../../models/consolidation-app/member-register.model.js";
+  MemberActions,
+  MemberAttributes,
+  MemberCreationAttributes,
+  MemberSearchData,
+} from "../../models/consolidation-app/member.model.js";
 
 import {
-  MemberRegisterCreationSchema,
-  MemberRegisterUpdateSchema,
+  MemberCreationSchema,
+  BulkMemberSchema,
+  MemberUpdateSchema,
 } from "@economic-control/shared";
 
-export const memberRegisterController = {
+export const memberController = {
   // Obtiene todos los registros de personas
-  allMemberRegisters: async (_req: Request, res: Response) => {
+  allMembers: async (_req: Request, res: Response) => {
     try {
-      const memberRegisters: MemberRegisterAttributes[] =
-        await MemberRegisterActions.getAll();
+      const members: MemberAttributes[] = await MemberActions.getAll();
 
       return res.status(200).json({
         ok: true,
         message:
-          memberRegisters.length === 0
+          members.length === 0
             ? "No hay registros de personas registradas."
             : "Registros de personas obtenidos correctamente.",
-        data: memberRegisters,
+        data: members,
       });
     } catch (error) {
       return ControllerErrorHandler(
@@ -40,10 +40,10 @@ export const memberRegisterController = {
 
   // Obtiene un registro de persona por ID o nombre
 
-  oneMemberRegister: async (req: Request, res: Response) => {
+  oneMember: async (req: Request, res: Response) => {
     try {
       const { id, name } = req.params;
-      const searchCriteria: MemberRegisterSearchData = {};
+      const searchCriteria: MemberSearchData = {};
 
       if (id) {
         searchCriteria.id = parseInt(id as string, 10);
@@ -53,10 +53,9 @@ export const memberRegisterController = {
         searchCriteria.first_name = name as string;
       }
 
-      const memberRegisterObtained =
-        await MemberRegisterActions.getOne(searchCriteria);
+      const memberObtained = await MemberActions.getOne(searchCriteria);
 
-      if (!memberRegisterObtained) {
+      if (!memberObtained) {
         return res.status(404).json({
           ok: false,
           message:
@@ -67,7 +66,7 @@ export const memberRegisterController = {
       return res.status(200).json({
         ok: true,
         message: "Registro de persona obtenido correctamente.",
-        data: memberRegisterObtained,
+        data: memberObtained,
       });
     } catch (error) {
       return ControllerErrorHandler(
@@ -79,9 +78,9 @@ export const memberRegisterController = {
   },
 
   // Crea un nuevo registro de persona
-  createMemberRegister: async (req: Request, res: Response) => {
+  createMember: async (req: Request, res: Response) => {
     try {
-      const validationResult = MemberRegisterCreationSchema.safeParse(req.body);
+      const validationResult = MemberCreationSchema.safeParse(req.body);
 
       if (!validationResult.success) {
         return res.status(400).json({
@@ -91,16 +90,14 @@ export const memberRegisterController = {
         });
       }
 
-      const memberRegisterData: MemberRegisterCreationAttributes =
-        validationResult.data;
+      const memberData: MemberCreationAttributes = validationResult.data;
 
-      const newMemberRegister =
-        await MemberRegisterActions.create(memberRegisterData);
+      const newMember = await MemberActions.create(memberData);
 
       return res.status(201).json({
         ok: true,
         message: "Registro de persona creado correctamente.",
-        data: newMemberRegister,
+        data: newMember,
       });
     } catch (error) {
       return ControllerErrorHandler(
@@ -111,17 +108,48 @@ export const memberRegisterController = {
     }
   },
 
-  updateMemberRegister: async (req: Request, res: Response) => {
+  // Crea múltiples miembros
+  createBulkMembers: async (req: Request, res: Response) => {
     try {
-      const memberRegisterId = parseInt((req.params.id as string) || "0", 10);
+      const validationResult = BulkMemberSchema.safeParse(req.body);
 
-      if (!memberRegisterId) {
+      if (!validationResult.success) {
+        return res.status(400).json({
+          ok: false,
+          message: "Datos de miembros inválidos.",
+          errors: validationResult.error.issues,
+        });
+      }
+
+      const { members } = validationResult.data;
+
+      const newMembers = await MemberActions.createMultipleMembers(members);
+
+      return res.status(201).json({
+        ok: true,
+        message: `${newMembers.length} miembros creados correctamente.`,
+        data: newMembers,
+      });
+    } catch (error) {
+      return ControllerErrorHandler(
+        res,
+        error,
+        "Error al crear miembros masivos.",
+      );
+    }
+  },
+
+  updateMember: async (req: Request, res: Response) => {
+    try {
+      const memberId = parseInt((req.params.id as string) || "0", 10);
+
+      if (!memberId) {
         return res
           .status(400)
           .json({ ok: false, message: "ID de registro de persona inválido" });
       }
 
-      const validationResult = MemberRegisterUpdateSchema.safeParse(req.body);
+      const validationResult = MemberUpdateSchema.safeParse(req.body);
 
       if (!validationResult.success) {
         return res.status(400).json({
@@ -131,7 +159,7 @@ export const memberRegisterController = {
         });
       }
 
-      const updateData: Partial<MemberRegisterCreationAttributes> =
+      const updateData: Partial<MemberCreationAttributes> =
         validationResult.data;
 
       if (Object.keys(updateData).length === 0) {
@@ -141,13 +169,13 @@ export const memberRegisterController = {
         });
       }
 
-      const updatedMemberRegister = await MemberRegisterActions.update(
-        memberRegisterId,
+      const updatedMember = await MemberActions.update(
+        memberId,
 
-        updateData as Partial<MemberRegisterCreationAttributes>,
+        updateData as Partial<MemberCreationAttributes>,
       );
 
-      if (!updatedMemberRegister) {
+      if (!updatedMember) {
         return res.status(404).json({
           ok: false,
           message: "Registro de persona no encontrado para actualizar.",
@@ -157,7 +185,7 @@ export const memberRegisterController = {
       return res.status(200).json({
         ok: true,
         message: "Registro de persona actualizado correctamente.",
-        data: updatedMemberRegister,
+        data: updatedMember,
       });
     } catch (error) {
       return ControllerErrorHandler(
@@ -168,20 +196,17 @@ export const memberRegisterController = {
     }
   },
 
-  deleteMemberRegister: async (req: Request, res: Response) => {
+  deleteMember: async (req: Request, res: Response) => {
     try {
-      const memberRegisterId: number = parseInt(
-        (req.params.id as string) || "0",
-        10,
-      );
+      const memberId: number = parseInt((req.params.id as string) || "0", 10);
 
-      if (!memberRegisterId) {
+      if (!memberId) {
         return res
           .status(400)
           .json({ ok: false, message: "ID de registro de persona inválido" });
       }
 
-      const deleted = await MemberRegisterActions.delete(memberRegisterId);
+      const deleted = await MemberActions.delete(memberId);
 
       if (!deleted) {
         return res.status(404).json({

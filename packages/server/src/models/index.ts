@@ -5,7 +5,7 @@ import { ApplicationModel as Application } from "./auth/application.model.js";
 import { UserPermissionModel as UserPermission } from "./auth/user-permission.model.js";
 import { ConsolidationModel as Consolidation } from "./consolidation-app/consolidation.model.js";
 import { NetworkModel as Network } from "./consolidation-app/network.model.js";
-import { MemberRegisterModel as MemberRegister } from "./consolidation-app/member-register.model.js";
+import { MemberModel as MemberRegister } from "./consolidation-app/member.model.js";
 import { CashModel as Cash } from "./finance-app/cash.model.js";
 import { IncomeModel as Income } from "./finance-app/income.model.js";
 import { OutcomeModel as Outcome } from "./finance-app/outcome.model.js";

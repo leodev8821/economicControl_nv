@@ -1,7 +1,7 @@
 // models/outcome.ts
 import { DataTypes, Model, type Optional } from "sequelize";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
-import { MemberRegisterModel } from "./member-register.model.js";
+import { MemberModel } from "./member.model.js";
 import { NetworkModel } from "./network.model.js";
 import {
   CLASIFICATION,
@@ -136,7 +136,7 @@ ConsolidationModel.init(
       populated: {
         include: [
           {
-            model: MemberRegisterModel,
+            model: MemberModel,
             as: "MemberRegister",
             attributes: ["id", "first_name", "last_name", "phone"],
             required: true,

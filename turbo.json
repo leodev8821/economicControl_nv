@@ -1,11 +1,18 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalPassThroughEnv": [
+    "SERVER_HOST", "SERVER_PORT", "DB_DB", "DB_USER", "DB_PASSWORD",
+    "DB_HOST", "DB_PORT", "DB_DIALECT", "SUDO_ROLE", "SUDO_USERNAME",
+    "SUDO_PASSWORD", "SUDO_FIRSTNAME", "SUDO_LASTNAME", "SUDO_IS_VISIBLE",
+    "SUDO_EMAIL", "SUDO_PHONE", "SECRET_KEY", "REFRESH_SECRET", 
+    "ACCESS_TOKEN_EXPIRATION", "REFRESH_TOKEN_EXPIRATION", "NODE_ENV", "CORS_ORIGIN"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       //"outputs": ["dist/**", ".tsbuildinfo"],
       "outputs": ["dist/**"],
-      "env": [
+      /* "env": [
         "SERVER_HOST",
         "SERVER_PORT",
         "DB_DB",
@@ -26,7 +33,7 @@
         "REFRESH_TOKEN_EXPIRATION",
         "NODE_ENV",
         "CORS_ORIGIN"
-      ]
+      ] */
     },
     "clean": {
       "cache": false
@@ -34,10 +41,20 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      /* "env": [
+        "SERVER_HOST", "SERVER_PORT", "DB_DB", "DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT", "DB_DIALECT", "SUDO_ROLE", "SUDO_USERNAME", "SUDO_PASSWORD", "SUDO_FIRSTNAME", "SUDO_LASTNAME", "SUDO_IS_VISIBLE", "SUDO_EMAIL", "SUDO_PHONE", "SECRET_KEY", "REFRESH_SECRET", "ACCESS_TOKEN_EXPIRATION", "REFRESH_TOKEN_EXPIRATION", "NODE_ENV", "EMAIL_USER", "EMAIL_PASS", "FRONTEND_URL", "CORS_ORIGIN"
+      ] */
     },
     "db:setup": {
-      "cache": false
+      "cache": false,
+      /* "env": [
+        "SERVER_HOST", "SERVER_PORT", "DB_DB", "DB_USER", "DB_PASSWORD",
+        "DB_HOST", "DB_PORT", "DB_DIALECT", "SUDO_ROLE", "SUDO_USERNAME",
+        "SUDO_PASSWORD", "SUDO_FIRSTNAME", "SUDO_LASTNAME", "SUDO_IS_VISIBLE",
+        "SUDO_EMAIL", "SUDO_PHONE", "SECRET_KEY", "REFRESH_SECRET", 
+        "ACCESS_TOKEN_EXPIRATION", "REFRESH_TOKEN_EXPIRATION", "NODE_ENV", "CORS_ORIGIN"
+      ] */
     },
     "check-types": {
       "outputs": []

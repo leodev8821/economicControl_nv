@@ -37,6 +37,11 @@ const CashDenominationPage = lazy(
   () => import("@modules/finance/pages/CashDenominationPage"),
 );
 
+// --- CONSOLIDATION MODULE ---
+const MembersPage = lazy(
+  () => import("@modules/consolidation/pages/MemberPage"),
+);
+
 // --- NOT FOUND MODULE ---
 const ModulePlaceholder = lazy(
   () => import("@shared/components/pages/ModulePlaceholder"),
@@ -143,24 +148,24 @@ export const AppRouter = () => {
                 <AppGuard requiredAppIds={[APPS.CONSOLIDATION, APPS.ALL]} />
               }
             >
-              <Route
-                path={`${API_ROUTES_PATH.CONSOLIDATION}/home`}
-                element={<ConsolidationPage />}
-              />
-
-              {/* SECCIÓN NOT-FOUND */}
-              <Route
-                path="*"
-                element={
-                  <ModulePlaceholder
-                    title="Página no encontrada"
-                    description="La página que buscas no existe."
-                    showBackButton
-                    backPath="/"
-                  />
-                }
-              />
+              <Route path={API_ROUTES_PATH.CONSOLIDATION}>
+                <Route path="home" element={<ConsolidationPage />} />
+                <Route path="members" element={<MembersPage />} />
+              </Route>
             </Route>
+
+            {/* SECCIÓN NOT-FOUND */}
+            <Route
+              path="*"
+              element={
+                <ModulePlaceholder
+                  title="Página no encontrada"
+                  description="La página que buscas no existe."
+                  showBackButton
+                  backPath="/"
+                />
+              }
+            />
           </Route>
         </Route>
       </Routes>
