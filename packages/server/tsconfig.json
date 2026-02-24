@@ -22,7 +22,15 @@
 
     "baseUrl": ".",
     "paths": {
-      "@economic-control/shared": ["../shared/src/index.ts"]
+      "@economic-control/shared": ["../shared/src/index.ts"],
+      "@config/*": ["./src/config/*"],
+      "@controllers/*": ["./src/controllers/*"],
+      "@middlewares/*": ["./src/middlewares/*"],
+      "@models/*": ["./src/models/*"],
+      "@routes/*": ["./src/routes/*"],
+      "@services/*": ["./src/services/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@utils/*": ["./src/utils/*"],
     }
   },
   "include": [

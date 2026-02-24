@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
 
-import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
+import ControllerErrorHandler from "@utils/ControllerErrorHandler.js";
 
 import {
   MemberActions,
   MemberAttributes,
   MemberCreationAttributes,
   MemberSearchData,
-} from "../../models/consolidation-app/member.model.js";
+} from "@models/consolidation-app/member.model.js";
 
 import {
   MemberCreationSchema,
@@ -15,11 +15,20 @@ import {
   MemberUpdateSchema,
 } from "@economic-control/shared";
 
+interface AuthRequest extends Request {
+  user: {
+    id: number;
+    username: string;
+    role_name: string;
+    permissions: any[];
+  };
+}
+
 export const memberController = {
   // Obtiene todos los registros de personas
   allMembers: async (_req: Request, res: Response) => {
     try {
-      const members: MemberAttributes[] = await MemberActions.getAll();
+      const members: MemberAttributes[] = await MemberActions.getAll(true);
 
       return res.status(200).json({
         ok: true,
@@ -81,6 +90,14 @@ export const memberController = {
   createMember: async (req: Request, res: Response) => {
     try {
       const validationResult = MemberCreationSchema.safeParse(req.body);
+      const currentUserId = (req as AuthRequest).user.id;
+
+      if (!currentUserId) {
+        return res.status(401).json({
+          ok: false,
+          message: "Usuario no autenticado.",
+        });
+      }
 
       if (!validationResult.success) {
         return res.status(400).json({
@@ -92,7 +109,7 @@ export const memberController = {
 
       const memberData: MemberCreationAttributes = validationResult.data;
 
-      const newMember = await MemberActions.create(memberData);
+      const newMember = await MemberActions.create(memberData, currentUserId);
 
       return res.status(201).json({
         ok: true,
@@ -113,6 +130,15 @@ export const memberController = {
     try {
       const validationResult = BulkMemberSchema.safeParse(req.body);
 
+      const currentUserId = (req as AuthRequest).user.id;
+
+      if (!currentUserId) {
+        return res.status(401).json({
+          ok: false,
+          message: "Usuario no autenticado.",
+        });
+      }
+
       if (!validationResult.success) {
         return res.status(400).json({
           ok: false,
@@ -123,7 +149,10 @@ export const memberController = {
 
       const { members } = validationResult.data;
 
-      const newMembers = await MemberActions.createMultipleMembers(members);
+      const newMembers = await MemberActions.createMultipleMembers(
+        members,
+        currentUserId,
+      );
 
       return res.status(201).json({
         ok: true,

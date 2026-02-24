@@ -6,10 +6,11 @@ import {
   Transaction,
 } from "sequelize";
 import bcrypt from "bcryptjs";
-import { getSequelizeConfig } from "../../config/sequelize.config.js";
-import { ROLE_TYPES } from "../auth/role.model.js";
-import { UserPermissionModel } from "./user-permission.model.js";
-import { APP_IDS } from "../../shared/app.constants.js";
+import { getSequelizeConfig } from "@config/sequelize.config.js";
+import { ROLE_TYPES } from "@models/auth/role.model.js";
+import { UserPermissionModel } from "@models/auth/user-permission.model.js";
+import { MemberModel } from "@models/consolidation-app/member.model.js";
+import { APP_IDS } from "@shared/app.constants.js";
 
 const connection = getSequelizeConfig();
 
@@ -203,6 +204,8 @@ export class UserActions {
 
   /**
    * Obtiene todas las usuarios de la base de datos.
+   * @param appId ID de la aplicación.
+   * @param includeHidden Si se deben incluir los usuarios ocultos.
    * @returns promise con un array de objetos UserAttributes.
    */
   public static async getAll(
@@ -322,12 +325,29 @@ export class UserActions {
    * @returns promise con un booleano que indica si la eliminación fue exitosa.
    */
   public static async delete(id: number): Promise<boolean> {
-    const [count] = await UserModel.update(
-      { is_visible: false },
-      { where: { id } },
-    );
+    return await connection.transaction(async (t) => {
+      // 1️⃣ Soft delete del usuario
+      const [count] = await UserModel.update(
+        { is_visible: false },
+        {
+          where: { id },
+          transaction: t,
+        },
+      );
 
-    return count > 0;
+      if (count === 0) return false;
+
+      // 2️⃣ Desvincular members
+      await MemberModel.update(
+        { user_id: null },
+        {
+          where: { user_id: id },
+          transaction: t,
+        },
+      );
+
+      return true;
+    });
   }
 
   /**

@@ -33,9 +33,9 @@ import * as SharedUserSchema from "@economic-control/shared";
 import { ROLE_VALUES } from "@economic-control/shared";
 
 /** Hooks & Context */
-import { useAuth } from "../hooks/useAuth";
-import { useApplications } from "../hooks/useApplications";
-import { useRoles } from "../hooks/useRoles";
+import { useAuth } from "../../hooks/useAuth";
+import { useApplications } from "../../hooks/useApplications";
+import { useRoles } from "../../hooks/useRoles";
 import { APPS, ROLE_WEIGHTS } from "@shared/constants/app";
 
 // Constantes para MUI Select

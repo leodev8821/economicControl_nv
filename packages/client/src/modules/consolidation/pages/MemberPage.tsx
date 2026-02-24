@@ -21,10 +21,15 @@ import MemberForm from "@modules/consolidation/components/forms/MemberForm";
 import type { Member } from "@modules/consolidation/types/member.type";
 import * as SharedMemberSchemas from "@economic-control/shared";
 
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import type { User } from "@/modules/auth/types/user.type";
+
 const MembersPage: React.FC = () => {
   const [formKey, setFormKey] = useState(0);
   const [draft, setDraft] = useState<any>(null);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
+
+  const { user: currentUser } = useAuth();
 
   // Hooks de React Query
   const { data: members = [], isLoading, isError, error } = useReadMembers();
@@ -118,12 +123,37 @@ const MembersPage: React.FC = () => {
     }, 100);
   };
 
-  const handleDeleteMember = (id: number) => {
-    if (window.confirm(`¿Está seguro de eliminar el Miembro con ID ${id}?`)) {
-      deleteMutation.mutate(id, {
-        onSuccess: () => showSnackbar("Miembro eliminado"),
-        onError: () => showSnackbar("Error al eliminar", "error"),
-      });
+  const handleToggleVisibility = (member: Member) => {
+    const isHidden = member.is_visible === false;
+
+    if (isHidden) {
+      // 1. Lógica de Restauración (Solo Admin/SuperUser llegarán a este punto visualmente)
+      if (
+        window.confirm(
+          `¿Está seguro de RESTAURAR el Miembro con ID ${member.id}?`,
+        )
+      ) {
+        updateMutation.mutate(
+          // Forzamos el tipado para asegurar que pasamos el id y el nuevo estado
+          { id: member.id, is_visible: true } as unknown as Member,
+          {
+            onSuccess: () => showSnackbar("Miembro restaurado correctamente"),
+            onError: () => showSnackbar("Error al restaurar", "error"),
+          },
+        );
+      }
+    } else {
+      // 2. Lógica de Eliminación (Soft-delete)
+      if (
+        window.confirm(
+          `¿Está seguro de ELIMINAR el Miembro con ID ${member.id}?`,
+        )
+      ) {
+        deleteMutation.mutate(member.id, {
+          onSuccess: () => showSnackbar("Miembro eliminado"),
+          onError: () => showSnackbar("Error al eliminar", "error"),
+        });
+      }
     }
   };
 
@@ -219,17 +249,22 @@ const MembersPage: React.FC = () => {
       ) : (
         <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
           <Typography variant="h5" sx={{ mb: 2, p: 1 }}>
-            Directorio de Miembros ({members.length})
+            Directorio de Miembros
           </Typography>
-          <MemberTable
-            members={members}
-            highlightedRowId={editingMember?.id}
-            onEdit={(member) => {
-              if (editingMember) return;
-              handleStartEdit(member);
-            }}
-            onDelete={handleDeleteMember}
-          />
+          {currentUser ? (
+            <MemberTable
+              members={members}
+              currentUser={currentUser as User}
+              highlightedRowId={editingMember?.id}
+              onEdit={(member) => {
+                if (editingMember) return;
+                handleStartEdit(member);
+              }}
+              onToggleVisibility={handleToggleVisibility}
+            />
+          ) : (
+            <Typography p={2}>Cargando permisos de usuario...</Typography>
+          )}
         </Paper>
       )}
 

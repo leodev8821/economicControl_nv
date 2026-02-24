@@ -101,14 +101,14 @@ export const updateMember = async (
 /**
  * Elimina un miembro.
  * @param id ID del miembro.
- * @returns Promesa que resuelve en un objeto Member.
+ * @returns Promesa que resuelve en un mensaje.
  */
-export const deleteMember = async (id: number): Promise<Member> => {
+export const deleteMember = async (id: number): Promise<string> => {
   try {
     const response = await apiClient.delete<ApiResponse<Member>>(
       `${API_ROUTES_PATH.CONSOLIDATION}/members/${id}`,
     );
-    return response.data.data[0];
+    return response.data.message?.[0] || "";
   } catch (error) {
     throw error;
   }

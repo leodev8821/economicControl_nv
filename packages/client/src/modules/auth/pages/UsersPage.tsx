@@ -8,7 +8,7 @@ import {
   useDeleteUser,
 } from "@modules/auth/hooks/useUser";
 import UserTable from "@modules/auth/components/tables/UserTable";
-import UserForm from "@modules/auth/components/UserForm";
+import UserForm from "@modules/auth/components/forms/UserForm";
 import { useAuth } from "@modules/auth/hooks/useAuth";
 import type { User } from "@modules/auth/types/user.type";
 import * as SharedUserSchema from "@economic-control/shared";

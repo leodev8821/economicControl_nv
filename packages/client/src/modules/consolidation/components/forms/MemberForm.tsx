@@ -90,6 +90,7 @@ export default function MemberForm({
           gender: "",
           birth_date: "",
           status: "",
+          visit_date: "",
         },
       ],
     },
@@ -123,6 +124,10 @@ export default function MemberForm({
             "",
           status:
             nestedFields.status.value ?? nestedFields.status.initialValue ?? "",
+          visit_date:
+            nestedFields.visit_date.value ??
+            nestedFields.visit_date.initialValue ??
+            "",
         };
       }),
     };
@@ -144,6 +149,7 @@ export default function MemberForm({
           gender: "",
           birth_date: "",
           status: "",
+          visit_date: "",
         },
       ],
     });
@@ -230,6 +236,7 @@ export default function MemberForm({
                     gender: "",
                     birth_date: "",
                     status: "",
+                    visit_date: "",
                   },
                 })
               }
@@ -310,6 +317,21 @@ function MemberRow({
         : dayjs(),
     );
   }, [rowFields.birth_date.initialValue, rowFields.birth_date.key]);
+
+  const [selectedVisitDate, setSelectedVisitDate] =
+    React.useState<Dayjs | null>(
+      rowFields.visit_date?.initialValue
+        ? dayjs(rowFields.visit_date.initialValue)
+        : null,
+    );
+
+  React.useEffect(() => {
+    setSelectedVisitDate(
+      rowFields.visit_date?.initialValue
+        ? dayjs(rowFields.visit_date.initialValue)
+        : dayjs(),
+    );
+  }, [rowFields.visit_date?.initialValue, rowFields.visit_date?.key]);
 
   return (
     <Box
@@ -408,6 +430,7 @@ function MemberRow({
             onChange={(val) => setSelectedBirthDate(val)}
             disabled={isLoading}
             format="DD-MM-YYYY"
+            maxDate={dayjs()}
             slotProps={{
               textField: {
                 fullWidth: true,
@@ -423,6 +446,34 @@ function MemberRow({
             value={
               selectedBirthDate?.isValid()
                 ? selectedBirthDate.format("YYYY-MM-DD")
+                : ""
+            }
+          />
+        </Grid>
+
+        <Grid size={{ xs: 6, sm: 2.5 }}>
+          <DatePicker
+            key={rowFields.visit_date?.key}
+            label="Fecha de Visita *"
+            value={selectedVisitDate}
+            onChange={(val) => setSelectedVisitDate(val)}
+            disabled={isLoading}
+            format="DD-MM-YYYY"
+            slotProps={{
+              textField: {
+                fullWidth: true,
+                size: "small",
+                error: !!rowFields.visit_date?.errors,
+                helperText: rowFields.visit_date?.errors?.join(", "),
+              },
+            }}
+          />
+          <input
+            type="hidden"
+            name={rowFields.visit_date?.name}
+            value={
+              selectedVisitDate?.isValid()
+                ? selectedVisitDate.format("YYYY-MM-DD")
                 : ""
             }
           />

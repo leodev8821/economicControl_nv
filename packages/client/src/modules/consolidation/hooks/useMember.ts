@@ -84,10 +84,10 @@ export const useUpdateMember = (): UseMutationResult<
 };
 
 // Hook para eliminar una miembro.
-export const useDeleteMember = (): UseMutationResult<Member, Error, number> => {
+export const useDeleteMember = (): UseMutationResult<String, Error, number> => {
   const queryClient = useQueryClient();
 
-  return useMutation<Member, Error, number>({
+  return useMutation<String, Error, number>({
     mutationFn: deleteMember,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [MEMBERS_QUERY_KEY] });

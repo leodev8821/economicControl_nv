@@ -1,6 +1,11 @@
-import { DataTypes, Model as SequelizeModel, type Optional } from "sequelize";
+import {
+  DataTypes,
+  Model as SequelizeModel,
+  Transaction,
+  type Optional,
+} from "sequelize";
 
-import { getSequelizeConfig } from "../../config/sequelize.config.js";
+import { getSequelizeConfig } from "@config/sequelize.config.js";
 
 import { GENDER, STATUS, type StatusType } from "@economic-control/shared";
 
@@ -10,23 +15,27 @@ const connection = getSequelizeConfig();
 
 export interface MemberAttributes {
   id: number;
+  user_id: number | null;
   first_name: string;
   last_name: string;
   phone: string;
   gender: string;
   birth_date: string;
   status: StatusType;
+  visit_date: string;
   is_visible: boolean;
 }
 
 export type MemberSearchData = {
   id?: number;
+  user_id?: number | null;
   first_name?: string;
   last_name?: string;
   phone?: string;
   gender?: string;
   birth_date?: string;
   status?: StatusType;
+  visit_date?: string;
   is_visible?: boolean;
 };
 
@@ -34,7 +43,7 @@ export type MemberSearchData = {
 
 export interface MemberCreationAttributes extends Optional<
   MemberAttributes,
-  "id" | "is_visible"
+  "id" | "is_visible" | "user_id"
 > {}
 
 /** Clase tipada de Sequelize */
@@ -43,12 +52,14 @@ export class MemberModel
   implements MemberAttributes
 {
   declare id: number;
+  declare user_id: number | null;
   declare first_name: string;
   declare last_name: string;
   declare phone: string;
   declare gender: string;
   declare birth_date: string;
   declare status: StatusType;
+  declare visit_date: string;
   declare is_visible: boolean;
 }
 
@@ -60,6 +71,15 @@ MemberModel.init(
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
+    },
+
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "users",
+        key: "id",
+      },
     },
 
     first_name: {
@@ -93,6 +113,11 @@ MemberModel.init(
       allowNull: false,
     },
 
+    visit_date: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+
     is_visible: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
@@ -101,10 +126,9 @@ MemberModel.init(
 
   {
     sequelize: connection,
-    tableName: "member_registers",
+    tableName: "members",
     timestamps: false,
-    modelName: "MemberRegister",
-
+    modelName: "Member",
     scopes: {
       visible: {
         where: { is_visible: true },
@@ -115,14 +139,43 @@ MemberModel.init(
 
 export class MemberActions {
   /**
+   * Helper para formatear las fechas
+   * @param date fecha a formatear
+   * @returns fecha formateada
+   */
+  private static normalizeDate = (date: string): string => {
+    if (typeof date !== "string") return date;
+
+    const ddmmyyyy = /^(\d{2})-(\d{2})-(\d{4})$/;
+    const match = date.match(ddmmyyyy);
+
+    if (match) {
+      const [, day, month, year] = match;
+      return `${year}-${month}-${day}`;
+    }
+
+    return date;
+  };
+
+  /**
    * Obtiene todas las personas de la base de datos.
    * @returns promise con un array de objetos PersonAttributes.
    */
 
-  public static async getAll(): Promise<MemberAttributes[]> {
-    const persons = await MemberModel.findAll();
+  public static async getAll(
+    includeHidden: boolean = false,
+  ): Promise<MemberAttributes[]> {
+    try {
+      const whereClause: any = includeHidden ? {} : { is_visible: true };
+      const members = await MemberModel.findAll({
+        where: whereClause,
+      });
 
-    return persons.map((person) => person.get({ plain: true }));
+      return members.map((member) => member.get({ plain: true }));
+    } catch (error) {
+      console.error("Error al obtener todas las personas:", error);
+      throw error;
+    }
   }
 
   /**
@@ -142,20 +195,26 @@ export class MemberActions {
   }
 
   /**
-   * Crea un nuevo persona en la base de datos.
+   * Crea un nuevo miembro en la base de datos.
    * @param data datos de la persona a crear.
-   * @returns promise con el objeto PersonAttributes creado.
+   * @param currentUserId id del usuario autenticado (desde JWT)
    */
-
   public static async create(
-    data: MemberCreationAttributes,
+    data: Omit<MemberCreationAttributes, "user_id">,
+    currentUserId: number,
   ): Promise<MemberAttributes> {
     return await connection.transaction(async (t) => {
-      const newPerson = await MemberModel.create(data, {
-        transaction: t,
-      });
+      const newMember = await MemberModel.create(
+        {
+          ...data,
+          user_id: currentUserId,
+          birth_date: this.normalizeDate(data.birth_date),
+          visit_date: this.normalizeDate(data.visit_date),
+        },
+        { transaction: t },
+      );
 
-      return newPerson.get({ plain: true });
+      return newMember.get({ plain: true });
     });
   }
 
@@ -165,27 +224,17 @@ export class MemberActions {
    * @returns Promise con el array de miembros creados.
    */
   public static async createMultipleMembers(
-    dataList: MemberCreationAttributes[],
+    dataList: Omit<MemberCreationAttributes, "user_id">[],
+    currentUserId: number,
   ): Promise<MemberAttributes[]> {
     return await connection.transaction(async (t) => {
       // Transformamos la data antes de insertar (ej. formatear la fecha)
       const normalizedData = dataList.map((item) => {
-        // Convierte "DD-MM-YYYY" a "YYYY-MM-DD" para que SQL lo entienda sin problemas
-        let formattedDate = item.birth_date;
-        if (
-          typeof item.birth_date === "string" &&
-          item.birth_date.includes("-")
-        ) {
-          const parts = item.birth_date.split("-");
-          if (parts[0].length === 2) {
-            // Asume que si empieza por 2 dígitos es DD-MM-YYYY
-            formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-          }
-        }
-
         return {
           ...item,
-          birth_date: formattedDate,
+          user_id: currentUserId,
+          birth_date: this.normalizeDate(item.birth_date),
+          visit_date: this.normalizeDate(item.visit_date),
         };
       });
 
@@ -223,6 +272,7 @@ export class MemberActions {
   public static async update(
     id: number,
     data: Partial<MemberCreationAttributes>,
+    transaction?: Transaction,
   ): Promise<MemberAttributes | null> {
     return await connection.transaction(async (t) => {
       const [count] = await MemberModel.update(data, {
@@ -233,7 +283,7 @@ export class MemberActions {
       if (!count) return null;
 
       const updatedPerson = await MemberModel.findByPk(id, {
-        transaction: t,
+        transaction,
       });
 
       return updatedPerson ? updatedPerson.get({ plain: true }) : null;

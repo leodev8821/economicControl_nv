@@ -35,15 +35,19 @@ import PeopleIcon from "@mui/icons-material/People";
 import DownloadIcon from "@mui/icons-material/Download";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import FilterListOffIcon from "@mui/icons-material/FilterListOff";
+import { RestoreFromTrash } from "@mui/icons-material";
 
 // Tipos
 import type { Member } from "@modules/consolidation/types/member.type";
+import type { User } from "@/modules/auth/types/user.type";
 
 interface MemberTableProps {
   members: Member[];
   highlightedRowId?: number | null;
+  currentUser: User;
   onEdit: (member: Member) => void;
-  onDelete: (id: number) => void;
+  //onDelete: (id: number) => void;
+  onToggleVisibility: (member: Member) => void;
 }
 
 // Tipos para la ordenación
@@ -73,8 +77,10 @@ const calculateAge = (birthDateStr: string | undefined): number | null => {
 
 export default function MemberTable({
   members,
+  currentUser,
   onEdit,
-  onDelete,
+  onToggleVisibility,
+  //onDelete,
   highlightedRowId,
 }: MemberTableProps) {
   // --- Estados ---
@@ -89,6 +95,7 @@ export default function MemberTable({
     firstName: "",
     lastName: "",
     phone: "",
+    visitDate: "",
   };
 
   const [filters, setFilters] = useState(initialFilters);
@@ -97,6 +104,18 @@ export default function MemberTable({
   // Estados para Sorting
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<OrderBy>("first_name");
+
+  const canManageMember = (member: Member) => {
+    // 1. Poder Global: SuperUser o Administrador pueden borrar cualquier cosa
+    const isAdmin =
+      currentUser.role_name === "SuperUser" ||
+      currentUser.role_name === "Administrador";
+
+    // 2. Poder de Propietario: El usuario es quien registró a este miembro
+    const isOwner = member.user_id === currentUser.id;
+
+    return isAdmin || isOwner;
+  };
 
   // --- Handlers de Ordenación ---
   const handleRequestSort = (property: OrderBy) => {
@@ -114,6 +133,17 @@ export default function MemberTable({
   // --- 1. Filtrado ---
   const filteredMembers = useMemo(() => {
     return members.filter((member) => {
+      const isAdmin =
+        currentUser.role_name === "SuperUser" ||
+        currentUser.role_name === "Administrador";
+
+      // Regla de Visibilidad según Rol
+      if (!isAdmin && member.user_id !== currentUser.id) return false;
+
+      // Regla de Borrado Lógico (Soft Delete)
+      const isHidden = member.is_visible === false;
+      if (isHidden && !isAdmin) return false;
+
       // 1. Filtro Global (Texto rápido en el input de búsqueda principal)
       if (searchText) {
         const lowerSearch = searchText.toLowerCase();
@@ -157,7 +187,7 @@ export default function MemberTable({
 
       return true;
     });
-  }, [members, filters, searchText]);
+  }, [members, currentUser, filters, searchText]);
 
   // --- 2. Ordenación (Sorting) ---
   const sortedMembers = useMemo(() => {
@@ -227,7 +257,7 @@ export default function MemberTable({
 
   const exportToCSV = () => {
     const headers = [
-      "ID",
+      "Líder",
       "Nombre",
       "Apellido",
       "Teléfono",
@@ -235,10 +265,11 @@ export default function MemberTable({
       "Fecha Nacimiento",
       "Edad",
       "Estado Civil",
+      "Fecha de Visita",
     ];
 
     const rows = sortedMembers.map((member) => [
-      member.id,
+      member.user_id,
       member.first_name || "",
       member.last_name || "",
       member.phone || "",
@@ -246,6 +277,7 @@ export default function MemberTable({
       member.birth_date || "",
       calculateAge(member.birth_date) ?? "",
       member.status || "",
+      member.visit_date || "",
     ]);
 
     const csvContent = [headers, ...rows].map((e) => e.join(";")).join("\n");
@@ -482,6 +514,7 @@ export default function MemberTable({
         <Table sx={{ minWidth: 650 }} aria-label="member table">
           <TableHead sx={{ bgcolor: "primary.main" }}>
             <TableRow>
+              <SortableHeader id="user_id" label="Líder" />
               <SortableHeader id="first_name" label="Nombre" />
               <SortableHeader id="last_name" label="Apellido" />
               <SortableHeader id="phone" label="Teléfono" />
@@ -489,6 +522,7 @@ export default function MemberTable({
               <SortableHeader id="birth_date" label="Nacimiento" />
               <SortableHeader id="age" label="Edad" />
               <SortableHeader id="status" label="Estado Civil" />
+              <SortableHeader id="visit_date" label="Fecha de Visita" />
 
               <TableCell
                 sx={{ fontWeight: "bold", color: "primary.contrastText" }}
@@ -500,55 +534,109 @@ export default function MemberTable({
           </TableHead>
           <TableBody>
             {paginatedMembers.length > 0 ? (
-              paginatedMembers.map((row) => (
-                <TableRow
-                  key={row.id}
-                  hover
-                  sx={{
-                    "&:last-child td, &:last-child th": { border: 0 },
-                    backgroundColor:
-                      highlightedRowId === row.id ? "warning.light" : "inherit",
-                    transition: "background-color 0.2s ease",
-                  }}
-                >
-                  <TableCell>{row.first_name || "-"}</TableCell>
-                  <TableCell>{row.last_name || "-"}</TableCell>
-                  <TableCell>{row.phone ? `+34 ${row.phone}` : "-"}</TableCell>
-                  <TableCell>{row.gender || "-"}</TableCell>
-                  <TableCell>
-                    {dayjs(row.birth_date).isValid()
-                      ? dayjs(row.birth_date).format("DD-MM-YYYY")
-                      : "-"}
-                  </TableCell>
+              paginatedMembers.map((row) => {
+                const isHidden = row.is_visible === false;
+                const isAdmin =
+                  currentUser.role_name === "SuperUser" ||
+                  currentUser.role_name === "Administrador";
+                const canDelete = canManageMember(row);
+                return (
+                  <TableRow
+                    key={row.id}
+                    hover
+                    sx={{
+                      "&:last-child td, &:last-child th": { border: 0 },
+                      backgroundColor:
+                        highlightedRowId === row.id
+                          ? "warning.light"
+                          : "inherit",
+                      opacity: isHidden ? 0.6 : 1,
+                      bgcolor: isHidden
+                        ? "action.hover"
+                        : highlightedRowId === row.id
+                          ? "warning.light"
+                          : "inherit",
+                      transition: "background-color 0.2s ease",
+                    }}
+                  >
+                    <TableCell>{row.user_id || "-"}</TableCell>
+                    <TableCell>{row.first_name || "-"}</TableCell>
+                    <TableCell>{row.last_name || "-"}</TableCell>
+                    <TableCell>{row.phone || "-"}</TableCell>
+                    <TableCell>{row.gender || "-"}</TableCell>
+                    <TableCell>
+                      {dayjs(row.birth_date).isValid()
+                        ? dayjs(row.birth_date).format("DD-MM-YYYY")
+                        : "-"}
+                    </TableCell>
 
-                  <TableCell sx={{ fontWeight: "bold" }}>
-                    {calculateAge(row.birth_date) ?? "-"}
-                  </TableCell>
-                  <TableCell>{row.status || "-"}</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>
+                      {calculateAge(row.birth_date) ?? "-"}
+                    </TableCell>
+                    <TableCell>{row.status || "-"}</TableCell>
+                    <TableCell>
+                      {dayjs(row.visit_date).isValid()
+                        ? dayjs(row.visit_date).format("DD-MM-YYYY")
+                        : "-"}
+                    </TableCell>
 
-                  <TableCell align="center">
-                    <Tooltip title="Editar">
-                      <IconButton
-                        color="primary"
-                        onClick={() => onEdit(row)}
-                        size="small"
+                    {/* ACCIONES */}
+                    <TableCell align="center">
+                      <Tooltip
+                        title={
+                          canDelete ? "Editar" : "No tienes permiso para editar"
+                        }
                       >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Eliminar">
-                      <IconButton
-                        color="error"
-                        onClick={() => onDelete(row.id)}
-                        size="small"
-                        disabled={highlightedRowId === row.id}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))
+                        <span>
+                          <IconButton
+                            color="primary"
+                            onClick={() => onEdit(row)}
+                            disabled={!canDelete}
+                            size="small"
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+
+                      {isAdmin && isHidden ? (
+                        <Tooltip title="Restaurar Miembro">
+                          <IconButton
+                            color="success"
+                            onClick={() => onToggleVisibility(row)}
+                            size="small"
+                          >
+                            <RestoreFromTrash />
+                          </IconButton>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip
+                          title={
+                            canDelete
+                              ? isHidden
+                                ? "Ya eliminado"
+                                : "Eliminar"
+                              : "Solo el propietario o un administrador pueden eliminar"
+                          }
+                        >
+                          <span>
+                            <IconButton
+                              color="error"
+                              onClick={() => onToggleVisibility(row)}
+                              size="small"
+                              disabled={
+                                !canDelete || highlightedRowId === row.id
+                              }
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={8} align="center" sx={{ py: 3 }}>

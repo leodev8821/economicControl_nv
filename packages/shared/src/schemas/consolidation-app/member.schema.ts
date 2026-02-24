@@ -19,6 +19,7 @@ export type GenderType = (typeof GENDER)[number];
 // ----------------------------------------------------------------------
 const BaseMemberSchema = z.object({
   id: z.coerce.number().int().positive().optional(),
+  user_id: z.coerce.number().int().positive().optional(),
   first_name: z.string({ message: "El nombre es obligatorio" }).min(1).max(50),
   last_name: z.string({ message: "El apellido es obligatorio" }).min(1).max(50),
   phone: z.string({ message: "El teléfono es obligatorio" }).min(1).max(15),
@@ -32,6 +33,10 @@ const BaseMemberSchema = z.object({
   status: z.enum(STATUS, {
     message: "El estado civil no es válido",
   }),
+  visit_date: z
+    .string({ message: "La fecha de visita es obligatoria" })
+    .min(1)
+    .max(10),
   is_visible: z.boolean().default(true).optional(),
 });
 

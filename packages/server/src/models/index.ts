@@ -5,7 +5,7 @@ import { ApplicationModel as Application } from "./auth/application.model.js";
 import { UserPermissionModel as UserPermission } from "./auth/user-permission.model.js";
 import { ConsolidationModel as Consolidation } from "./consolidation-app/consolidation.model.js";
 import { NetworkModel as Network } from "./consolidation-app/network.model.js";
-import { MemberModel as MemberRegister } from "./consolidation-app/member.model.js";
+import { MemberModel as Member } from "./consolidation-app/member.model.js";
 import { CashModel as Cash } from "./finance-app/cash.model.js";
 import { IncomeModel as Income } from "./finance-app/income.model.js";
 import { OutcomeModel as Outcome } from "./finance-app/outcome.model.js";
@@ -88,25 +88,25 @@ CashDenomination.belongsTo(Cash, {
 // =================================================================
 
 // --- Consolidation <-> MemberRegister ---
-Consolidation.belongsTo(MemberRegister, {
-  foreignKey: { name: "member_register_id", allowNull: true },
-  as: "MemberRegister",
+Consolidation.belongsTo(Member, {
+  foreignKey: { name: "member_id", allowNull: true },
+  as: "Member",
   onDelete: "SET NULL",
 });
 
-MemberRegister.hasMany(Consolidation, {
-  foreignKey: { name: "member_register_id", allowNull: true },
+Member.hasMany(Consolidation, {
+  foreignKey: { name: "member_id", allowNull: true },
   as: "Consolidations",
 });
 
 // --- Consolidation <-> Leader ---
 Consolidation.belongsTo(User, {
-  foreignKey: { name: "leader_id", allowNull: true },
-  as: "Leader",
+  foreignKey: { name: "user_id", allowNull: true },
+  as: "User",
 });
 
 User.hasMany(Consolidation, {
-  foreignKey: { name: "leader_id", allowNull: true },
+  foreignKey: { name: "user_id", allowNull: true },
   as: "Consolidations",
 });
 
@@ -119,6 +119,16 @@ Consolidation.belongsTo(Network, {
 Network.hasMany(Consolidation, {
   foreignKey: { name: "network_id", allowNull: true },
   as: "Consolidations",
+});
+
+Member.belongsTo(User, {
+  foreignKey: { name: "user_id", allowNull: true },
+  as: "User",
+});
+
+User.hasMany(Member, {
+  foreignKey: { name: "user_id", allowNull: true },
+  as: "Members",
 });
 
 // =================================================================
@@ -210,7 +220,7 @@ export {
   CashDenomination,
   Consolidation,
   Network,
-  MemberRegister,
+  Member,
   Application,
   UserPermission,
 };
