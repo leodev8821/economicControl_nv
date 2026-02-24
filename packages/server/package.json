@@ -8,7 +8,7 @@
     "clean": "rm -rf dist .turbo node_modules tsconfig.tsbuildinfo",
     "dev": "tsx watch --clear-screen=false src/app.ts",
     "lint": "eslint src",
-    "build": "tsc -b && copyfiles -u 1 \"src/migrations/**/*.cjs\" dist/",
+    "build": "tsc -b && tsc-alias && copyfiles -u 1 \"src/migrations/**/*.cjs\" dist/",
     "db:migrate": "sequelize-cli db:migrate",
     "db:seed:dev": "tsx src/seeders/initDatabases.ts",
     "db:seed:prod": "node dist/seeders/initDatabases.js",
@@ -51,6 +51,7 @@
     "copyfiles": "^2.4.1",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.16",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }

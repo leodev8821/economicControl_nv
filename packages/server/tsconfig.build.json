@@ -1,0 +1,46 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "composite": true,
+    "outDir": "./dist",
+    "rootDir": "src",
+    "module": "NodeNext",
+    "allowImportingTsExtensions": false,
+
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+
+    "noEmit": false,
+    "declaration": true,
+    "sourceMap": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@economic-control/shared": ["../shared/dist/index.js"],
+      "@config/*": ["./dist/config/*"],
+      "@controllers/*": ["./dist/controllers/*"],
+      "@middlewares/*": ["./dist/middlewares/*"],
+      "@models/*": ["./dist/models/*"],
+      "@routes/*": ["./dist/routes/*"],
+      "@services/*": ["./dist/services/*"],
+      "@shared/*": ["./dist/shared/*"],
+      "@utils/*": ["./dist/utils/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "types/express.d.ts"
+  ],
+  "exclude": [
+    "src/migrations"
+  ],
+  "references": [
+    { "path": "../shared" }
+  ]
+}

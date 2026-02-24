@@ -29,7 +29,8 @@ RUN pnpm install --frozen-lockfile
 
 # Usamos --force para ignorar la caché de Turbo
 RUN pnpm turbo run build --filter=@economic-control/shared --force
-RUN pnpm turbo run build --filter=@economic-control/server --force
+#RUN pnpm turbo run build --filter=@economic-control/server --force
+RUN pnpm --filter @economic-control/server run build --force
 
 # Limpiamos devDependencies para que no pasen al runner (Opcional pero recomendado)
 RUN CI=true pnpm install --prod --frozen-lockfile
@@ -48,9 +49,6 @@ COPY --from=builder /app/package.json .
 
 # Copiamos el servidor y el paquete compartido
 COPY --from=builder /app/packages/server ./packages/server
-#COPY --from=builder /app/packages/server/config ./packages/server/config
-#COPY --from=builder /app/packages/server/migrations ./packages/server/migrations
-#COPY --from=builder /app/packages/server/seeders ./packages/server/seeders
 COPY --from=builder /app/packages/shared ./packages/shared
 
 USER expressjs
