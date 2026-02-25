@@ -6,6 +6,7 @@ import { z } from "zod";
 export const STATUS = [
   "Soltero/a",
   "Casado/a",
+  "Unión Libre",
   "Divorciado/a",
   "Viudo/a",
 ] as const;

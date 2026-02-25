@@ -8,6 +8,7 @@ import {
 import { getSequelizeConfig } from "@config/sequelize.config.js";
 
 import { GENDER, STATUS, type StatusType } from "@economic-control/shared";
+import { UserModel } from "@models/auth/user.model.js";
 
 const connection = getSequelizeConfig();
 
@@ -158,6 +159,21 @@ export class MemberActions {
   };
 
   /**
+   * Helper para obtener la configuración de includes
+   * @returns array con la configuración de includes
+   */
+  private static getIncludeConfig() {
+    return [
+      {
+        model: UserModel,
+        as: "User",
+        attributes: ["id", "first_name", "username"],
+        required: true,
+      },
+    ];
+  }
+
+  /**
    * Obtiene todas las personas de la base de datos.
    * @returns promise con un array de objetos PersonAttributes.
    */
@@ -169,6 +185,7 @@ export class MemberActions {
       const whereClause: any = includeHidden ? {} : { is_visible: true };
       const members = await MemberModel.findAll({
         where: whereClause,
+        include: this.getIncludeConfig(),
       });
 
       return members.map((member) => member.get({ plain: true }));
@@ -189,6 +206,7 @@ export class MemberActions {
   ): Promise<MemberAttributes | null> {
     const person = await MemberModel.scope("visible").findOne({
       where: data,
+      include: this.getIncludeConfig(),
     });
 
     return person ? person.get({ plain: true }) : null;

@@ -52,7 +52,7 @@ interface MemberTableProps {
 
 // Tipos para la ordenación
 type Order = "asc" | "desc";
-type OrderBy = keyof Member | "age";
+type OrderBy = keyof Member | "age" | "username";
 
 /**
  * Calcula la edad a partir de un string de fecha.
@@ -96,6 +96,7 @@ export default function MemberTable({
     lastName: "",
     phone: "",
     visitDate: "",
+    leader: "",
   };
 
   const [filters, setFilters] = useState(initialFilters);
@@ -184,6 +185,13 @@ export default function MemberTable({
       )
         return false;
       if (filters.phone && !member.phone?.includes(filters.phone)) return false;
+      if (
+        filters.leader &&
+        !member.User?.username
+          ?.toLowerCase()
+          .includes(filters.leader.toLowerCase())
+      )
+        return false;
 
       return true;
     });
@@ -193,6 +201,7 @@ export default function MemberTable({
   const sortedMembers = useMemo(() => {
     const getValue = (item: Member, column: OrderBy) => {
       if (column === "age") return calculateAge(item.birth_date) ?? -1;
+      if (column === "username") return item.User?.username ?? "";
       return item[column as keyof Member] ?? "";
     };
 
@@ -269,7 +278,7 @@ export default function MemberTable({
     ];
 
     const rows = sortedMembers.map((member) => [
-      member.user_id,
+      member.User?.username || "",
       member.first_name || "",
       member.last_name || "",
       member.phone || "",
@@ -453,6 +462,25 @@ export default function MemberTable({
 
             <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
               <FormControl fullWidth size="small">
+                <InputLabel>Líder</InputLabel>
+                <Select
+                  value={filters.leader}
+                  label="Líder"
+                  onChange={(e) =>
+                    setFilters({ ...filters, leader: e.target.value })
+                  }
+                >
+                  <MenuItem value="all">
+                    <em>Todos</em>
+                  </MenuItem>
+                  <MenuItem value="Masculino">Masculino</MenuItem>
+                  <MenuItem value="Femenino">Femenino</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+              <FormControl fullWidth size="small">
                 <InputLabel>Estado Civil</InputLabel>
                 <Select
                   value={filters.status}
@@ -514,7 +542,7 @@ export default function MemberTable({
         <Table sx={{ minWidth: 650 }} aria-label="member table">
           <TableHead sx={{ bgcolor: "primary.main" }}>
             <TableRow>
-              <SortableHeader id="user_id" label="Líder" />
+              <SortableHeader id="username" label="Líder" />
               <SortableHeader id="first_name" label="Nombre" />
               <SortableHeader id="last_name" label="Apellido" />
               <SortableHeader id="phone" label="Teléfono" />
@@ -559,7 +587,7 @@ export default function MemberTable({
                       transition: "background-color 0.2s ease",
                     }}
                   >
-                    <TableCell>{row.user_id || "-"}</TableCell>
+                    <TableCell>{row.User?.username || "-"}</TableCell>
                     <TableCell>{row.first_name || "-"}</TableCell>
                     <TableCell>{row.last_name || "-"}</TableCell>
                     <TableCell>{row.phone || "-"}</TableCell>

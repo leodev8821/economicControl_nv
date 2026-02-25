@@ -142,7 +142,8 @@ const normalizeIncomeSource = (source: string): IncomeSource => {
 
 export class IncomeActions {
   /**
-   * Helper privado para evitar dependencias circulares en la inicialización
+   * Helper para obtener la configuración de includes
+   * @returns array con la configuración de includes
    */
   private static getIncludeConfig() {
     return [

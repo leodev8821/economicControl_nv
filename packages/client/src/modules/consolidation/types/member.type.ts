@@ -8,6 +8,11 @@ export {
 
 export interface Member extends MemberCreationRequest {
   id: number;
+  User?: {
+    id: number;
+    first_name: string;
+    username: string;
+  };
 }
 
 export type MemberAttributes = Member;
