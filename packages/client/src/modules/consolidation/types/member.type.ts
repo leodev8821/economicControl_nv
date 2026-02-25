@@ -8,6 +8,7 @@ export {
 
 export interface Member extends MemberCreationRequest {
   id: number;
+  is_visible: boolean;
   User?: {
     id: number;
     first_name: string;

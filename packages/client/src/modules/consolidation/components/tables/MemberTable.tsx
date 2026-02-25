@@ -351,7 +351,10 @@ export default function MemberTable({
               TOTAL MIEMBROS (FILTRADO)
             </Typography>
             <Typography variant="h4" fontWeight="bold">
-              {filteredMembers.length}
+              {
+                filteredMembers.filter((member) => member.is_visible === true)
+                  .length
+              }
             </Typography>
           </Box>
         </Box>

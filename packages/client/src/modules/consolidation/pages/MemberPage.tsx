@@ -86,7 +86,12 @@ const MembersPage: React.FC = () => {
     // Modo edición → update
     if (editingMember) {
       updateMutation.mutate(
-        { ...payload[0], id: editingMember.id },
+        {
+          ...editingMember,
+          ...payload[0],
+          id: editingMember.id,
+          is_visible: payload[0].is_visible ?? editingMember.is_visible,
+        } as Member,
         {
           onSuccess: () => {
             setEditingMember(null);
