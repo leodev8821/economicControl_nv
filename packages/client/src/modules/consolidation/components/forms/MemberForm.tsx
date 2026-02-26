@@ -314,7 +314,7 @@ function MemberRow({
     setSelectedBirthDate(
       rowFields.birth_date.initialValue
         ? dayjs(rowFields.birth_date.initialValue)
-        : dayjs(),
+        : null,
     );
   }, [rowFields.birth_date.initialValue, rowFields.birth_date.key]);
 
@@ -329,7 +329,7 @@ function MemberRow({
     setSelectedVisitDate(
       rowFields.visit_date?.initialValue
         ? dayjs(rowFields.visit_date.initialValue)
-        : dayjs(),
+        : null,
     );
   }, [rowFields.visit_date?.initialValue, rowFields.visit_date?.key]);
 

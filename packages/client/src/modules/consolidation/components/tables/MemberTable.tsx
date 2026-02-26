@@ -96,7 +96,7 @@ export default function MemberTable({
     lastName: "",
     phone: "",
     visitDate: "",
-    leader: "",
+    leader: "all",
   };
 
   const [filters, setFilters] = useState(initialFilters);
@@ -145,19 +145,6 @@ export default function MemberTable({
       const isHidden = member.is_visible === false;
       if (isHidden && !isAdmin) return false;
 
-      // 1. Filtro Global (Texto rápido en el input de búsqueda principal)
-      if (searchText) {
-        const lowerSearch = searchText.toLowerCase();
-        const matchName = member.first_name
-          ?.toLowerCase()
-          .includes(lowerSearch);
-        const matchLastName = member.last_name
-          ?.toLowerCase()
-          .includes(lowerSearch);
-        const matchPhone = member.phone?.includes(lowerSearch);
-        if (!matchName && !matchLastName && !matchPhone) return false;
-      }
-
       // 2. Filtros Avanzados
       if (filters.global) {
         const lowerGlobal = filters.global.toLowerCase();
@@ -166,10 +153,15 @@ export default function MemberTable({
           return false;
       }
 
+      // Filtro por Género
       if (filters.gender !== "all" && member.gender !== filters.gender)
         return false;
+
+      // Filtro por Estado
       if (filters.status !== "all" && member.status !== filters.status)
         return false;
+
+      // Filtro por Nombre
       if (
         filters.firstName &&
         !member.first_name
@@ -177,6 +169,8 @@ export default function MemberTable({
           .includes(filters.firstName.toLowerCase())
       )
         return false;
+
+      // Filtro por Apellido
       if (
         filters.lastName &&
         !member.last_name
@@ -184,14 +178,24 @@ export default function MemberTable({
           .includes(filters.lastName.toLowerCase())
       )
         return false;
+
+      // Filtro por Teléfono
       if (filters.phone && !member.phone?.includes(filters.phone)) return false;
-      if (
-        filters.leader &&
-        !member.User?.username
-          ?.toLowerCase()
-          .includes(filters.leader.toLowerCase())
-      )
-        return false;
+
+      // Filtro por Líder
+      if (filters.leader !== "all") {
+        if (member.User?.username !== filters.leader) {
+          return false;
+        }
+      }
+
+      // Filtro por Fecha de Visita
+      if (filters.visitDate) {
+        const filterDate = dayjs(filters.visitDate).format("DD/MM/YYYY");
+        const memberDate = dayjs(member.visit_date).format("DD/MM/YYYY");
+
+        if (filterDate !== memberDate) return false;
+      }
 
       return true;
     });
@@ -214,6 +218,18 @@ export default function MemberTable({
       return 0;
     });
   }, [filteredMembers, order, orderBy]);
+
+  const availableLeaders = useMemo(() => {
+    const leadersMap = new Map();
+
+    members.forEach((member) => {
+      const id = member.user_id;
+      const username = member.User?.username;
+      leadersMap.set(id, { id, username });
+    });
+
+    return Array.from(leadersMap.values());
+  }, [members]);
 
   // --- 3. Paginación ---
   const paginatedMembers = useMemo(() => {
@@ -420,26 +436,6 @@ export default function MemberTable({
               ? "Ocultar Filtros Avanzados"
               : "Mostrar Filtros Avanzados"}
           </Button>
-
-          <TextField
-            placeholder="Búsqueda rápida (ID...)"
-            variant="outlined"
-            size="small"
-            value={filters.global}
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, global: e.target.value }))
-            }
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon color="action" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-            sx={{ width: { xs: "100%", sm: 300 } }}
-          />
         </Stack>
 
         <Collapse in={showFilters}>
@@ -469,15 +465,22 @@ export default function MemberTable({
                 <Select
                   value={filters.leader}
                   label="Líder"
-                  onChange={(e) =>
-                    setFilters({ ...filters, leader: e.target.value })
-                  }
+                  onChange={(e) => {
+                    setFilters((prev) => ({
+                      ...prev,
+                      leader: e.target.value,
+                    }));
+                    setPage(0);
+                  }}
                 >
                   <MenuItem value="all">
                     <em>Todos</em>
                   </MenuItem>
-                  <MenuItem value="Masculino">Masculino</MenuItem>
-                  <MenuItem value="Femenino">Femenino</MenuItem>
+                  {availableLeaders.map((leader) => (
+                    <MenuItem key={leader.id} value={leader.username}>
+                      {leader.username}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -523,6 +526,24 @@ export default function MemberTable({
                 value={filters.lastName}
                 onChange={(e) =>
                   setFilters({ ...filters, lastName: e.target.value })
+                }
+              />
+            </Grid>
+
+            <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+              <TextField
+                label="Fecha de Visita"
+                type="date"
+                size="small"
+                fullWidth
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
+                value={filters.visitDate}
+                onChange={(e) =>
+                  setFilters({ ...filters, visitDate: e.target.value })
                 }
               />
             </Grid>

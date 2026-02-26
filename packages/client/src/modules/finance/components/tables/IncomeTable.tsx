@@ -489,7 +489,6 @@ export default function IncomeTable({
                     <MenuItem value="all">
                       <em>Todas</em>
                     </MenuItem>
-                    {/* Aquí deberías importar tus sources constantes o hardcodearlos */}
                     {INCOME_SOURCES.map((s) => (
                       <MenuItem key={s} value={s}>
                         {s}
