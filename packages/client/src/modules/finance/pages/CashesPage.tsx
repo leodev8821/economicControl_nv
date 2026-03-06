@@ -209,7 +209,7 @@ const CashesPage: React.FC = () => {
               borderBottom={1}
               borderColor="divider"
             >
-              <Typography variant="h6">
+              <Typography variant="h6" color="secondary" gutterBottom>
                 Listado de Cajas Registradas ({cashes.length})
               </Typography>
             </Box>
@@ -237,7 +237,7 @@ const CashesPage: React.FC = () => {
           gap={2}
         >
           <Box>
-            <Typography variant="h4" fontWeight="bold" color="primary.main">
+            <Typography variant="h6" color="primary" gutterBottom>
               Arqueo de Efectivo
             </Typography>
             {/* Selector de Caja para el Arqueo */}

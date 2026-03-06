@@ -84,6 +84,7 @@ export default function UserForm({
     if (!initialValues) return null;
     return {
       ...initialValues,
+      is_visible: initialValues.is_visible ?? true,
       role_name: initialValues.role_name ?? "",
       permissions: initialValues.permissions || initialValues.Permissions || [],
     };

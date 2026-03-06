@@ -6,7 +6,7 @@ import Grid from "@mui/material/Grid";
 import InputLabel from "@mui/material/InputLabel";
 import FormHelperText from "@mui/material/FormHelperText";
 import InputAdornment from "@mui/material/InputAdornment";
-import { Button, Stack } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import { useForm } from "@conform-to/react";
 
 /** Schemas de validación */
@@ -82,7 +82,11 @@ export default function CashForm({
       onSubmit={handleSubmit}
       className="cash-form"
     >
-      <h2>{isUpdateMode ? "Editar Caja" : "Crear Nueva Caja"}</h2>
+      <Typography variant="h6" color="secondary" gutterBottom>
+        {isUpdateMode
+          ? `Editar Caja: ${initialValues?.name}`
+          : "Crear Nueva Caja"}
+      </Typography>
 
       {/* Errores a nivel de formulario (si existen) */}
       {form.errors && <div style={{ color: "red" }}>{form.errors}</div>}

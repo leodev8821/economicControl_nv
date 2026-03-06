@@ -7,7 +7,7 @@ import {
 } from "sequelize";
 import bcrypt from "bcryptjs";
 import { getSequelizeConfig } from "@config/sequelize.config.js";
-import { ROLE_TYPES } from "@models/auth/role.model.js";
+import { ROLE_TYPES, RoleModel } from "@models/auth/role.model.js";
 import { UserPermissionModel } from "@models/auth/user-permission.model.js";
 import { MemberModel } from "@models/consolidation-app/member.model.js";
 import { APP_IDS } from "@shared/app.constants.js";
@@ -205,11 +205,13 @@ export class UserActions {
   /**
    * Obtiene todas las usuarios de la base de datos.
    * @param appId ID de la aplicación.
+   * @param role_id ID del rol.
    * @param includeHidden Si se deben incluir los usuarios ocultos.
    * @returns promise con un array de objetos UserAttributes.
    */
   public static async getAll(
     appId?: number,
+    roleId?: number,
     includeHidden: boolean = false,
   ): Promise<UserAttributes[]> {
     try {
@@ -221,14 +223,25 @@ export class UserActions {
         required: false,
       };
 
+      const roleInclude: any = {
+        model: RoleModel,
+        as: "Role",
+        required: false,
+      };
+
       if (appId && appId > APP_IDS.ALL) {
         permissionsInclude.where = { application_id: appId };
         permissionsInclude.required = true;
       }
 
+      if (roleId) {
+        roleInclude.where = { id: roleId };
+        roleInclude.required = true;
+      }
+
       const users = await UserModel.findAll({
         where: whereClause,
-        include: [permissionsInclude],
+        include: [permissionsInclude, roleInclude],
         attributes: { exclude: ["password"] },
       });
 

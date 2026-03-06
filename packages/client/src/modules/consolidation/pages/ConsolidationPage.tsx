@@ -1,11 +1,12 @@
-import React, { useEffect } from "react";
+//import React, { useEffect } from "react";
+import React from "react";
 import { Box, Typography, Paper } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@modules/auth/hooks/useAuth";
+//import { useNavigate } from "react-router-dom";
+//import { useAuth } from "@modules/auth/hooks/useAuth";
 
 const ConsolidationPage: React.FC = () => {
   // Seguridad y Autenticación (misma idea que UserPage)
-  const { user: authUser } = useAuth();
+  /* const { user: authUser } = useAuth();
   const navigate = useNavigate();
 
   const ALLOWED_ROLES = ["Administrador", "SuperUser"];
@@ -20,7 +21,7 @@ const ConsolidationPage: React.FC = () => {
   }, [authUser, hasPermission, navigate]);
 
   // Si no tiene permiso, no renderizamos nada (el effect redirige)
-  if (!authUser || !hasPermission) return null;
+  if (!authUser || !hasPermission) return null; */
 
   return (
     <Box p={3}>

@@ -19,6 +19,7 @@ import {
   Divider,
   useTheme,
   useMediaQuery,
+  Avatar,
 } from "@mui/material";
 import {
   Logout,
@@ -61,6 +62,7 @@ interface DashboardShellProps {
   children: React.ReactNode;
   navigation: NavItem[];
   userRole?: string;
+  user?: any;
   onLogout: () => void;
 }
 
@@ -81,9 +83,16 @@ const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
   },
 }));
 
+const getInitials = (name?: string, lastName?: string) => {
+  const first = name?.charAt(0).toUpperCase() ?? "";
+  const last = lastName?.charAt(0).toUpperCase() ?? "";
+  return `${first}${last}`;
+};
+
 const DashboardShell: React.FC<DashboardShellProps> = ({
   children,
   navigation,
+  user,
   onLogout,
 }) => {
   const theme = useTheme();
@@ -268,10 +277,63 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
         }}
       >
         <Toolbar /> {/* Espaciador para no tapar con el AppBar */}
-        <Box sx={{ overflow: "auto", py: 1 }}>
-          <List>
-            {navigation.map((item, index) => renderNavItem(item, index))}
-          </List>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+          }}
+        >
+          {/* MENU */}
+          <Box sx={{ flexGrow: 1, overflow: "auto", py: 1 }}>
+            <List>
+              {navigation.map((item, index) => renderNavItem(item, index))}
+            </List>
+          </Box>
+
+          <Divider />
+
+          {/* USER INFO */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: collapsed && !isMobile ? "center" : "flex-start",
+              p: 2,
+              gap: 1.5,
+            }}
+          >
+            <StyledTooltip
+              title={`${user?.first_name ?? ""} ${user?.last_name ?? ""}`}
+              placement="right"
+              arrow
+              disableHoverListener={!collapsed}
+            >
+              <Avatar
+                sx={{
+                  bgcolor: "primary.main",
+                  width: 36,
+                  height: 36,
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              >
+                {getInitials(user?.first_name, user?.last_name)}
+              </Avatar>
+            </StyledTooltip>
+
+            {/* Nombre visible solo cuando el sidebar está abierto */}
+            {(!collapsed || isMobile) && (
+              <Box sx={{ overflow: "hidden" }}>
+                <Typography variant="body2" fontWeight={600} noWrap>
+                  {user?.first_name} {user?.last_name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" noWrap>
+                  {user?.role_name}
+                </Typography>
+              </Box>
+            )}
+          </Box>
         </Box>
       </Drawer>
 
@@ -360,7 +422,7 @@ const AppLayout: React.FC = () => {
         { kind: "header", title: "Módulos" },
         {
           title: "Consolidación",
-          segment: "/consolidation",
+          segment: "/consolidation/home",
           icon: <Handshake />,
         },
         {
@@ -386,7 +448,7 @@ const AppLayout: React.FC = () => {
   return (
     <AppTheme>
       <CssBaseline enableColorScheme />
-      <DashboardShell navigation={navigation} onLogout={logout}>
+      <DashboardShell navigation={navigation} user={user} onLogout={logout}>
         <Outlet />
       </DashboardShell>
     </AppTheme>

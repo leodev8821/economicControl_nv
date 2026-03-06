@@ -7,16 +7,24 @@ import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
 /**
  * Función que realiza la petición GET al backend para obtener todos los usuarios.
+ * @param applicationId - ID de la aplicación para filtrar los usuarios.
+ * @param roleId - ID del rol para filtrar los usuarios.
  * Ruta: GET /ec/api/v1/users
  * @returns Promesa que resuelve en un array de objetos User.
  */
-export const getAllUsers = async (applicationId?: number): Promise<User[]> => {
+export const getAllUsers = async (
+  applicationId?: number,
+  roleId?: number,
+): Promise<User[]> => {
   try {
     // Usamos la ruta relativa, el proxy de Vite y el prefijo de Axios hacen el resto.
     const response = await apiClient.get<ApiResponse<User>>(
       `${API_ROUTES_PATH.AUTH}/users`,
       {
-        params: applicationId ? { applicationId: applicationId } : {},
+        params: {
+          ...(applicationId ? { applicationId: applicationId } : {}),
+          ...(roleId ? { roleId: roleId } : {}),
+        },
       },
     );
 
@@ -25,7 +33,6 @@ export const getAllUsers = async (applicationId?: number): Promise<User[]> => {
       ...user,
     }));
   } catch (error) {
-    // Dejamos que React Query maneje el error en el componente, solo re-lanzamos.
     throw error;
   }
 };

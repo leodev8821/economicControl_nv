@@ -36,6 +36,30 @@ export const useUsers = (): UseQueryResult<User[], Error> => {
   });
 };
 
+// Hook para obtener la lista de líderes de consolidación
+export const useConsolidationLeaders = (): UseQueryResult<User[], Error> => {
+  const { user } = useAuth();
+
+  // 1. Identificamos si tiene acceso total (APPS.ALL = 1)
+  const hasGlobalAccess =
+    user?.role_name === "SuperUser" ||
+    user?.permissions.some((p) => p.application_id === APPS.ALL);
+
+  // 2. Extraemos el ID de aplicación para el filtro
+  const filterAppId = hasGlobalAccess
+    ? undefined
+    : user?.permissions[0]?.application_id;
+
+  const filterRoleId = 3;
+
+  return useQuery<User[], Error>({
+    queryKey: [USERS_QUERY_KEY],
+    queryFn: () => getAllUsers(filterAppId, filterRoleId),
+    staleTime: 5 * 60 * 1000,
+    enabled: !!user,
+  });
+};
+
 // Hook para crear un usuario
 export const useCreateUser = (): UseMutationResult<
   User,

@@ -90,6 +90,7 @@ const MembersPage: React.FC = () => {
           ...editingMember,
           ...payload[0],
           id: editingMember.id,
+          user_id: payload[0].user_id ?? editingMember.user_id,
           is_visible: payload[0].is_visible ?? editingMember.is_visible,
         } as Member,
         {
@@ -191,7 +192,8 @@ const MembersPage: React.FC = () => {
             </Button>
           }
         >
-          Estás editando el miembro ID {editingMember.id}
+          Estás editando el miembro {editingMember.first_name}{" "}
+          {editingMember.last_name}
         </Alert>
       )}
 
@@ -209,7 +211,12 @@ const MembersPage: React.FC = () => {
         </Alert>
       )}
 
-      <Paper ref={formRef} elevation={3} sx={{ p: 3, mb: 4, bgcolor: "paper" }}>
+      <Paper
+        id="member-form"
+        ref={formRef}
+        elevation={3}
+        sx={{ p: 3, mb: 4, bgcolor: "background.paper" }}
+      >
         {draft && !editingMember && (
           <Alert
             severity="warning"
@@ -222,12 +229,6 @@ const MembersPage: React.FC = () => {
           >
             Se han recuperado datos de un borrador guardado localmente.
           </Alert>
-        )}
-
-        {editingMember && (
-          <Typography color="primary" sx={{ mb: 2 }}>
-            Editando miembro ID {editingMember.id}
-          </Typography>
         )}
 
         <MemberForm
@@ -253,7 +254,7 @@ const MembersPage: React.FC = () => {
         </Box>
       ) : (
         <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
-          <Typography variant="h5" sx={{ mb: 2, p: 1 }}>
+          <Typography variant="h6" color="secondary" sx={{ mb: 2, p: 1 }}>
             Directorio de Miembros
           </Typography>
           {currentUser ? (

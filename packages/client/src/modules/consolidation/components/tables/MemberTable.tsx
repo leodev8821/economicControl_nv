@@ -205,7 +205,7 @@ export default function MemberTable({
   const sortedMembers = useMemo(() => {
     const getValue = (item: Member, column: OrderBy) => {
       if (column === "age") return calculateAge(item.birth_date) ?? -1;
-      if (column === "username") return item.User?.username ?? "";
+      if (column === "username") return item.User?.username || "";
       return item[column as keyof Member] ?? "";
     };
 
@@ -224,7 +224,7 @@ export default function MemberTable({
 
     members.forEach((member) => {
       const id = member.user_id;
-      const username = member.User?.username;
+      const username = member.User?.username || "";
       leadersMap.set(id, { id, username });
     });
 

@@ -80,27 +80,31 @@ export const createBulkMembers = async (
 };
 
 /**
- * Actualiza un miembro.
- * @param member Objeto MemberAttributes.
+ * Función que realiza la petición PUT al backend para actualizar un miembro.
+ * Ruta: PUT /ec/api/v1/members/{id}
+ * @param id ID del miembro a actualizar.
+ * @param data Objeto MemberAttributes con los datos del miembro a actualizar.
  * @returns Promesa que resuelve en un objeto Member.
  */
-export const updateMember = async (
-  member: MemberAttributes,
-): Promise<Member> => {
+export const updateMember = async ({
+  id,
+  ...data
+}: MemberAttributes): Promise<Member> => {
   try {
     const response = await apiClient.put<ApiResponse<Member>>(
-      `${API_ROUTES_PATH.CONSOLIDATION}/members/${member.id}`,
-      member,
+      `${API_ROUTES_PATH.CONSOLIDATION}/members/${id}`,
+      data,
     );
-    return response.data.data[0];
+    return response.data.data as unknown as Member;
   } catch (error) {
     throw error;
   }
 };
 
 /**
- * Elimina un miembro.
- * @param id ID del miembro.
+ * Función que realiza la petición DELETE al backend para eliminar un miembro.
+ * Ruta: DELETE /ec/api/v1/members/{id}
+ * @param id ID del miembro a eliminar.
  * @returns Promesa que resuelve en un mensaje.
  */
 export const deleteMember = async (id: number): Promise<string> => {

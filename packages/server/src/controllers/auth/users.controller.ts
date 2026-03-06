@@ -28,12 +28,19 @@ dotenv.config({ path: envPath });
 
 const sudoRole = process.env.SUDO_ROLE || "SuperUser"; // Valor por defecto seguro
 
+// Función auxiliar para parsear números de forma segura
+const parseOptionalId = (value: any): number | undefined => {
+  if (!value) return undefined;
+  const parsed = parseInt(value as string, 10);
+  return isNaN(parsed) ? undefined : parsed;
+};
+
 export const usersController = {
   // Obtiene todos los usuarios
   allUsers: async (req: Request, res: Response) => {
     try {
       const requester = (req as any).user;
-      const { applicationId } = req.query;
+      const { applicationId, roleId } = req.query;
 
       if (!requester) {
         return res.status(401).json({
@@ -42,28 +49,31 @@ export const usersController = {
         });
       }
 
-      // 2. Lógica de permisos basada en los datos del token
+      // Lógica de permisos basada en los datos del token
       const isSuperUser = requester.role_name === sudoRole;
       const permissions = requester.permissions || [];
-
       const hasGlobalAccess: boolean = permissions.some(
         (p: any) => p.application_id === APP_IDS.ALL,
       );
 
       let appIdToFilter: number | undefined;
+      let roleToFilter: number | undefined;
+      let canSeeHidden: boolean;
 
-      if (isSuperUser || hasGlobalAccess) {
-        appIdToFilter = applicationId
-          ? parseInt(applicationId as string, 10)
-          : undefined;
+      canSeeHidden = isSuperUser || hasGlobalAccess;
+      roleToFilter = parseOptionalId(roleId);
+
+      if (canSeeHidden) {
+        appIdToFilter = parseOptionalId(applicationId);
       } else {
-        // Si es admin de app, forzamos su ID asignado
+        // Si no tiene acceso global, forzamos su app
         appIdToFilter = permissions[0]?.application_id;
       }
 
       const users = await UserActions.getAll(
         appIdToFilter,
-        hasGlobalAccess || isSuperUser,
+        roleToFilter,
+        canSeeHidden,
       );
 
       return res.status(200).json({
@@ -260,6 +270,7 @@ export const usersController = {
 
         const isGlobalMaster =
           requester?.role_name === ROLE_TYPES.SUPER_USER ||
+          requester?.role_name === ROLE_TYPES.ADMINISTRADOR ||
           requester?.permissions?.some(
             (p: any) => p.application_id === APP_IDS.ALL,
           );

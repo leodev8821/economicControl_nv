@@ -66,7 +66,11 @@ const UserPage: React.FC = () => {
       // LOGICA DE SANITIZACIÓN
       const isEditingSelf = editingUser.id === authUser?.id;
 
-      const payload = { ...data, id: editingUser.id };
+      const payload = {
+        ...data,
+        id: editingUser.id,
+        is_visible: data.is_visible ?? true,
+      };
 
       if (isEditingSelf) {
         delete payload.role_name;
@@ -146,7 +150,11 @@ const UserPage: React.FC = () => {
       )}
 
       {/* === SECCIÓN FORMULARIO === */}
-      <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: "background.paper" }}>
+      <Paper
+        id="user-form"
+        elevation={3}
+        sx={{ p: 3, mb: 4, bgcolor: "background.paper" }}
+      >
         <Typography variant="h6" color="secondary" gutterBottom>
           {editingUser
             ? `Editando Usuario: ${editingUser.username}`

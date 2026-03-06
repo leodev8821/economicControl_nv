@@ -1,5 +1,7 @@
 import * as React from "react";
 import { useForm, getFormProps } from "@conform-to/react";
+/**MUI */
+import { type Theme, useTheme } from "@mui/material/styles";
 import Grid from "@mui/material/Grid";
 import {
   FormControl,
@@ -14,7 +16,6 @@ import {
   Box,
   Divider,
   useMediaQuery,
-  useTheme,
   Fade,
 } from "@mui/material";
 import {
@@ -31,6 +32,30 @@ import dayjs, { Dayjs } from "dayjs";
 
 import { parseWithZod } from "@conform-to/zod/v4";
 import * as SharedMemberSchemas from "@economic-control/shared";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { useConsolidationLeaders } from "@/modules/auth/hooks/useUser";
+import type { User } from "@/modules/auth/types/user.type";
+
+// Constantes para MUI Select
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
+function getStyles(name: string, selectedValue: string, theme: Theme) {
+  return {
+    fontWeight:
+      selectedValue === name
+        ? theme.typography.fontWeightMedium
+        : theme.typography.fontWeightRegular,
+  };
+}
 
 interface MemberFormProps {
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
@@ -143,6 +168,7 @@ export default function MemberForm({
       name: fields.members.name,
       value: [
         {
+          user_id: "",
           first_name: "",
           last_name: "",
           phone: "",
@@ -168,11 +194,10 @@ export default function MemberForm({
             gap: 2,
           }}
         >
-          <Typography
-            variant="h5"
-            sx={{ fontWeight: "bold", textAlign: { xs: "center", sm: "left" } }}
-          >
-            {isEditMode ? "Editar Miembro" : "Nuevos Miembros"}
+          <Typography variant="h6" color="secondary" gutterBottom>
+            {isEditMode
+              ? `Editando Miembro: ${initialValues?.members[0]?.first_name} ${initialValues?.members[0]?.last_name}`
+              : "Crear Nuevo Miembro"}
           </Typography>
 
           {!isEditMode && (
@@ -230,6 +255,7 @@ export default function MemberForm({
                 form.insert({
                   name: fields.members.name,
                   defaultValue: {
+                    user_id: "",
                     first_name: "",
                     last_name: "",
                     phone: "",
@@ -301,7 +327,17 @@ function MemberRow({
   isLoading,
   index,
 }: any) {
+  const theme = useTheme();
+  const { user } = useAuth();
   const rowFields = field.getFieldset();
+
+  const canAssignLeader =
+    user?.role_name === "Administrador" || user?.role_name === "SuperUser";
+
+  let leaders: User[] | undefined;
+  if (canAssignLeader) {
+    leaders = useConsolidationLeaders().data;
+  }
 
   const [selectedBirthDate, setSelectedBirthDate] =
     React.useState<Dayjs | null>(
@@ -337,10 +373,9 @@ function MemberRow({
     <Box
       sx={{
         p: { xs: 1.5, sm: 2 },
-        border: "1px solid #eee",
         borderRadius: 2,
-        bgcolor: "#fff",
         boxShadow: { xs: 1, sm: 0 },
+        bgcolor: "background.paper",
       }}
     >
       {/* Etiqueta visible solo en móviles para identificar la fila */}
@@ -353,6 +388,40 @@ function MemberRow({
       </Typography>
 
       <Grid container spacing={2} alignItems="flex-start">
+        {canAssignLeader && (
+          <Grid size={{ xs: 6, sm: 2 }}>
+            <FormControl
+              fullWidth
+              size="small"
+              error={!!rowFields.user_id.errors}
+            >
+              <InputLabel>Asignar Líder</InputLabel>
+              <Select
+                key={rowFields.user_id.key}
+                label="Asignar Líder"
+                name={rowFields.user_id.name}
+                defaultValue={rowFields.user_id.initialValue ?? ""}
+                disabled={isLoading}
+                MenuProps={MenuProps}
+              >
+                {leaders?.map((leader) => (
+                  <MenuItem
+                    key={leader.id}
+                    value={leader.id}
+                    style={getStyles("user_id", leader.username, theme)}
+                  >
+                    {leader.username}
+                  </MenuItem>
+                ))}
+              </Select>
+              {rowFields.user_id.errors && (
+                <Typography variant="caption" color="error" sx={{ ml: 1.5 }}>
+                  {rowFields.leader_id.errors.join(", ")}
+                </Typography>
+              )}
+            </FormControl>
+          </Grid>
+        )}
         <Grid size={{ xs: 6, sm: 2 }}>
           <TextField
             key={rowFields.first_name.key}
@@ -407,9 +476,14 @@ function MemberRow({
               name={rowFields.gender.name}
               defaultValue={rowFields.gender.initialValue ?? ""}
               disabled={isLoading}
+              MenuProps={MenuProps}
             >
               {SharedMemberSchemas.GENDER.map((s) => (
-                <MenuItem key={s} value={s}>
+                <MenuItem
+                  key={s}
+                  value={s}
+                  style={getStyles("gender", s, theme)}
+                >
                   {s}
                 </MenuItem>
               ))}
@@ -488,9 +562,14 @@ function MemberRow({
               name={rowFields.status.name}
               defaultValue={rowFields.status.initialValue ?? "Soltero/a"}
               disabled={isLoading}
+              MenuProps={MenuProps}
             >
               {SharedMemberSchemas.STATUS.map((s) => (
-                <MenuItem key={s} value={s}>
+                <MenuItem
+                  key={s}
+                  value={s}
+                  style={getStyles("status", s, theme)}
+                >
                   {s}
                 </MenuItem>
               ))}
