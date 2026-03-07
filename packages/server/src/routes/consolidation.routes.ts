@@ -20,7 +20,7 @@ router.delete("/members/:id", memberController.deleteMember);
 // =================================================================
 router.get("/networks", networkController.allNetworks);
 router.get("/networks/:id", networkController.oneNetwork);
-router.post("/networks/new-network", networkController.createNetwork);
+router.post("/networks", networkController.createNetwork);
 router.put("/networks/:id", networkController.updateNetwork);
 router.delete("/networks/:id", networkController.deleteNetwork);
 

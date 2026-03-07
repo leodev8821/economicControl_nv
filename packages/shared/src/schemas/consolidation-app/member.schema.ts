@@ -61,7 +61,7 @@ export type MemberUpdateRequest = z.infer<typeof MemberUpdateSchema>;
 // 6. ESQUEMA para Carga Masiva (Formulario)
 // ----------------------------------------------------------------------
 
-// 1. Definimos el item del Bulk con la validación de "Diezmo"
+// 1. Definimos el item del Bulk
 export const BulkMemberItemSchema = BaseMemberSchema;
 
 // 2. El Schema del formulario ahora usará el item refinado

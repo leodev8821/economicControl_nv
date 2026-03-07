@@ -1,7 +1,13 @@
-import type { NetworkCreationRequest } from "@economic-control/shared";
+import type {
+  NetworkType,
+  NetworkCreationRequest,
+  NetworkUpdateRequest,
+} from "@economic-control/shared";
 
-export interface Network extends NetworkCreationRequest {
+export interface Network extends NetworkType {
   id: number;
 }
 
-export type NetworkType = Network;
+export type NetworkAttributes = Network;
+export type NetworkCreate = NetworkCreationRequest;
+export type NetworkUpdate = NetworkUpdateRequest;

@@ -1,56 +1,48 @@
-//import React, { useEffect } from "react";
-import React from "react";
-import { Box, Typography, Paper } from "@mui/material";
-//import { useNavigate } from "react-router-dom";
-//import { useAuth } from "@modules/auth/hooks/useAuth";
+import { Box, Paper, Typography, Snackbar } from "@mui/material";
+import MuiAlert from "@mui/material/Alert";
 
-const ConsolidationPage: React.FC = () => {
-  // Seguridad y Autenticación (misma idea que UserPage)
-  /* const { user: authUser } = useAuth();
-  const navigate = useNavigate();
+import NetworkForm from "../components/forms/NetworkForm";
+import NetworkTable from "../components/tables/NetworkTable";
 
-  const ALLOWED_ROLES = ["Administrador", "SuperUser"];
-  const hasPermission =
-    authUser?.role_name && ALLOWED_ROLES.includes(authUser.role_name);
+import useNetworkController from "../hooks/useNetworkController";
 
-  // Redirección si no hay permiso
-  useEffect(() => {
-    if (authUser && !hasPermission) {
-      navigate("/dashboard");
-    }
-  }, [authUser, hasPermission, navigate]);
-
-  // Si no tiene permiso, no renderizamos nada (el effect redirige)
-  if (!authUser || !hasPermission) return null; */
+export default function ConsolidationPage() {
+  const controller = useNetworkController();
 
   return (
     <Box p={3}>
-      <Box mb={3}>
-        <Typography variant="h4" component="h1" gutterBottom color="primary">
-          Consolidación
-        </Typography>
-        <Typography variant="body2" color="textSecondary">
-          Módulo de consolidación de información
-        </Typography>
-      </Box>
-
-      <Paper
-        elevation={3}
-        sx={{
-          p: 6,
-          textAlign: "center",
-          bgcolor: "background.paper",
-        }}
-      >
-        <Typography variant="h5" gutterBottom>
-          🚧 Página en construcción...
-        </Typography>
-        <Typography variant="body1" color="textSecondary">
-          Esta sección estará disponible próximamente. Estamos trabajando para
-          ofrecerte nuevas funcionalidades.
-        </Typography>
+      <Paper ref={controller.formRef} sx={{ p: 3, mb: 4 }}>
+        <NetworkForm
+          onSubmit={controller.handleFormSubmit}
+          isLoading={controller.isLoading}
+          initialValues={controller.editingNetwork ?? undefined}
+          isEditMode={!!controller.editingNetwork}
+          onCancel={controller.cancelEdit}
+        />
       </Paper>
+
+      <Paper sx={{ p: 2 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Directorio de Redes ({controller.networks.length})
+        </Typography>
+
+        <NetworkTable
+          rows={controller.networks}
+          onEdit={controller.startEdit}
+          onToggleVisibility={controller.toggleVisibility}
+        />
+      </Paper>
+
+      <Snackbar
+        open={controller.snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => controller.setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <MuiAlert severity={controller.snackbar.severity} variant="filled">
+          {controller.snackbar.message}
+        </MuiAlert>
+      </Snackbar>
     </Box>
   );
-};
-export default ConsolidationPage;
+}

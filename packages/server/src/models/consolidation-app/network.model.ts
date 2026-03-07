@@ -50,24 +50,19 @@ NetworkModel.init(
     tableName: "networks",
     timestamps: false,
     modelName: "Network",
-    scopes: {
-      visible: {
-        where: { is_visible: true },
-      },
-    },
   },
 );
 
 export class NetworkActions {
   public static async getAll(): Promise<NetworkAttributes[]> {
-    const networks = await NetworkModel.scope("visible").findAll();
+    const networks = await NetworkModel.findAll();
     return networks.map((network) => network.get({ plain: true }));
   }
 
   public static async getOne(
     data: NetworkSearchData,
   ): Promise<NetworkAttributes | null> {
-    const network = await NetworkModel.scope("visible").findOne({
+    const network = await NetworkModel.findOne({
       where: data,
     });
     return network ? network.get({ plain: true }) : null;
