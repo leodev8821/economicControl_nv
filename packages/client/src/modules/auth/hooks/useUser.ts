@@ -50,7 +50,7 @@ export const useConsolidationLeaders = (): UseQueryResult<User[], Error> => {
     ? undefined
     : user?.permissions[0]?.application_id;
 
-  const filterRoleId = 3;
+  const filterRoleId = 4;
 
   return useQuery<User[], Error>({
     queryKey: [USERS_QUERY_KEY],
