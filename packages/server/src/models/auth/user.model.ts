@@ -239,9 +239,6 @@ export class UserActions {
         roleInclude.required = true;
       }
 
-      console.log("permissionsInclude - Model", permissionsInclude);
-      console.log("roleInclude - Model", roleInclude);
-
       const users = await UserModel.findAll({
         where: whereClause,
         include: [permissionsInclude, roleInclude],

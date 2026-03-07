@@ -71,17 +71,11 @@ export const usersController = {
 
       roleToFilter = parseOptionalId(roleId);
 
-      console.log("appIdToFilter - Controller", appIdToFilter);
-      console.log("roleToFilter - Controller", roleToFilter);
-      console.log("canSeeHidden - Controller", canSeeHidden);
-
       const users = await UserActions.getAll(
         appIdToFilter,
         roleToFilter,
         canSeeHidden,
       );
-
-      console.log("users - Controller", users);
 
       return res.status(200).json({
         ok: true,
