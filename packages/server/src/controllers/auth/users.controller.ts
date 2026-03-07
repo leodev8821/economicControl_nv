@@ -76,6 +76,8 @@ export const usersController = {
         canSeeHidden,
       );
 
+      console.log("users", users);
+
       return res.status(200).json({
         ok: true,
         data: users,
