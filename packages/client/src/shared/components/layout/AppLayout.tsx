@@ -426,7 +426,7 @@ const AppLayout: React.FC = () => {
           icon: <Handshake />,
         },
         {
-          title: "Miembros",
+          title: "Nuevas Personas",
           segment: "/consolidation/members",
           icon: <HowToReg />,
         },

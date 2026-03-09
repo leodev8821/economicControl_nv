@@ -57,7 +57,7 @@ export default function NetworkForm({
       onSubmit(event);
 
       if (!isEditMode) {
-        form.reset();
+        resetForm();
       }
     },
 
@@ -66,6 +66,15 @@ export default function NetworkForm({
   });
 
   const nameField = fields.name;
+
+  const resetForm = React.useCallback(() => {
+    resetForm();
+
+    form.update({
+      name: fields.name.name,
+      value: nameField.initialValue,
+    });
+  }, [form, fields.name.name]);
 
   return (
     <form {...getFormProps(form)}>

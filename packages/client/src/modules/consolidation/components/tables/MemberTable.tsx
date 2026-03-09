@@ -312,7 +312,7 @@ export default function MemberTable({
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      `miembros_filtrados_${new Date().toISOString().slice(0, 10)}.csv`,
+      `nuevas_personas_filtradas_${new Date().toISOString().slice(0, 10)}.csv`,
     );
     link.style.visibility = "hidden";
     document.body.appendChild(link);
@@ -364,7 +364,7 @@ export default function MemberTable({
               variant="caption"
               sx={{ opacity: 0.9, letterSpacing: 1 }}
             >
-              TOTAL MIEMBROS (FILTRADO)
+              TOTAL NUEVAS PERSONAS (FILTRADO)
             </Typography>
             <Typography variant="h4" fontWeight="bold">
               {

@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Typography,
@@ -9,176 +8,26 @@ import {
   Snackbar,
   Alert as MuiAlert,
 } from "@mui/material";
-import { parseWithZod } from "@conform-to/zod/v4";
-import {
-  useReadMembers,
-  useUpdateMember,
-  useDeleteMember,
-  useCreateBulkMembers,
-} from "@modules/consolidation/hooks/useMember";
+
+import useMemberController from "@modules/consolidation/hooks/useMemberController";
 import MemberTable from "@modules/consolidation/components/tables/MemberTable";
 import MemberForm from "@modules/consolidation/components/forms/MemberForm";
-import type { Member } from "@modules/consolidation/types/member.type";
-import * as SharedMemberSchemas from "@economic-control/shared";
 
-import { useAuth } from "@/modules/auth/hooks/useAuth";
 import type { User } from "@/modules/auth/types/user.type";
 
-const MembersPage: React.FC = () => {
-  const [formKey, setFormKey] = useState(0);
-  const [draft, setDraft] = useState<any>(null);
-  const [editingMember, setEditingMember] = useState<Member | null>(null);
-
-  const { user: currentUser } = useAuth();
-
-  // Hooks de React Query
-  const { data: members = [], isLoading, isError, error } = useReadMembers();
-  const deleteMutation = useDeleteMember();
-  const updateMutation = useUpdateMember();
-  const createBulkMutation = useCreateBulkMembers();
-
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success" as "success" | "error",
-  });
-
-  const formRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const savedDraft = localStorage.getItem("members_draft");
-    if (savedDraft && !editingMember) {
-      setDraft(JSON.parse(savedDraft));
-      setFormKey((prev) => prev + 1);
-    }
-  }, [editingMember]);
-
-  const handleClearDraft = () => {
-    localStorage.removeItem("members_draft");
-    setDraft(null);
-    setFormKey((prev) => prev + 1);
-    showSnackbar("Borrador eliminado");
-  };
-
-  const showSnackbar = (
-    message: string,
-    severity: "success" | "error" = "success",
-  ) => {
-    setSnackbar({ open: true, message, severity });
-  };
-
-  // --- Lógica de Formulario ---
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-
-    const submission = parseWithZod(formData, {
-      schema: SharedMemberSchemas.BulkMemberSchema,
-    });
-
-    if (submission.status !== "success") {
-      console.log("Errores de validación:", submission.reply());
-      return;
-    }
-
-    const payload = submission.value.members;
-
-    // Modo edición → update
-    if (editingMember) {
-      updateMutation.mutate(
-        {
-          ...editingMember,
-          ...payload[0],
-          id: editingMember.id,
-          user_id: payload[0].user_id ?? editingMember.user_id,
-          is_visible: payload[0].is_visible ?? editingMember.is_visible,
-        } as Member,
-        {
-          onSuccess: () => {
-            setEditingMember(null);
-            setFormKey((prev) => prev + 1);
-            showSnackbar("Miembro actualizado correctamente");
-          },
-          onError: () => showSnackbar("Error al actualizar", "error"),
-        },
-      );
-      return;
-    }
-
-    // Modo creación (Bulk o Single)
-    createBulkMutation.mutate(payload, {
-      onSuccess: () => {
-        localStorage.removeItem("members_draft");
-        setDraft(null);
-        setEditingMember(null);
-        setFormKey((prev) => prev + 1);
-        showSnackbar("Miembros registrados correctamente");
-      },
-      onError: () => showSnackbar("Error al guardar", "error"),
-    });
-  };
-
-  const handleStartEdit = (member: Member) => {
-    setEditingMember(member);
-    setFormKey((prev) => prev + 1);
-    setTimeout(() => {
-      formRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 100);
-  };
-
-  const handleToggleVisibility = (member: Member) => {
-    const isHidden = member.is_visible === false;
-
-    if (isHidden) {
-      // 1. Lógica de Restauración (Solo Admin/SuperUser llegarán a este punto visualmente)
-      if (
-        window.confirm(
-          `¿Está seguro de RESTAURAR el Miembro con ID ${member.id}?`,
-        )
-      ) {
-        updateMutation.mutate(
-          // Forzamos el tipado para asegurar que pasamos el id y el nuevo estado
-          { id: member.id, is_visible: true } as unknown as Member,
-          {
-            onSuccess: () => showSnackbar("Miembro restaurado correctamente"),
-            onError: () => showSnackbar("Error al restaurar", "error"),
-          },
-        );
-      }
-    } else {
-      // 2. Lógica de Eliminación (Soft-delete)
-      if (
-        window.confirm(
-          `¿Está seguro de ELIMINAR el Miembro con ID ${member.id}?`,
-        )
-      ) {
-        deleteMutation.mutate(member.id, {
-          onSuccess: () => showSnackbar("Miembro eliminado"),
-          onError: () => showSnackbar("Error al eliminar", "error"),
-        });
-      }
-    }
-  };
-
-  const formInitialValues = editingMember
-    ? { members: [editingMember] }
-    : draft
-      ? draft
-      : undefined;
+export default function MembersPage() {
+  const controller = useMemberController();
 
   return (
     <Box p={3}>
       {/* Indicador de mutación en curso */}
-      {(deleteMutation.isPending || updateMutation.isPending) && (
+      {controller.isLoading && (
         <Typography color="primary" sx={{ mb: 2 }}>
           Realizando acción en el servidor...
         </Typography>
       )}
 
-      {editingMember && (
+      {controller.editingMember && (
         <Alert
           severity="info"
           sx={{ mb: 3, position: "sticky", top: 0, zIndex: 10 }}
@@ -186,25 +35,23 @@ const MembersPage: React.FC = () => {
             <Button
               color="inherit"
               size="small"
-              onClick={() => setEditingMember(null)}
+              onClick={() => controller.setEditingMember(null)}
             >
               Cancelar
             </Button>
           }
         >
-          Estás editando el miembro {editingMember.first_name}{" "}
-          {editingMember.last_name}
+          Estás editando la nueva persona {controller.editingMember.first_name}{" "}
+          {controller.editingMember.last_name}
         </Alert>
       )}
 
       <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
-        Gestión de Miembros
+        Gestión de Nuevas Personas
       </Typography>
 
       {/* Alertas de Error Consolidadas */}
-      {(deleteMutation.isError ||
-        updateMutation.isError ||
-        createBulkMutation.isError) && (
+      {controller.isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
           Hubo un problema al procesar la solicitud. Por favor, intente de
           nuevo.
@@ -213,16 +60,20 @@ const MembersPage: React.FC = () => {
 
       <Paper
         id="member-form"
-        ref={formRef}
+        ref={controller.formRef}
         elevation={3}
         sx={{ p: 3, mb: 4, bgcolor: "background.paper" }}
       >
-        {draft && !editingMember && (
+        {controller.draft && !controller.editingMember && (
           <Alert
             severity="warning"
             sx={{ mb: 2 }}
             action={
-              <Button color="inherit" size="small" onClick={handleClearDraft}>
+              <Button
+                color="inherit"
+                size="small"
+                onClick={controller.handleClearDraft}
+              >
                 Descartar Borrador
               </Button>
             }
@@ -232,41 +83,41 @@ const MembersPage: React.FC = () => {
         )}
 
         <MemberForm
-          key={formKey}
-          onSubmit={handleFormSubmit}
-          isLoading={createBulkMutation.isPending || updateMutation.isPending}
-          initialValues={formInitialValues}
-          disableAdd={!!editingMember}
-          isEditMode={!!editingMember}
+          key={controller.formKey}
+          onSubmit={controller.handleFormSubmit}
+          isLoading={controller.isLoading}
+          initialValues={controller.formInitialValues}
+          disableAdd={!!controller.editingMember}
+          isEditMode={!!controller.editingMember}
           onCancel={() => {
-            setEditingMember(null);
-            setFormKey((prev) => prev + 1);
+            controller.setEditingMember(null);
+            controller.setFormKey((prev) => prev + 1);
           }}
         />
       </Paper>
 
-      {isLoading ? (
+      {controller.isLoading ? (
         <Box display="flex" flexDirection="column" alignItems="center" py={5}>
           <CircularProgress />
           <Typography variant="h6" mt={2}>
-            Cargando listado de miembros...
+            Cargando listado de nuevas personas...
           </Typography>
         </Box>
       ) : (
         <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
           <Typography variant="h6" color="secondary" sx={{ mb: 2, p: 1 }}>
-            Directorio de Miembros
+            Directorio de Nuevas Personas
           </Typography>
-          {currentUser ? (
+          {controller.currentUser ? (
             <MemberTable
-              members={members}
-              currentUser={currentUser as User}
-              highlightedRowId={editingMember?.id}
+              members={controller.members}
+              currentUser={controller.currentUser as User}
+              highlightedRowId={controller.editingMember?.id}
               onEdit={(member) => {
-                if (editingMember) return;
-                handleStartEdit(member);
+                if (controller.editingMember) return;
+                controller.handleStartEdit(member);
               }}
-              onToggleVisibility={handleToggleVisibility}
+              onToggleVisibility={controller.handleToggleVisibility}
             />
           ) : (
             <Typography p={2}>Cargando permisos de usuario...</Typography>
@@ -275,31 +126,31 @@ const MembersPage: React.FC = () => {
       )}
 
       {/* Error real */}
-      {isError && !isLoading && (
+      {controller.isError && !controller.isLoading && (
         <Box p={3} color="error.main">
           <Typography variant="h6" gutterBottom>
-            Error al cargar miembros
+            Error al cargar nuevas personas
           </Typography>
-          <Typography variant="body2">Mensaje: {error?.message}</Typography>
+          <Typography variant="body2">
+            Mensaje: {controller.error?.message}
+          </Typography>
         </Box>
       )}
 
       <Snackbar
-        open={snackbar.open}
+        open={controller.snackbar.open}
         autoHideDuration={3000}
-        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        onClose={() => controller.setSnackbar((s) => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <MuiAlert
-          severity={snackbar.severity}
+          severity={controller.snackbar.severity}
           variant="filled"
-          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+          onClose={() => controller.setSnackbar((s) => ({ ...s, open: false }))}
         >
-          {snackbar.message}
+          {controller.snackbar.message}
         </MuiAlert>
       </Snackbar>
     </Box>
   );
-};
-
-export default MembersPage;
+}

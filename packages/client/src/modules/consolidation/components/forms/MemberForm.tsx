@@ -196,8 +196,8 @@ export default function MemberForm({
         >
           <Typography variant="h6" color="secondary" gutterBottom>
             {isEditMode
-              ? `Editando Miembro: ${initialValues?.members[0]?.first_name} ${initialValues?.members[0]?.last_name}`
-              : "Crear Nuevo Miembro"}
+              ? `Editando Nueva Persona: ${initialValues?.members[0]?.first_name} ${initialValues?.members[0]?.last_name}`
+              : "Crear Nueva Persona"}
           </Typography>
 
           {!isEditMode && (
@@ -272,7 +272,7 @@ export default function MemberForm({
               disabled={isLoading}
               fullWidth={isMobile}
             >
-              Añadir otro miembro
+              Añadir otra persona
             </Button>
           )}
 
@@ -310,7 +310,7 @@ export default function MemberForm({
               {isLoading
                 ? "Procesando..."
                 : isEditMode
-                  ? "Actualizar miembro"
+                  ? "Actualizar nueva persona"
                   : `Confirmar y Guardar (${memberList.length})`}
             </Button>
           </Stack>
@@ -384,7 +384,7 @@ function MemberRow({
         color="primary"
         sx={{ display: { xs: "block", sm: "none" }, mb: 1, fontWeight: "bold" }}
       >
-        Miembro #{index + 1}
+        Nueva Persona #{index + 1}
       </Typography>
 
       <Grid container spacing={2} alignItems="flex-start">
