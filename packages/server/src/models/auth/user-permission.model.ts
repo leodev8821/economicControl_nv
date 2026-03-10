@@ -1,5 +1,5 @@
 import { DataTypes, Model, type Optional } from "sequelize";
-import { getSequelizeConfig } from "../../config/sequelize.config.js";
+import { getSequelizeConfig } from "@config/sequelize.config.js";
 import { ROLE_VALUES } from "@economic-control/shared";
 import { APPLICATION_VALUES } from "@economic-control/shared";
 

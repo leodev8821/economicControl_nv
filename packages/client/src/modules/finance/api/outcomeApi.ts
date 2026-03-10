@@ -7,11 +7,11 @@ import type {
 import type { ApiResponse, ApiResponseData } from "@shared/types/apiResponse";
 import type {
   OutcomeCreationRequest,
-  ConsolidationUpdateRequest,
+  OutcomeUpdateRequest,
 } from "@economic-control/shared";
 import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
-export type OutcomeUpdateData = ConsolidationUpdateRequest & { id: number };
+export type OutcomeUpdateData = OutcomeUpdateRequest & { id: number };
 
 /**
  * Helper interno para normalizar el monto de los egresos.

@@ -1,10 +1,10 @@
 import { DataTypes, Model, fn, col, type Optional, Op } from "sequelize";
-import { getSequelizeConfig } from "../../config/sequelize.config.js";
+import { getSequelizeConfig } from "@config/sequelize.config.js";
 import { PersonModel } from "./person.model.js";
 import { WeekModel } from "./week.model.js";
 import { CashModel, CashActions } from "./cash.model.js";
 import { INCOME_SOURCES, type IncomeSource } from "@economic-control/shared";
-import { DashboardFilter } from "../../shared/dashboard.types.js";
+import { DashboardFilter } from "@shared/dashboard.types.js";
 
 const connection = getSequelizeConfig();
 

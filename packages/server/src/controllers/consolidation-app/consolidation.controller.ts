@@ -1,22 +1,18 @@
 import { Request, Response } from "express";
 import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
-import {
-  ConsolidationActions,
-  ConsolidationAttributes,
-  ConsolidationCreationAttributes,
-  ConsolidationSearchData,
-} from "../../models/consolidation-app/consolidation.model.js";
+import type { ConsolidationAttributes } from "@models/consolidation-app/consolidation.model.js";
 import {
   ConsolidationCreationSchema,
   ConsolidationUpdateSchema,
 } from "@economic-control/shared";
+import { consolidationService } from "@services/consolidation/consolidation.service.js";
 
 export const consolidationController = {
   // Obtiene todas las consolidaciones
   allConsolidations: async (_req: Request, res: Response) => {
     try {
       const consolidations: ConsolidationAttributes[] =
-        await ConsolidationActions.getAll();
+        await consolidationService.getAll();
 
       return res.status(200).json({
         ok: true,
@@ -38,15 +34,17 @@ export const consolidationController = {
   // Obtiene una consolidación por ID
   oneConsolidation: async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      const searchCriteria: ConsolidationSearchData = {};
+      const consolidationId = parseInt(req.params.id as string, 10);
 
-      if (id) {
-        searchCriteria.id = parseInt(id as string, 10);
+      if (isNaN(consolidationId) || consolidationId <= 0) {
+        return res.status(400).json({
+          ok: false,
+          message: "ID de consolidación inválido.",
+        });
       }
 
       const consolidationObtained =
-        await ConsolidationActions.getOne(searchCriteria);
+        await consolidationService.getById(consolidationId);
 
       if (!consolidationObtained) {
         return res.status(404).json({
@@ -83,39 +81,19 @@ export const consolidationController = {
         });
       }
 
-      const {
-        church_visit_date,
-        call_date,
-        visit_date,
-        observations,
-        invited_by,
-        register_id,
-        lider_id,
-        red_id,
-        ...rest
-      } = validationResult.data;
-
-      const consolidationData: ConsolidationCreationAttributes = {
-        ...rest,
-        member_register_id: register_id,
-        leader_id: lider_id,
-        network_id: red_id,
-        church_visit_date: new Date(church_visit_date),
-        call_date: new Date(call_date),
-        visit_date: new Date(visit_date),
-        observations: observations ?? null,
-        invited_by: invited_by ?? null,
-      };
-
-      const newConsolidation =
-        await ConsolidationActions.create(consolidationData);
+      const newConsolidation = await consolidationService.create(
+        validationResult.data,
+      );
 
       return res.status(201).json({
         ok: true,
         message: "Consolidación creada correctamente.",
         data: newConsolidation,
       });
-    } catch (error) {
+    } catch (error: any) {
+      if (error.message === "Usuario, miembro o red no encontrado") {
+        return res.status(400).json({ ok: false, message: error.message });
+      }
       return ControllerErrorHandler(
         res,
         error,
@@ -124,14 +102,15 @@ export const consolidationController = {
     }
   },
 
+  // Actualiza una consolidación
   updateConsolidation: async (req: Request, res: Response) => {
     try {
-      const consolidationId = parseInt((req.params.id as string) || "0", 10);
+      const consolidationId = parseInt(req.params.id as string, 10);
 
-      if (!consolidationId) {
+      if (isNaN(consolidationId) || consolidationId <= 0) {
         return res
           .status(400)
-          .json({ ok: false, message: "ID de consolidación inválido" });
+          .json({ ok: false, message: "ID de consolidación inválido." });
       }
 
       const validationResult = ConsolidationUpdateSchema.safeParse(req.body);
@@ -144,53 +123,27 @@ export const consolidationController = {
         });
       }
 
-      const {
-        church_visit_date,
-        call_date,
-        visit_date,
-        register_id,
-        lider_id,
-        red_id,
-        ...restUpdate
-      } = validationResult.data;
-
-      const updateData: Partial<ConsolidationCreationAttributes> = {
-        ...restUpdate,
-        ...(register_id && { member_register_id: register_id }),
-        ...(lider_id && { leader_id: lider_id }),
-        ...(red_id && { network_id: red_id }),
-        ...(church_visit_date && {
-          church_visit_date: new Date(church_visit_date),
-        }),
-        ...(call_date && { call_date: new Date(call_date) }),
-        ...(visit_date && { visit_date: new Date(visit_date) }),
-      };
-
-      if (Object.keys(updateData).length === 0) {
+      if (Object.keys(validationResult.data).length === 0) {
         return res.status(400).json({
           ok: false,
           message: "No se proporcionaron datos para actualizar.",
         });
       }
 
-      const updatedConsolidation = await ConsolidationActions.update(
+      const updatedConsolidation = await consolidationService.update(
         consolidationId,
-        updateData,
+        validationResult.data,
       );
-
-      if (!updatedConsolidation) {
-        return res.status(404).json({
-          ok: false,
-          message: "Consolidación no encontrada para actualizar.",
-        });
-      }
 
       return res.status(200).json({
         ok: true,
         message: "Consolidación actualizada correctamente.",
         data: updatedConsolidation,
       });
-    } catch (error) {
+    } catch (error: any) {
+      if (error.message === "Consolidación no encontrada") {
+        return res.status(404).json({ ok: false, message: error.message });
+      }
       return ControllerErrorHandler(
         res,
         error,
@@ -199,33 +152,27 @@ export const consolidationController = {
     }
   },
 
+  // Elimina una consolidación
   deleteConsolidation: async (req: Request, res: Response) => {
     try {
-      const consolidationId: number = parseInt(
-        (req.params.id as string) || "0",
-        10,
-      );
+      const consolidationId = parseInt(req.params.id as string, 10);
 
-      if (!consolidationId) {
+      if (isNaN(consolidationId) || consolidationId <= 0) {
         return res
           .status(400)
-          .json({ ok: false, message: "ID de consolidación inválido" });
+          .json({ ok: false, message: "ID de consolidación inválido." });
       }
 
-      const deleted = await ConsolidationActions.delete(consolidationId);
-
-      if (!deleted) {
-        return res.status(404).json({
-          ok: false,
-          message: "No se encontró la consolidación para eliminar.",
-        });
-      }
+      await consolidationService.remove(consolidationId);
 
       return res.status(200).json({
         ok: true,
         message: "Consolidación eliminada correctamente.",
       });
-    } catch (error) {
+    } catch (error: any) {
+      if (error.message === "Consolidación no encontrada") {
+        return res.status(404).json({ ok: false, message: error.message });
+      }
       return ControllerErrorHandler(
         res,
         error,

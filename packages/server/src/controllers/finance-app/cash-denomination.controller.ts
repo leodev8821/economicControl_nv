@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
-import type { CashDenominationAttributes } from "../../models/finance-app/cash-denomination.model.js";
+import ControllerErrorHandler from "@utils/ControllerErrorHandler.js";
+import type { CashDenominationAttributes } from "@models/finance-app/cash-denomination.model.js";
 import {
   CashDenominationCreationDTO,
   CashDenominationUpdateDTO,
 } from "@economic-control/shared";
-import { cashDenominationService } from "../../services/finance-app/cash-denomination.service.js";
+import { cashDenominationService } from "@services/finance-app/cash-denomination.service.js";
 
 export const cashDenominationController = {
   // Obtiene todas las monedas

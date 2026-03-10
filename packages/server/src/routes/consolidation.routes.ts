@@ -27,10 +27,13 @@ router.delete("/networks/:id", networkController.deleteNetwork);
 // =================================================================
 // 🤝 CONSOLIDACIONES (Gestión de visitas y llamadas)
 // =================================================================
-router.get("/", consolidationController.allConsolidations);
-router.get("/:id", consolidationController.oneConsolidation);
-router.post("/new-consolidation", consolidationController.createConsolidation);
-router.put("/:id", consolidationController.updateConsolidation);
-router.delete("/:id", consolidationController.deleteConsolidation);
+router.get("/consolidations", consolidationController.allConsolidations);
+router.get("/consolidations/:id", consolidationController.oneConsolidation);
+router.post("/consolidations/new", consolidationController.createConsolidation);
+router.put("/consolidations/:id", consolidationController.updateConsolidation);
+router.delete(
+  "/consolidations/:id",
+  consolidationController.deleteConsolidation,
+);
 
 export default router;

@@ -1,4 +1,4 @@
-import { getSequelizeConfig } from "../config/sequelize.config.js";
+import { getSequelizeConfig } from "@config/sequelize.config.js";
 import { RoleModel as Role } from "./auth/role.model.js";
 import { UserModel as User } from "./auth/user.model.js";
 import { ApplicationModel as Application } from "./auth/application.model.js";
@@ -86,38 +86,48 @@ CashDenomination.belongsTo(Cash, {
 // =================================================================
 // Consolidation App
 // =================================================================
-
-// --- Consolidation <-> MemberRegister ---
-Consolidation.belongsTo(Member, {
-  foreignKey: { name: "member_id", allowNull: true },
-  as: "Member",
-  onDelete: "SET NULL",
-});
-
-Member.hasMany(Consolidation, {
-  foreignKey: { name: "member_id", allowNull: true },
-  as: "Consolidations",
-});
-
-// --- Consolidation <-> Leader ---
+// --- Consolidation <--> User ---
 Consolidation.belongsTo(User, {
-  foreignKey: { name: "user_id", allowNull: true },
+  foreignKey: "user_id",
+  targetKey: "id",
   as: "User",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 User.hasMany(Consolidation, {
-  foreignKey: { name: "user_id", allowNull: true },
+  foreignKey: "user_id",
+  sourceKey: "id",
   as: "Consolidations",
+});
+
+// --- Consolidation <-> Member  ---
+Consolidation.belongsTo(Member, {
+  foreignKey: "member_id",
+  targetKey: "id",
+  as: "Member",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+
+Member.hasOne(Consolidation, {
+  foreignKey: "member_id",
+  sourceKey: "id",
+  as: "Consolidation",
 });
 
 // --- Consolidation <-> Network ---
 Consolidation.belongsTo(Network, {
-  foreignKey: { name: "network_id", allowNull: true },
+  foreignKey: "network_id",
+  targetKey: "id",
   as: "Network",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Network.hasMany(Consolidation, {
-  foreignKey: { name: "network_id", allowNull: true },
+  foreignKey: "network_id",
+  sourceKey: "id",
   as: "Consolidations",
 });
 

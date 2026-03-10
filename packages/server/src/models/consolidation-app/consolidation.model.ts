@@ -1,48 +1,56 @@
 // models/outcome.ts
 import { DataTypes, Model, type Optional } from "sequelize";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
-import { MemberModel } from "./member.model.js";
-import { NetworkModel } from "./network.model.js";
 import {
-  CLASIFICATION,
-  type ClasificationType,
+  CALL_OBSERVATIONS,
+  HOW_KNOW_US,
+  type CallObservationType,
+  type HowKnowUsType,
 } from "@economic-control/shared";
-import { UserModel } from "../auth/user.model.js";
 
 const connection = getSequelizeConfig();
 
 export interface ConsolidationAttributes {
   id: number;
-  member_register_id: number;
-  leader_id: number | null;
-  network_id: number | null;
-  church_visit_date: Date;
-  call_date: Date | null;
-  visit_date: Date | null;
-  observations: string | null;
+  user_id: number;
+  member_id: number;
+  network_id: number;
+  how_know_us: HowKnowUsType;
   invited_by: string | null;
-  clasification: ClasificationType;
+  call_date: Date | null;
+  call_observations: CallObservationType;
+  other_observations: string | null;
+  visit_date: Date | null;
+  visit_observations: string | null;
   is_visible: boolean;
 }
 
 export type ConsolidationSearchData = {
   id?: number;
-  member_register_id?: number;
-  leader_id?: number;
+  user_id?: number;
+  member_id?: number;
   network_id?: number;
-  church_visit_date?: Date;
-  call_date?: Date;
-  visit_date?: Date;
-  observations?: string;
-  invited_by?: string;
-  clasification?: ClasificationType;
+  how_know_us?: HowKnowUsType;
+  invited_by?: string | null;
+  call_date?: Date | null;
+  call_observations?: CallObservationType;
+  other_observations?: string | null;
+  visit_date?: Date | null;
+  visit_observations?: string | null;
   is_visible?: boolean;
 };
 
-/** Campos opcionales al crear un Outcome (id auto-incremental) */
+/** Campos opcionales al crear un Consolidation (id auto-incremental) */
 export interface ConsolidationCreationAttributes extends Optional<
   ConsolidationAttributes,
-  "id" | "is_visible"
+  | "id"
+  | "is_visible"
+  | "other_observations"
+  | "visit_observations"
+  | "call_observations"
+  | "call_date"
+  | "visit_date"
+  | "invited_by"
 > {}
 
 /** Clase del modelo tipada */
@@ -51,15 +59,16 @@ export class ConsolidationModel
   implements ConsolidationAttributes
 {
   declare id: number;
-  declare member_register_id: number;
-  declare leader_id: number | null;
-  declare network_id: number | null;
-  declare church_visit_date: Date;
-  declare call_date: Date | null;
-  declare visit_date: Date | null;
-  declare observations: string | null;
+  declare user_id: number;
+  declare member_id: number;
+  declare network_id: number;
+  declare how_know_us: HowKnowUsType;
   declare invited_by: string | null;
-  declare clasification: ClasificationType;
+  declare call_date: Date | null;
+  declare call_observations: CallObservationType;
+  declare other_observations: string | null;
+  declare visit_date: Date | null;
+  declare visit_observations: string | null;
   declare is_visible: boolean;
 }
 
@@ -71,53 +80,57 @@ ConsolidationModel.init(
       primaryKey: true,
       autoIncrement: true,
     },
-    member_register_id: {
+    user_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: "member-registers",
-        key: "id",
-      },
-    },
-    leader_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: "users",
         key: "id",
       },
     },
+    member_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "members",
+        key: "id",
+      },
+    },
     network_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: "networks",
         key: "id",
       },
     },
-    church_visit_date: {
-      type: DataTypes.DATE,
+    how_know_us: {
+      type: DataTypes.ENUM(...HOW_KNOW_US),
+      allowNull: false,
+    },
+    invited_by: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
     call_date: {
       type: DataTypes.DATE,
       allowNull: true,
     },
+    call_observations: {
+      type: DataTypes.ENUM(...CALL_OBSERVATIONS),
+      allowNull: true,
+    },
+    other_observations: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     visit_date: {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    observations: {
+    visit_observations: {
       type: DataTypes.STRING,
       allowNull: true,
-    },
-    invited_by: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    clasification: {
-      type: DataTypes.ENUM(...CLASIFICATION),
-      allowNull: false,
     },
     is_visible: {
       type: DataTypes.BOOLEAN,
@@ -129,33 +142,6 @@ ConsolidationModel.init(
     tableName: "consolidations",
     timestamps: false,
     modelName: "Consolidation",
-    scopes: {
-      visible: {
-        where: { is_visible: true },
-      },
-      populated: {
-        include: [
-          {
-            model: MemberModel,
-            as: "MemberRegister",
-            attributes: ["id", "first_name", "last_name", "phone"],
-            required: true,
-          },
-          {
-            model: UserModel,
-            as: "Leader",
-            attributes: ["id", "first_name", "last_name", "phone"],
-            required: false,
-          },
-          {
-            model: NetworkModel,
-            as: "Network",
-            attributes: ["id", "name"],
-            required: false,
-          },
-        ],
-      },
-    },
   },
 );
 

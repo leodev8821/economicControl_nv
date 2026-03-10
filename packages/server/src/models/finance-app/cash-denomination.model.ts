@@ -18,7 +18,7 @@ export type CashDenominationSearchData = {
   denomination_value?: number;
 };
 
-// Opcionalidad para la creación (id es auto-generado, quantity tiene un valor por defecto)
+// Opcionalidad para la creación (id es auto-generado
 export interface CashDenominationCreationAttributes extends Optional<
   CashDenominationAttributes,
   "id"

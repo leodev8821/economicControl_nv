@@ -6,9 +6,9 @@ import {
   CashDenominationAttributes,
   CashDenominationModel,
   CashDenominationSearchData,
-} from "../../models/finance-app/cash-denomination.model.js";
-import { CashModel } from "../../models/finance-app/cash.model.js";
-import { getSequelizeConfig } from "../../config/sequelize.config.js";
+} from "@models/finance-app/cash-denomination.model.js";
+import { CashModel } from "@models/finance-app/cash.model.js";
+import { getSequelizeConfig } from "@config/sequelize.config.js";
 import { Transaction } from "sequelize";
 
 const connection = getSequelizeConfig();
