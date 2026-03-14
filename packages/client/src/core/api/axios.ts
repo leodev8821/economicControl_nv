@@ -9,13 +9,13 @@ import { API_ROUTES_PATH } from "./appsApiRoute";
 
 const isProd = import.meta.env.PROD;
 
-// 2. Definimos la URL base:
-// Si es PROD: usamos la URL completa del .env.production
-// Si es DEV: usamos solo el prefijo para que el proxy de Vite lo capture
+// Definición de la URL base:
+// Si es PROD: se usa la URL completa del .env.production
+// Si es DEV: se usa solo el prefijo para que el proxy de Vite lo capture
 // Limpia posibles barras duplicadas o faltantes
-const cleanURL = (url: string) => url.replace(/\/+$/, ""); // Quita barras al final
+const cleanURL = (url: string) => url.replace(/\/+$/, "");
 const cleanPrefix = (prefix: string) =>
-  prefix.startsWith("/") ? prefix : `/${prefix}`; // Asegura barra al inicio
+  prefix.startsWith("/") ? prefix : `/${prefix}`;
 
 const BASE_URL = isProd
   ? `${cleanURL(import.meta.env.VITE_API_URL)}${cleanPrefix(
@@ -73,7 +73,7 @@ apiClient.interceptors.response.use(
       originalRequest.url?.includes(API_ROUTES_PATH.AUTH + "/refresh-token") ||
       originalRequest.url?.includes(API_ROUTES_PATH.AUTH + "/logout");
 
-    // Si la respuesta es un 401 Y no estamos ya intentando renovar
+    // Si la respuesta es un 401 y no se está intentando renovar
     if (
       error.response?.status === 401 &&
       originalRequest &&
@@ -81,12 +81,12 @@ apiClient.interceptors.response.use(
       !isAuthEndpoint
     ) {
       if (isRefreshing) {
-        // Si ya hay una renovación en curso, ponemos la petición en cola
+        // Si ya hay una renovación en curso, se pone la petición en cola
         return new Promise<string | null>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
           .then((token) => {
-            // Solo añadir header si tenemos token válido
+            // Solo añadir header si se tiene token válido
             if (token) {
               originalRequest.headers = originalRequest.headers || {};
               const tokenWithBearer = token.startsWith("Bearer ")
@@ -117,10 +117,10 @@ apiClient.interceptors.response.use(
             refreshResponse.data?.token;
 
           if (newAccessToken) {
-            // 1. Establecer el nuevo Access Token globalmente
+            // Establecer el nuevo Access Token globalmente
             setGlobalAccessToken(newAccessToken);
 
-            // 2. Disparar evento para que AuthProvider actualice su estado
+            // Disparar evento para que AuthProvider actualice su estado
             if (
               typeof window !== "undefined" &&
               typeof window.dispatchEvent === "function"
@@ -130,11 +130,11 @@ apiClient.interceptors.response.use(
               );
             }
 
-            // 3. Procesar la cola y reintentar la petición original (incluida en la cola)
+            // Procesar la cola y reintentar la petición original (incluida en la cola)
             isRefreshing = false;
             processQueue(null, newAccessToken ?? null);
 
-            // 4. Configurar la petición original para que use el nuevo token y resolver
+            // Configurar la petición original para que use el nuevo token y resolver
             originalRequest.headers = originalRequest.headers || {};
             const newTokenWithBearer = newAccessToken.startsWith("Bearer ")
               ? newAccessToken
@@ -147,7 +147,7 @@ apiClient.interceptors.response.use(
             throw new Error("No se recibió el nuevo Access Token.");
           }
         } catch (refreshError) {
-          // 5. Si la renovación falla (401 del refresh), forzamos logout
+          // Si la renovación falla (401 del refresh), se fuerza el logout
           processQueue(refreshError, null);
           if (
             typeof window !== "undefined" &&
@@ -173,12 +173,12 @@ export const setGlobalAccessToken = (token: string | null) => {
 apiClient.interceptors.request.use(
   (config) => {
     if (accessToken === null || accessToken === undefined) {
-      return config; // No hay token, no hacemos nada
+      return config; // No hay token, no se hace nada
     }
 
     // Añadir el token solo si existe y no es una cadena vacía
     const tokenValue: string = accessToken.trim();
-    // * Aseguramos que el token exista Y que no sea solo una cadena vacía después de trim()
+    // * Se asegura que el token exista Y que no sea solo una cadena vacía después de trim()
     if (tokenValue) {
       config.headers = config.headers || {};
       const finalToken = tokenValue.startsWith("Bearer ")

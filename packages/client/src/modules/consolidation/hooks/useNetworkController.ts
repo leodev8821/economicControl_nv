@@ -4,22 +4,24 @@ import { parseWithZod } from "@conform-to/zod/v4";
 import * as SharedMemberSchemas from "@economic-control/shared";
 
 import {
-  useReadNetworks,
+  useNetworks,
   useCreateNetwork,
   useUpdateNetwork,
   useDeleteNetwork,
 } from "./useNetwork";
 
-import type { Network } from "../types/network.type";
+import type { NetworkType } from "@economic-control/shared";
 
 export default function useNetworkController() {
-  const { data: networks = [] } = useReadNetworks();
+  const { data: networks = [] } = useNetworks();
 
   const createMutation = useCreateNetwork();
   const updateMutation = useUpdateNetwork();
   const deleteMutation = useDeleteNetwork();
 
-  const [editingNetwork, setEditingNetwork] = useState<Network | null>(null);
+  const [editingNetwork, setEditingNetwork] = useState<NetworkType | null>(
+    null,
+  );
 
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +53,7 @@ export default function useNetworkController() {
 
     if (editingNetwork) {
       updateMutation.mutate(
-        { ...payload, id: editingNetwork.id },
+        { id: editingNetwork.id!, data: payload },
         {
           onSuccess: () => {
             setEditingNetwork(null);
@@ -69,7 +71,7 @@ export default function useNetworkController() {
     });
   };
 
-  const startEdit = (network: Network) => {
+  const startEdit = (network: NetworkType) => {
     setEditingNetwork(network);
 
     setTimeout(() => {
@@ -81,10 +83,10 @@ export default function useNetworkController() {
     setEditingNetwork(null);
   };
 
-  const toggleVisibility = (network: Network) => {
+  const toggleVisibility = (network: NetworkType) => {
     if (network.is_visible) {
       updateMutation.mutate(
-        { id: network.id, is_visible: false },
+        { id: network.id!, data: { is_visible: false } },
         {
           onSuccess: () => showSnackbar("Red inactivada"),
           onError: () => showSnackbar("Error al inactivar", "error"),
@@ -92,7 +94,7 @@ export default function useNetworkController() {
       );
     } else {
       updateMutation.mutate(
-        { id: network.id, is_visible: true },
+        { id: network.id!, data: { is_visible: true } },
         {
           onSuccess: () => showSnackbar("Red restaurada"),
           onError: () => showSnackbar("Error al restaurar", "error"),

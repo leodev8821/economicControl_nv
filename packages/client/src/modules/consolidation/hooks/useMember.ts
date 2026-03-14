@@ -1,96 +1,111 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import {
-  getAllMembers,
-  getOneMember,
-  createMember,
-  createBulkMembers,
-  updateMember,
-  deleteMember,
-} from "@modules/consolidation/api/memberApi";
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type UseQueryResult,
+  type UseMutationResult,
+} from "@tanstack/react-query";
+import { memberApi } from "@modules/consolidation/api/memberApi";
+import { ConsolidationQueryKeys } from "@/core/api/queryKeys";
 import type {
-  Member,
-  MemberAttributes,
-} from "@modules/consolidation/types/member.type";
-import type { MemberCreationRequest } from "@economic-control/shared";
-
-// Clave única para esta consulta.
-const MEMBERS_QUERY_KEY = "members";
+  MemberType,
+  MemberCreateDTO,
+  BulkMemberCreateDTO,
+  MemberUpdateDTO,
+} from "@economic-control/shared";
 
 // Hook para obtener la lista de miembros.
-export const useReadMembers = (): UseQueryResult<Member[], Error> => {
-  return useQuery<Member[], Error>({
-    queryKey: [MEMBERS_QUERY_KEY],
-    queryFn: getAllMembers,
+export const useMembers = (): UseQueryResult<MemberType[], Error> => {
+  return useQuery<MemberType[], Error>({
+    queryKey: ConsolidationQueryKeys.members.all(),
+    queryFn: memberApi.getAll,
     staleTime: 5 * 60 * 1000,
   });
 };
 
 // Hook para obtener un solo miembro
-export const useOneMember = (id: number): UseQueryResult<Member, Error> => {
-  return useQuery<Member, Error>({
-    queryKey: [MEMBERS_QUERY_KEY],
-    queryFn: () => getOneMember(id),
+export const useMember = (id: number): UseQueryResult<MemberType, Error> => {
+  return useQuery<MemberType, Error>({
+    queryKey: ConsolidationQueryKeys.members.one(id),
+    queryFn: () => memberApi.getById(id),
     staleTime: 5 * 60 * 1000,
   });
 };
 
 // Hook para crear una miembro.
 export const useCreateMember = (): UseMutationResult<
-  Member,
+  MemberType,
   Error,
-  MemberCreationRequest
+  MemberCreateDTO
 > => {
   const queryClient = useQueryClient();
-
-  return useMutation<Member, Error, MemberCreationRequest>({
-    mutationFn: createMember,
+  return useMutation<MemberType, Error, MemberCreateDTO>({
+    mutationFn: (data: MemberCreateDTO) => memberApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [MEMBERS_QUERY_KEY] });
+      queryClient.invalidateQueries({
+        queryKey: ConsolidationQueryKeys.members.all(),
+      });
     },
   });
 };
 
 // Hook para crear múltiples miembros.
 export const useCreateBulkMembers = (): UseMutationResult<
-  Member[],
+  MemberType[],
   Error,
-  MemberCreationRequest[]
+  BulkMemberCreateDTO[]
 > => {
   const queryClient = useQueryClient();
 
-  return useMutation<Member[], Error, MemberCreationRequest[]>({
-    mutationFn: createBulkMembers,
+  return useMutation<MemberType[], Error, BulkMemberCreateDTO[]>({
+    mutationFn: (data: BulkMemberCreateDTO[]) => memberApi.createBulk(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [MEMBERS_QUERY_KEY] });
+      queryClient.invalidateQueries({
+        queryKey: ConsolidationQueryKeys.members.all(),
+      });
     },
   });
 };
 
 // Hook para actualizar una miembro.
 export const useUpdateMember = (): UseMutationResult<
-  Member,
+  MemberType,
   Error,
-  MemberAttributes
+  { id: number; data: MemberUpdateDTO }
 > => {
   const queryClient = useQueryClient();
 
-  return useMutation<Member, Error, MemberAttributes>({
-    mutationFn: updateMember,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [MEMBERS_QUERY_KEY] });
+  return useMutation<MemberType, Error, { id: number; data: MemberUpdateDTO }>({
+    mutationFn: ({ id, data }: { id: number; data: MemberUpdateDTO }) =>
+      memberApi.update(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ConsolidationQueryKeys.members.one(id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ConsolidationQueryKeys.members.all(),
+      });
     },
   });
 };
 
 // Hook para eliminar una miembro.
-export const useDeleteMember = (): UseMutationResult<String, Error, number> => {
+export const useDeleteMember = (): UseMutationResult<
+  { message: string },
+  Error,
+  { id: number }
+> => {
   const queryClient = useQueryClient();
 
-  return useMutation<String, Error, number>({
-    mutationFn: deleteMember,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [MEMBERS_QUERY_KEY] });
+  return useMutation<{ message: string }, Error, { id: number }>({
+    mutationFn: ({ id }: { id: number }) => memberApi.remove(id),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ConsolidationQueryKeys.members.one(id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ConsolidationQueryKeys.members.all(),
+      });
     },
   });
 };

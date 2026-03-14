@@ -1,94 +1,23 @@
 /* eslint-disable no-useless-catch */
-import apiClient from "@core/api/axios";
-import type { User, UserAttributes } from "@modules/auth/types/user.type";
-import type { ApiResponse, ApiResponseData } from "@shared/types/apiResponse";
-import type { UserCreationRequest } from "@economic-control/shared";
+import { createCrudApi } from "@/core/api/apiServiceFactory";
 import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
+import type {
+  UserCreateDTO,
+  UserUpdateDTO,
+  UserType,
+} from "@economic-control/shared";
 
-/**
- * Función que realiza la petición GET al backend para obtener todos los usuarios.
- * @param applicationId - ID de la aplicación para filtrar los usuarios.
- * @param roleId - ID del rol para filtrar los usuarios.
- * Ruta: GET /ec/api/v1/users
- * @returns Promesa que resuelve en un array de objetos User.
- */
-export const getAllUsers = async (
-  applicationId?: number,
-  roleId?: number,
-): Promise<User[]> => {
-  try {
-    // Usamos la ruta relativa, el proxy de Vite y el prefijo de Axios hacen el resto.
-    const response = await apiClient.get<ApiResponse<User>>(
-      `${API_ROUTES_PATH.AUTH}/users`,
-      {
-        params: {
-          ...(applicationId ? { applicationId: applicationId } : {}),
-          ...(roleId ? { roleId: roleId } : {}),
-        },
-      },
-    );
-
-    // Devolvemos el array limpio y tipado correctamente
-    return response.data.data.map((user) => ({
-      ...user,
-    }));
-  } catch (error) {
-    throw error;
-  }
+type UserFilters = {
+  applicationId?: number | undefined;
+  roleId?: number | undefined;
 };
 
 /**
- * Función que realiza la petición POST al backend para crear un nuevo usuario.
- * Ruta: POST /ec/api/v1/users
- * @param userData - Objeto UserCreationRequest con los datos del usuario a crear.
- * @returns Promesa que resuelve en un objeto User.
+ * API para la gestión de usuarios
  */
-export const createUser = async (
-  userData: UserCreationRequest,
-): Promise<User> => {
-  try {
-    const response = await apiClient.post<ApiResponseData<User>>(
-      `${API_ROUTES_PATH.AUTH}/users`,
-      userData,
-    );
-    return response.data.data as unknown as User;
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Función que realiza la petición PUT al backend para actualizar un usuario.
- * Ruta: PUT /ec/api/v1/users/{id}
- * @param id - ID del usuario a actualizar.
- * @param data - Objeto UserAttributes con los datos del usuario a actualizar.
- * @returns Promesa que resuelve en un objeto User.
- */
-export const updateUser = async ({
-  id,
-  ...data
-}: UserAttributes): Promise<User> => {
-  try {
-    const response = await apiClient.put<ApiResponseData<User>>(
-      `${API_ROUTES_PATH.AUTH}/users/${id}`,
-      data,
-    );
-    return response.data.data as unknown as User;
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Función que realiza la petición DELETE al backend para eliminar un usuario.
- * Ruta: DELETE /ec/api/v1/users/{id}
- * @param id - ID del usuario a eliminar.
- * @returns Promesa que resuelve en void.
- */
-export const deleteUser = async (id: number): Promise<void> => {
-  try {
-    await apiClient.delete(`${API_ROUTES_PATH.AUTH}/users/${id}`);
-  } catch (error) {
-    throw error;
-  }
-};
+export const userApi = createCrudApi<
+  UserType,
+  UserCreateDTO,
+  UserUpdateDTO,
+  UserFilters
+>(`${API_ROUTES_PATH.AUTH}/users`);

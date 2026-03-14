@@ -1,49 +1,67 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import {
-  getAllUsers,
-  createUser,
-  updateUser,
-  deleteUser,
-} from "@modules/auth/api/userApi";
-import type { User, UserAttributes } from "@modules/auth/types/user.type";
-import type { UserCreationRequest } from "@economic-control/shared";
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type UseQueryResult,
+  type UseMutationResult,
+} from "@tanstack/react-query";
+import { userApi } from "@modules/auth/api/userApi";
+import { AuthQueryKeys } from "@/core/api/queryKeys";
+import type {
+  UserCreateDTO,
+  UserUpdateDTO,
+  UserType,
+} from "@economic-control/shared";
+
 import { useAuth } from "./useAuth";
 import { APPS } from "@shared/constants/app";
 
-// Clave única para la consulta de usuarios
-const USERS_QUERY_KEY = "users";
+// Tipos para los hooks
+type UpdateUserParams = {
+  id: number;
+  data: UserUpdateDTO;
+};
 
 // Hook para obtener la lista de usuarios
-export const useUsers = (): UseQueryResult<User[], Error> => {
+export const useUsers = (): UseQueryResult<UserType[], Error> => {
   const { user } = useAuth();
 
   // 1. Identificamos si tiene acceso total (APPS.ALL = 1)
   const hasGlobalAccess =
     user?.role_name === "SuperUser" ||
-    user?.permissions.some((p) => p.application_id === APPS.ALL);
+    user?.permissions.some(
+      (p: { application_id: number }) => p.application_id === APPS.ALL,
+    );
 
   // 2. Extraemos el ID de aplicación para el filtro
   const filterAppId = hasGlobalAccess
     ? undefined
     : user?.permissions[0]?.application_id;
 
-  return useQuery<User[], Error>({
-    queryKey: [USERS_QUERY_KEY, filterAppId],
-    queryFn: () => getAllUsers(filterAppId),
+  return useQuery<UserType[], Error>({
+    queryKey: AuthQueryKeys.users.all(),
+    queryFn: () =>
+      userApi.getAll({
+        applicationId: filterAppId,
+      }),
     staleTime: 5 * 60 * 1000,
     enabled: !!user,
   });
 };
 
 // Hook para obtener la lista de líderes de consolidación
-export const useConsolidationLeaders = (): UseQueryResult<User[], Error> => {
+export const useConsolidationLeaders = (): UseQueryResult<
+  UserType[],
+  Error
+> => {
   const { user } = useAuth();
 
   // 1. Identificamos si tiene acceso total (APPS.ALL = 1)
   const hasGlobalAccess =
     user?.role_name === "SuperUser" ||
-    user?.permissions.some((p) => p.application_id === APPS.ALL);
+    user?.permissions.some(
+      (p: { application_id: number }) => p.application_id === APPS.ALL,
+    );
 
   // 2. Extraemos el ID de aplicación para el filtro
   const filterAppId = hasGlobalAccess
@@ -52,9 +70,13 @@ export const useConsolidationLeaders = (): UseQueryResult<User[], Error> => {
 
   const filterRoleId = 4;
 
-  return useQuery<User[], Error>({
-    queryKey: [USERS_QUERY_KEY],
-    queryFn: () => getAllUsers(filterAppId, filterRoleId),
+  return useQuery<UserType[], Error>({
+    queryKey: AuthQueryKeys.users.all(),
+    queryFn: () =>
+      userApi.getAll({
+        applicationId: filterAppId,
+        roleId: filterRoleId,
+      }),
     staleTime: 5 * 60 * 1000,
     enabled: !!user,
   });
@@ -62,44 +84,57 @@ export const useConsolidationLeaders = (): UseQueryResult<User[], Error> => {
 
 // Hook para crear un usuario
 export const useCreateUser = (): UseMutationResult<
-  User,
+  UserType,
   Error,
-  UserCreationRequest
+  UserCreateDTO
 > => {
   const queryClient = useQueryClient();
 
-  return useMutation<User, Error, UserCreationRequest>({
-    mutationFn: createUser,
+  return useMutation<UserType, Error, UserCreateDTO>({
+    mutationFn: (data) => userApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [USERS_QUERY_KEY] });
+      queryClient.invalidateQueries({
+        queryKey: AuthQueryKeys.users.all(),
+        exact: false,
+      });
     },
   });
 };
 
 // Hook para actualizar un usuario
 export const useUpdateUser = (): UseMutationResult<
-  User,
+  UserType,
   Error,
-  UserAttributes
+  UpdateUserParams
 > => {
   const queryClient = useQueryClient();
 
-  return useMutation<User, Error, UserAttributes>({
-    mutationFn: updateUser,
+  return useMutation<UserType, Error, UpdateUserParams>({
+    mutationFn: ({ id, data }: UpdateUserParams) => userApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [USERS_QUERY_KEY] });
+      queryClient.invalidateQueries({
+        queryKey: AuthQueryKeys.users.all(),
+        exact: false,
+      });
     },
   });
 };
 
 // Hook para eliminar un usuario
-export const useDeleteUser = (): UseMutationResult<void, Error, number> => {
+export const useDeleteUser = (): UseMutationResult<
+  { message: string },
+  Error,
+  number
+> => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, number>({
-    mutationFn: deleteUser,
+  return useMutation<{ message: string }, Error, number>({
+    mutationFn: (id) => userApi.remove(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [USERS_QUERY_KEY] });
+      queryClient.invalidateQueries({
+        queryKey: AuthQueryKeys.users.all(),
+        exact: false,
+      });
     },
   });
 };

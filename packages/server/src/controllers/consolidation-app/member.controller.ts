@@ -1,19 +1,12 @@
 import { Request, Response } from "express";
-
 import ControllerErrorHandler from "@utils/ControllerErrorHandler.js";
-
-import {
-  MemberActions,
-  MemberAttributes,
-  MemberCreationAttributes,
-  MemberSearchData,
-} from "@models/consolidation-app/member.model.js";
-
+import type { MemberAttributes } from "@models/consolidation-app/member.model.js";
 import {
   MemberCreationSchema,
   BulkMemberSchema,
   MemberUpdateSchema,
 } from "@economic-control/shared";
+import { memberService } from "@services/consolidation/member.service.js";
 
 interface AuthRequest extends Request {
   user: {
@@ -28,7 +21,7 @@ export const memberController = {
   // Obtiene todos los registros de personas
   allMembers: async (_req: Request, res: Response) => {
     try {
-      const members: MemberAttributes[] = await MemberActions.getAll(true);
+      const members: MemberAttributes[] = await memberService.getAll(true);
 
       return res.status(200).json({
         ok: true,
@@ -51,18 +44,16 @@ export const memberController = {
 
   oneMember: async (req: Request, res: Response) => {
     try {
-      const { id, name } = req.params;
-      const searchCriteria: MemberSearchData = {};
+      const memberId = parseInt(req.params.id as string, 10);
 
-      if (id) {
-        searchCriteria.id = parseInt(id as string, 10);
+      if (isNaN(memberId) || memberId <= 0) {
+        return res.status(400).json({
+          ok: false,
+          message: "ID de registro de persona inválido.",
+        });
       }
 
-      if (name) {
-        searchCriteria.first_name = name as string;
-      }
-
-      const memberObtained = await MemberActions.getOne(searchCriteria);
+      const memberObtained = await memberService.getOne(memberId);
 
       if (!memberObtained) {
         return res.status(404).json({
@@ -107,9 +98,10 @@ export const memberController = {
         });
       }
 
-      const memberData: MemberCreationAttributes = validationResult.data;
-
-      const newMember = await MemberActions.create(memberData, currentUserId);
+      const newMember = await memberService.create(
+        validationResult.data,
+        currentUserId,
+      );
 
       return res.status(201).json({
         ok: true,
@@ -149,7 +141,7 @@ export const memberController = {
 
       const { members } = validationResult.data;
 
-      const newMembers = await MemberActions.createMultipleMembers(
+      const newMembers = await memberService.createMultipleMembers(
         members,
         currentUserId,
       );
@@ -172,11 +164,8 @@ export const memberController = {
     try {
       const memberId = parseInt((req.params.id as string) || "0", 10);
 
-      if (!memberId) {
-        return res
-          .status(400)
-          .json({ ok: false, message: "ID de registro de persona inválido" });
-      }
+      if (isNaN(memberId))
+        return res.status(400).json({ ok: false, message: "ID inválido" });
 
       const validationResult = MemberUpdateSchema.safeParse(req.body);
 
@@ -188,34 +177,16 @@ export const memberController = {
         });
       }
 
-      const updateData: Partial<MemberCreationAttributes> =
-        validationResult.data;
-
-      if (Object.keys(updateData).length === 0) {
-        return res.status(400).json({
-          ok: false,
-          message: "No se proporcionaron datos para actualizar.",
-        });
-      }
-
-      const updatedMember = await MemberActions.update(
+      const updatedMember = await memberService.update(
         memberId,
-
-        updateData as Partial<MemberCreationAttributes>,
+        validationResult.data,
       );
 
       if (!updatedMember) {
-        return res.status(404).json({
-          ok: false,
-          message: "Registro de persona no encontrado para actualizar.",
-        });
+        return res.status(404).json({ ok: false, message: "No encontrado." });
       }
 
-      return res.status(200).json({
-        ok: true,
-        message: "Registro de persona actualizado correctamente.",
-        data: updatedMember,
-      });
+      return res.status(200).json({ ok: true, data: updatedMember });
     } catch (error) {
       return ControllerErrorHandler(
         res,
@@ -235,7 +206,7 @@ export const memberController = {
           .json({ ok: false, message: "ID de registro de persona inválido" });
       }
 
-      const deleted = await MemberActions.delete(memberId);
+      const deleted = await memberService.delete(memberId);
 
       if (!deleted) {
         return res.status(404).json({

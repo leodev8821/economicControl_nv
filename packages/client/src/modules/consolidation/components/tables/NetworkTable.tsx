@@ -18,12 +18,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RestoreIcon from "@mui/icons-material/Restore";
 
-import type { Network } from "../../types/network.type";
+import type { NetworkType } from "@economic-control/shared";
 
 interface Props {
-  rows: Network[];
-  onEdit: (network: Network) => void;
-  onToggleVisibility: (network: Network) => void;
+  rows: NetworkType[];
+  onEdit: (network: NetworkType) => void;
+  onToggleVisibility: (network: NetworkType) => void;
 }
 
 // --- Tipos y Funciones auxiliares para el ordenamiento ---
@@ -42,7 +42,7 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
 function getComparator<Key extends keyof any>(
   order: Order,
   orderBy: Key,
-): (a: { [key in Key]: any }, b: { [key in Key]: any }) => number {
+): (a: { [key in Key]?: any }, b: { [key in Key]?: any }) => number {
   return order === "desc"
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
@@ -57,7 +57,7 @@ export default function NetworkTable({
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [order, setOrder] = useState<Order>("asc");
-  const [orderBy, setOrderBy] = useState<keyof Network>("id");
+  const [orderBy, setOrderBy] = useState<keyof NetworkType>("id");
 
   // --- Manejadores de eventos ---
   const handleChangePage = (_event: unknown, newPage: number) => {
@@ -71,7 +71,7 @@ export default function NetworkTable({
     setPage(0);
   };
 
-  const handleRequestSort = (property: keyof Network) => {
+  const handleRequestSort = (property: keyof NetworkType) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
@@ -164,7 +164,7 @@ export default function NetworkTable({
                     <Stack direction="row" spacing={1}>
                       <IconButton
                         size="small"
-                        onClick={() => onEdit(row as Network)}
+                        onClick={() => onEdit(row)}
                         disabled={!row.is_visible}
                         title={row.is_visible ? "Editar" : "No editable"}
                       >
@@ -174,7 +174,7 @@ export default function NetworkTable({
                       <IconButton
                         size="small"
                         color={row.is_visible ? "error" : "success"}
-                        onClick={() => onToggleVisibility(row as Network)}
+                        onClick={() => onToggleVisibility(row)}
                         title={row.is_visible ? "Eliminar" : "Restaurar"}
                       >
                         {row.is_visible ? <DeleteIcon /> : <RestoreIcon />}

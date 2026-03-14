@@ -221,7 +221,7 @@ export default function BulkOutcomeForm({
               label="Semana del Movimiento"
               name="common_week_id"
             >
-              {availableWeeks.map((w) => (
+              {availableWeeks?.map((w: any) => (
                 <MenuItem key={w.id} value={w.id}>
                   Semana {w.id} desde el (
                   {dayjs(w.week_start).format("DD/MM/YY")})

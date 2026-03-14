@@ -9,10 +9,10 @@ import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
  * Ruta: GET /ec/api/v1/finance/weeks
  * @returns Promesa que resuelve en la respuesta completa de la API con el array de Weeks.
  */
-export const getAllWeeks = async (): Promise<ApiResponse<Week>> => {
+export const getAllWeeks = async (): Promise<ApiResponse<Week[]>> => {
   try {
     // 1. Cambiamos <ApiResponse<Week>> por <ApiResponse<Week>> porque esperamos una lista
-    const response = await apiClient.get<ApiResponse<Week>>(
+    const response = await apiClient.get<ApiResponse<Week[]>>(
       `${API_ROUTES_PATH.FINANCE}/weeks`,
     );
 

@@ -1,104 +1,94 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import {
-  getAllNetworks,
-  getOneNetwork,
-  createNetwork,
-  updateNetwork,
-  deleteNetwork,
-} from "@modules/consolidation/api/networkApi";
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type UseQueryResult,
+  type UseMutationResult,
+} from "@tanstack/react-query";
+import { networkApi } from "@modules/consolidation/api/networkApi";
+import { ConsolidationQueryKeys } from "@/core/api/queryKeys";
 import type {
-  NetworkAttributes,
-  NetworkCreate,
-  NetworkUpdate,
-} from "@modules/consolidation/types/network.type";
+  NetworkType,
+  NetworkCreationDTO,
+  NetworkUpdateDTO,
+} from "@economic-control/shared";
 
-// Clave única para esta consulta.
-const NETWORKS_QUERY_KEY = "networks";
-
-/**
- * Hook para obtener todas las redes.
- * @returns Un objeto UseQueryResult que contiene el resultado de la consulta.
- */
-export const useReadNetworks = (): UseQueryResult<
-  NetworkAttributes[],
-  Error
-> => {
-  return useQuery<NetworkAttributes[], Error>({
-    queryKey: [NETWORKS_QUERY_KEY],
-    queryFn: getAllNetworks,
+// 🔹 Obtener todas las redes
+export const useNetworks = (): UseQueryResult<NetworkType[], Error> => {
+  return useQuery<NetworkType[], Error>({
+    queryKey: ConsolidationQueryKeys.networks.all(),
+    queryFn: networkApi.getAll,
     staleTime: 5 * 60 * 1000,
   });
 };
 
-/**
- * Hook para obtener una red por su ID.
- * @param id ID de la red.
- * @returns Un objeto UseQueryResult que contiene el resultado de la consulta.
- */
-export const useOneNetwork = (
-  id: number,
-): UseQueryResult<NetworkAttributes, Error> => {
-  return useQuery<NetworkAttributes, Error>({
-    queryKey: [NETWORKS_QUERY_KEY, id],
-    queryFn: () => getOneNetwork(id),
+// 🔹 Obtener una red por ID
+export const useNetwork = (id: number): UseQueryResult<NetworkType, Error> => {
+  return useQuery<NetworkType, Error>({
+    queryKey: ConsolidationQueryKeys.networks.one(id),
+    queryFn: () => networkApi.getById(id),
     staleTime: 5 * 60 * 1000,
   });
 };
 
-/**
- * Hook para crear una red.
- * @returns Un objeto UseMutationResult que contiene el resultado de la mutación.
- */
+// 🔹 Crear una red
 export const useCreateNetwork = (): UseMutationResult<
-  NetworkAttributes,
+  NetworkType,
   Error,
-  NetworkCreate
+  NetworkCreationDTO
 > => {
   const queryClient = useQueryClient();
-
-  return useMutation<NetworkAttributes, Error, NetworkCreate>({
-    mutationFn: createNetwork,
+  return useMutation<NetworkType, Error, NetworkCreationDTO>({
+    mutationFn: (data: NetworkCreationDTO) => networkApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [NETWORKS_QUERY_KEY] });
+      queryClient.invalidateQueries({
+        queryKey: ConsolidationQueryKeys.networks.all(),
+      });
     },
   });
 };
 
-/**
- * Hook para actualizar una red.
- * @returns Un objeto UseMutationResult que contiene el resultado de la mutación.
- */
+// 🔹 Actualizar una red
 export const useUpdateNetwork = (): UseMutationResult<
-  NetworkAttributes,
+  NetworkType,
   Error,
-  NetworkUpdate
+  { id: number; data: NetworkUpdateDTO }
 > => {
   const queryClient = useQueryClient();
-
-  return useMutation<NetworkAttributes, Error, NetworkUpdate>({
-    mutationFn: updateNetwork,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [NETWORKS_QUERY_KEY] });
+  return useMutation<
+    NetworkType,
+    Error,
+    { id: number; data: NetworkUpdateDTO }
+  >({
+    mutationFn: ({ id, data }: { id: number; data: NetworkUpdateDTO }) =>
+      networkApi.update(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ConsolidationQueryKeys.networks.one(id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ConsolidationQueryKeys.networks.all(),
+      });
     },
   });
 };
 
-/**
- * Hook para eliminar una red.
- * @returns Un objeto UseMutationResult que contiene el resultado de la mutación.
- */
+// 🔹 Eliminar una red
 export const useDeleteNetwork = (): UseMutationResult<
-  String,
+  { message: string },
   Error,
-  number
+  { id: number }
 > => {
   const queryClient = useQueryClient();
-
-  return useMutation<String, Error, number>({
-    mutationFn: deleteNetwork,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [NETWORKS_QUERY_KEY] });
+  return useMutation<{ message: string }, Error, { id: number }>({
+    mutationFn: ({ id }: { id: number }) => networkApi.remove(id),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ConsolidationQueryKeys.networks.one(id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ConsolidationQueryKeys.networks.all(),
+      });
     },
   });
 };

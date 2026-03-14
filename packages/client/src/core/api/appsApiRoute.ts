@@ -1,3 +1,6 @@
+/**
+ * Rutas de las aplicaciones
+ */
 export const API_ROUTES_PATH: Record<string, string> = {
   ADMIN: "/admin",
   AUTH: "/auth",
@@ -5,6 +8,9 @@ export const API_ROUTES_PATH: Record<string, string> = {
   FINANCE: "/finance",
 };
 
+/**
+ * Redirecciones de permisos
+ */
 export const PERMISSION_REDIRECTS: Record<string, string> = {
   LOGIN: API_ROUTES_PATH.AUTH + "/login",
   FORGOT_PASSWORD: API_ROUTES_PATH.AUTH + "/forgot-password",

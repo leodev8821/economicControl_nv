@@ -13,9 +13,9 @@ import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
  */
 export const getBalance = async (
   filters: BalanceFilters = {},
-): Promise<ApiResponse<CashBalance>> => {
+): Promise<ApiResponse<CashBalance[]>> => {
   try {
-    const response = await apiClient.get<ApiResponse<CashBalance>>(
+    const response = await apiClient.get<ApiResponse<CashBalance[]>>(
       `${API_ROUTES_PATH.FINANCE}/balance`,
       {
         params: filters, // Axios convierte esto en ?week_id=X

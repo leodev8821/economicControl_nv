@@ -14,7 +14,7 @@ export const BALANCE_QUERY_KEY = "balanceData";
  * @param filters Objeto opcional con week_id o rango de fechas.
  */
 export const useBalance = (filters: BalanceFilters = {}) => {
-  return useQuery<ApiResponse<CashBalance>, Error>({
+  return useQuery<ApiResponse<CashBalance[]>, Error>({
     // La queryKey ahora incluye los filtros.
     // Si filters.week_id cambia, React Query re-ejecuta queryFn.
     queryKey: [BALANCE_QUERY_KEY, filters],

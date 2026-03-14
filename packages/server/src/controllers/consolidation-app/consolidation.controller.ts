@@ -102,6 +102,28 @@ export const consolidationController = {
     }
   },
 
+  createBulkConsolidations: async (_req: Request, res: Response) => {
+    try {
+      const newConsolidations =
+        await consolidationService.createMultipleConsolidations();
+
+      return res.status(201).json({
+        ok: true,
+        message: `Se han creado ${newConsolidations.length} consolidaciones correctamente.`,
+        data: newConsolidations,
+      });
+    } catch (error: any) {
+      if (error.message === "No hay miembros registrados") {
+        return res.status(400).json({ ok: false, message: error.message });
+      }
+      return ControllerErrorHandler(
+        res,
+        error,
+        "Error al crear la consolidación.",
+      );
+    }
+  },
+
   // Actualiza una consolidación
   updateConsolidation: async (req: Request, res: Response) => {
     try {

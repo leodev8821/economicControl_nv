@@ -26,7 +26,7 @@ export const WeekSelector: React.FC<WeekSelectorProps> = ({
   // 1. Usamos useMemo para ordenar las semanas de forma ascendente (1, 2, 3...)
   const sortedWeeks = useMemo(() => {
     const data = response?.data || [];
-    return [...data].sort((a, b) => a.id - b.id);
+    return [...data].sort((a: any, b: any) => a.id - b.id);
   }, [response]);
 
   const handleSelect = (event: SelectChangeEvent<number | "">) => {

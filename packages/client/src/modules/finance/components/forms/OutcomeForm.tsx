@@ -261,7 +261,7 @@ export default function OutcomeForm({
               <MenuItem value="">
                 <em>Seleccione una semana</em>
               </MenuItem>
-              {availableWeeks.map((w) => (
+              {availableWeeks?.map((w: any) => (
                 <MenuItem
                   key={w.id}
                   value={w.id}

@@ -10,8 +10,11 @@ import {
 import UserTable from "@modules/auth/components/tables/UserTable";
 import UserForm from "@modules/auth/components/forms/UserForm";
 import { useAuth } from "@modules/auth/hooks/useAuth";
-import type { User } from "@modules/auth/types/user.type";
-import * as SharedUserSchema from "@economic-control/shared";
+import type {
+  UserType,
+  UserCreateDTO,
+  UserUpdateDTO,
+} from "@economic-control/shared";
 
 const UserPage: React.FC = () => {
   // 1. Seguridad y Autenticación
@@ -35,27 +38,38 @@ const UserPage: React.FC = () => {
   const deleteMutation = useDeleteUser();
 
   // 3. Estado local para Edición
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState<UserType | null>(null);
 
   // 4. Manejadores (Handlers)
 
   // Crear
-  const handleCreateUser = async (
-    data: SharedUserSchema.UserCreationRequest,
-  ) => {
+  const handleCreateUser = async (data: UserCreateDTO) => {
     try {
       await createMutation.mutateAsync(data);
     } catch (error) {
+      console.error("Error al crear el usuario:", error);
       throw error;
     }
   };
 
   // Actualizar
-  const handleUpdateUser = async (data: User) => {
+  const handleUpdateUser = async (data: UserUpdateDTO) => {
     try {
-      await updateMutation.mutateAsync(data);
-      setEditingUser(null);
+      if (!editingUser?.id) return;
+
+      await updateMutation.mutateAsync(
+        {
+          id: editingUser.id,
+          data,
+        },
+        {
+          onSuccess: () => {
+            setEditingUser(null);
+          },
+        },
+      );
     } catch (error) {
+      console.error("Error al actualizar el usuario:", error);
       throw error;
     }
   };
@@ -83,7 +97,7 @@ const UserPage: React.FC = () => {
   };
 
   // Iniciar Edición (viene desde la Tabla)
-  const handleStartEdit = (userToEdit: User) => {
+  const handleStartEdit = (userToEdit: UserType) => {
     setEditingUser(userToEdit);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -94,10 +108,13 @@ const UserPage: React.FC = () => {
   };
 
   // Eliminar
-  const handleToggleUserStatus = (user: User) => {
+  const handleToggleUserStatus = (user: UserType) => {
     const userId = user.id;
     const actualUser = users.find((user) => user.id === userId);
     const isCurrentlyVisible = actualUser?.is_visible;
+
+    if (!userId) return;
+    if (!actualUser?.id) return;
 
     // Evitar que uno se borre a sí mismo (seguridad extra visual)
     if (isCurrentlyVisible) {
@@ -117,10 +134,11 @@ const UserPage: React.FC = () => {
         )
       ) {
         // Usamos la mutación de update para volver a poner is_visible en true
-        if (!actualUser) return;
         updateMutation.mutate({
-          ...actualUser,
-          is_visible: true,
+          id: actualUser.id,
+          data: {
+            is_visible: true,
+          },
         });
       }
     }

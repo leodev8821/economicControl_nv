@@ -20,7 +20,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AppTheme from "@core/theme/shared-theme/AppTheme";
 import ColorModeSelect from "@core/theme/shared-theme/ColorModeSelect";
 import { NVIcon } from "@shared/components/ui/CustomIcons";
-import { forgotPassword } from "@modules/auth/api/authApi"; // Asegúrate de crear esta función
+import { forgotPassword } from "@modules/auth/api/authApi";
 
 // Reutilizamos tus estilos
 const Card = styled(MuiCard)(({ theme }) => ({

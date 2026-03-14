@@ -51,41 +51,49 @@ const BaseConsolidationSchema = z.object({
     .int({
       message: "El ID de la red es obligatorio",
     })
-    .positive("El ID de la red debe ser un número entero positivo"),
+    .positive("El ID de la red debe ser un número entero positivo")
+    .nullable(),
 
-  how_know_us: z.enum(HOW_KNOW_US, {
-    message: "La forma de conocernos es obligatoria",
-  }),
+  how_know_us: z
+    .enum(HOW_KNOW_US, {
+      message: "La forma de conocernos es obligatoria",
+    })
+    .nullable(),
 
   invited_by: z
     .string({
       message: "El nombre de quien ha invitado es obligatorio",
     })
-    .optional(),
+    .optional()
+    .nullable(),
 
   call_date: z.coerce
     .date({
       error: "La fecha de la llamada es inválida",
     })
+    .nullable()
     .optional(),
 
   call_observations: z
     .enum(CALL_OBSERVATIONS, {
       message: "La observación de la llamada es obligatoria",
     })
+    .nullable()
     .optional(),
 
-  other_observations: z.string().optional(),
+  other_observations: z.string().optional().nullable(),
 
   visit_date: z.coerce
     .date({
       error: "La fecha de la visita es inválida",
     })
+    .nullable()
     .optional(),
 
   visit_observations: z
     .string()
     .min(1, "Si escribes algo, no puede estar vacío")
+    .nullable()
     .optional(),
 
   is_visible: z
@@ -110,12 +118,31 @@ export const ConsolidationUpdateSchema = BaseConsolidationSchema.omit({
 }).partial();
 
 // ----------------------------------------------------------------------
-// 5. EXPORTACIÓN DE TIPOS E INTERFACES
+// 5. ESQUEMA DE CARGA MASIVA
+// ----------------------------------------------------------------------
+export const BulkConsolidationItemSchema = BaseConsolidationSchema.omit({
+  id: true,
+});
+
+export const BulkConsolidationSchema = z.object({
+  consolidations: z
+    .array(BulkConsolidationItemSchema)
+    .min(1, "Debe agregar al menos una consolidación"),
+});
+
+// ----------------------------------------------------------------------
+// 6. EXPORTACIÓN DE TIPOS E INTERFACES
 // ----------------------------------------------------------------------
 export type ConsolidationCreationDTO = z.infer<
   typeof ConsolidationCreationSchema
 >;
 export type ConsolidationUpdateDTO = z.infer<typeof ConsolidationUpdateSchema>;
+export type BulkConsolidationCreationDTO = z.infer<
+  typeof BulkConsolidationItemSchema
+>;
+export type ConsolidationBulkCreateDTO = z.infer<
+  typeof BulkConsolidationSchema
+>;
 
 // Para la UI
 export type ConsolidationType = z.infer<typeof BaseConsolidationSchema>;

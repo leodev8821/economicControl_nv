@@ -4,6 +4,7 @@ import {
 } from "@economic-control/shared";
 import {
   ConsolidationAttributes,
+  ConsolidationCreationAttributes,
   ConsolidationModel,
   ConsolidationSearchData,
 } from "@models/consolidation-app/consolidation.model.js";
@@ -22,23 +23,92 @@ const connection = getSequelizeConfig();
  */
 async function create(
   dto: ConsolidationCreationDTO,
+  transaction?: Transaction,
 ): Promise<ConsolidationAttributes> {
-  return connection.transaction(async (t) => {
-    const user = await UserModel.findByPk(dto.user_id, { transaction: t });
-    const member = await MemberModel.findByPk(dto.member_id, {
-      transaction: t,
-    });
-    const network = await NetworkModel.findByPk(dto.network_id, {
-      transaction: t,
-    });
+  const execute = async (t: Transaction) => {
+    const [user, member] = await Promise.all([
+      UserModel.findByPk(dto.user_id, { transaction: t }),
+      MemberModel.findByPk(dto.member_id, { transaction: t }),
+    ]);
 
-    const isValid = !user || !member || !network;
+    if (!user) throw new Error("El usuario especificado no existe");
+    if (!member) throw new Error("El miembro especificado no existe");
 
-    if (isValid) {
-      throw new Error("Usuario, miembro o red no encontrado");
+    if (dto.network_id !== null && dto.network_id !== undefined) {
+      const network = await NetworkModel.findByPk(dto.network_id, {
+        transaction: t,
+      });
+      if (!network) throw new Error("La red especificada no existe");
     }
 
-    return ConsolidationModel.create(dto, { transaction: t });
+    const consolidation = await ConsolidationModel.create(dto, {
+      transaction: t,
+    });
+
+    const result = await ConsolidationModel.scope(["populated"]).findByPk(
+      consolidation.id,
+      {
+        transaction: t,
+      },
+    );
+
+    return result!.get({ plain: true });
+  };
+
+  return transaction ? execute(transaction) : connection.transaction(execute);
+}
+
+async function createMultipleConsolidations(): Promise<
+  ConsolidationAttributes[]
+> {
+  return await connection.transaction(async (t) => {
+    // Obtener todos los members
+    const members = await MemberModel.findAll({
+      attributes: ["id", "user_id"],
+      transaction: t,
+    });
+
+    if (!members.length) throw new Error("No hay miembros registrados");
+
+    // Obtener los member_id que ya tienen consolidación
+    const existing = await ConsolidationModel.findAll({
+      attributes: ["member_id"],
+      transaction: t,
+    });
+
+    const existingMemberIds = new Set(existing.map((c) => c.member_id));
+
+    // Filtrar los miembros que no tienen consolidación
+    const missingMembers = members.filter((m) => !existingMemberIds.has(m.id));
+
+    if (!missingMembers.length) return [];
+
+    // Construir las consolidaciones
+    const consolidations: ConsolidationCreationAttributes[] =
+      missingMembers.map((member) => ({
+        user_id: member.user_id!,
+        member_id: member.id,
+        network_id: null,
+        how_know_us: null,
+        invited_by: null,
+        call_date: null,
+        call_observations: null,
+        other_observations: null,
+        visit_date: null,
+        visit_observations: null,
+        is_visible: true,
+      }));
+
+    // Insertar en bloque
+    const createdConsolidations = await ConsolidationModel.bulkCreate(
+      consolidations,
+      {
+        transaction: t,
+        validate: true,
+      },
+    );
+
+    return createdConsolidations.map((c) => c.get({ plain: true }));
   });
 }
 
@@ -96,7 +166,14 @@ async function update(
 
   await consolidation.update(data, { transaction: t });
 
-  return consolidation.get({ plain: true });
+  const updatedRecord = await ConsolidationModel.scope(["populated"]).findByPk(
+    id,
+    {
+      transaction: t,
+    },
+  );
+
+  return updatedRecord!.get({ plain: true });
 }
 
 /**
@@ -117,6 +194,7 @@ async function remove(id: number): Promise<boolean> {
 
 export const consolidationService = {
   create,
+  createMultipleConsolidations,
   getAll,
   getById,
   update,

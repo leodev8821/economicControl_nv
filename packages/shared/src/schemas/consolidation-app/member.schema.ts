@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // ----------------------------------------------------------------------
-// 1. DEFINICIÓN DE CONSTANTES (Single Source of Truth)
+// DEFINICIÓN DE CONSTANTES (Single Source of Truth)
 // ----------------------------------------------------------------------
 export const STATUS = [
   "Soltero/a",
@@ -16,7 +16,7 @@ export const GENDER = ["Masculino", "Femenino"] as const;
 export type GenderType = (typeof GENDER)[number];
 
 // ----------------------------------------------------------------------
-// 2. DEFINICIÓN BASE (Campos comunes y limpieza de datos)
+// DEFINICIÓN BASE (Campos comunes y limpieza de datos)
 // ----------------------------------------------------------------------
 const BaseMemberSchema = z.object({
   id: z.coerce.number().int().positive().optional(),
@@ -42,37 +42,36 @@ const BaseMemberSchema = z.object({
 });
 
 // ----------------------------------------------------------------------
-// 3. ESQUEMA de Creación
+// ESQUEMA de Creación
 // ----------------------------------------------------------------------
-export const MemberCreationSchema = BaseMemberSchema;
+export const MemberCreationSchema = BaseMemberSchema.omit({ id: true });
 
 // ----------------------------------------------------------------------
-// 4. ESQUEMA de Actualización
+// ESQUEMA de Actualización
 // ----------------------------------------------------------------------
-export const MemberUpdateSchema = BaseMemberSchema.partial();
+export const MemberUpdateSchema = BaseMemberSchema.omit({ id: true }).partial();
 
 // ----------------------------------------------------------------------
-// 5. EXPORTACIÓN DE TIPOS E INTERFACES
-// ----------------------------------------------------------------------
-export type MemberCreationRequest = z.infer<typeof MemberCreationSchema>;
-export type MemberUpdateRequest = z.infer<typeof MemberUpdateSchema>;
-
-// ----------------------------------------------------------------------
-// 6. ESQUEMA para Carga Masiva (Formulario)
+// ESQUEMA para Carga Masiva (Formulario)
 // ----------------------------------------------------------------------
 
-// 1. Definimos el item del Bulk
-export const BulkMemberItemSchema = BaseMemberSchema;
+// Se define el item del Bulk
+export const BulkMemberItemSchema = BaseMemberSchema.omit({ id: true });
 
-// 2. El Schema del formulario ahora usará el item refinado
+// El Schema del formulario ahora usará el item refinado
 export const BulkMemberSchema = z.object({
   members: z
     .array(BulkMemberItemSchema)
     .min(1, "Debe agregar al menos una persona"),
 });
 
-export type BulkMemberItemRequest = z.infer<typeof BulkMemberItemSchema>;
-export type BulkMemberRequest = z.infer<typeof BulkMemberSchema>;
+// ----------------------------------------------------------------------
+// EXPORTACIÓN DE TIPOS E INTERFACES
+// ----------------------------------------------------------------------
+export type MemberCreateDTO = z.infer<typeof MemberCreationSchema>;
+export type MemberUpdateDTO = z.infer<typeof MemberUpdateSchema>;
+export type BulkMemberCreateDTO = z.infer<typeof BulkMemberItemSchema>;
+export type BulkMemberDTO = z.infer<typeof BulkMemberSchema>;
 
 // Para la UI
 export type MemberType = z.infer<typeof BaseMemberSchema>;

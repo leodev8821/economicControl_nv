@@ -4,7 +4,7 @@ import type {
   Income,
   BulkIncomeCreatePayload,
 } from "@modules/finance/types/income.type";
-import type { ApiResponse, ApiResponseData } from "@shared/types/apiResponse";
+import type { ApiResponse } from "@shared/types/apiResponse";
 import type {
   IncomeCreationRequest,
   IncomeUpdateRequest,
@@ -31,7 +31,7 @@ const normalizeIncome = (income: any): Income => ({
  */
 export const getAllIncomes = async (): Promise<Income[]> => {
   try {
-    const response = await apiClient.get<ApiResponse<Income>>(
+    const response = await apiClient.get<ApiResponse<Income[]>>(
       `${API_ROUTES_PATH.FINANCE}/incomes`,
     );
 
@@ -51,7 +51,7 @@ export const createIncome = async (
   data: IncomeCreationRequest,
 ): Promise<Income> => {
   try {
-    const response = await apiClient.post<ApiResponseData<Income>>(
+    const response = await apiClient.post<ApiResponse<Income>>(
       `${API_ROUTES_PATH.FINANCE}/incomes/new-income`,
       data,
     );
@@ -72,7 +72,7 @@ export const createBulkIncome = async (
   data: BulkIncomeCreatePayload,
 ): Promise<Income[]> => {
   try {
-    const response = await apiClient.post<ApiResponseData<Income[]>>(
+    const response = await apiClient.post<ApiResponse<Income[]>>(
       `${API_ROUTES_PATH.FINANCE}/incomes/bulk-incomes`,
       data,
     );
@@ -93,7 +93,7 @@ export const createBulkIncome = async (
 export const updateIncome = async (data: IncomeUpdateData): Promise<Income> => {
   try {
     const { id, ...updatePayload } = data;
-    const response = await apiClient.put<ApiResponseData<Income>>(
+    const response = await apiClient.put<ApiResponse<Income>>(
       `${API_ROUTES_PATH.FINANCE}/incomes/${id}`,
       updatePayload,
     );
@@ -112,7 +112,7 @@ export const updateIncome = async (data: IncomeUpdateData): Promise<Income> => {
  */
 export const deleteIncome = async (id: number): Promise<Income> => {
   try {
-    const response = await apiClient.delete<ApiResponseData<Income>>(
+    const response = await apiClient.delete<ApiResponse<Income>>(
       `${API_ROUTES_PATH.FINANCE}/incomes/${id}`,
     );
     return response.data.data;

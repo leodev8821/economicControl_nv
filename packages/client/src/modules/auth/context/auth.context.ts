@@ -1,12 +1,12 @@
 import { createContext } from "react";
-import type { User, LoginCredentials } from "@modules/auth/types/user.type";
+import type { UserType, LoginType } from "@economic-control/shared";
 
 // 1. Exportar el tipo de contexto
 export interface AuthContextType {
-  user: User | null;
+  user: UserType | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginType) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }

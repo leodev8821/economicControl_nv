@@ -1,7 +1,7 @@
 /* eslint-disable no-useless-catch */
 import apiClient from "@core/api/axios";
 import type { Cash } from "@modules/finance/types/cash.type";
-import type { ApiResponse, ApiResponseData } from "@shared/types/apiResponse";
+import type { ApiResponse } from "@shared/types/apiResponse";
 import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
 /**
@@ -11,7 +11,7 @@ import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
  */
 export const getAllCashes = async (): Promise<Cash[]> => {
   try {
-    const response = await apiClient.get<ApiResponse<Cash>>(
+    const response = await apiClient.get<ApiResponse<Cash[]>>(
       `${API_ROUTES_PATH.FINANCE}/cashes`,
     );
 
@@ -38,7 +38,7 @@ export type CashUpdateData = { id: number } & Partial<Cash>;
  */
 export const createCash = async (data: any): Promise<Cash> => {
   try {
-    const response = await apiClient.post<ApiResponseData<Cash>>(
+    const response = await apiClient.post<ApiResponse<Cash>>(
       `${API_ROUTES_PATH.FINANCE}/cashes/new-cash`,
       data,
     );
@@ -57,7 +57,7 @@ export const createCash = async (data: any): Promise<Cash> => {
 export const updateCash = async (data: CashUpdateData): Promise<Cash> => {
   try {
     const { id, ...updatePayload } = data;
-    const response = await apiClient.put<ApiResponseData<Cash>>(
+    const response = await apiClient.put<ApiResponse<Cash>>(
       `${API_ROUTES_PATH.FINANCE}/cashes/${id}`,
       updatePayload,
     );
@@ -75,7 +75,7 @@ export const updateCash = async (data: CashUpdateData): Promise<Cash> => {
  */
 export const deleteCash = async (id: number): Promise<boolean> => {
   try {
-    const response = await apiClient.delete<ApiResponseData<boolean>>(
+    const response = await apiClient.delete<ApiResponse<boolean>>(
       `${API_ROUTES_PATH.FINANCE}/cashes/${id}`,
     );
     return response.data.data;

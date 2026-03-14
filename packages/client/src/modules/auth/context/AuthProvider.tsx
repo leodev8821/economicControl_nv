@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
 import { setGlobalAccessToken, refreshInstance } from "@core/api/axios";
-import type { User, LoginCredentials } from "@modules/auth/types/user.type";
+import type { UserType, LoginType } from "@economic-control/shared";
 import { login as apiLogin } from "@modules/auth/api/authApi";
 import { AuthContext } from "./auth.context";
 
@@ -10,7 +10,7 @@ interface AuthProviderProps {
 }
 
 // Función helper para obtener el usuario inicial desde localStorage
-const getInitialUser = (): User | null => {
+const getInitialUser = (): UserType | null => {
   const saved = localStorage.getItem("authUser");
   if (!saved) return null;
   try {
@@ -21,7 +21,7 @@ const getInitialUser = (): User | null => {
 };
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(getInitialUser);
+  const [user, setUser] = useState<UserType | null>(getInitialUser);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -118,7 +118,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    * - Usa useCallback para optimización y estabilidad
    */
   const login = useCallback(
-    async (credentials: LoginCredentials) => {
+    async (credentials: LoginType) => {
       setIsLoading(true);
       try {
         const { token: newAccessToken, user: userData } =

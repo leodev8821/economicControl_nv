@@ -4,7 +4,7 @@ import type {
   Outcome,
   BulkOutcomeCreatePayload,
 } from "@modules/finance/types/outcome.type";
-import type { ApiResponse, ApiResponseData } from "@shared/types/apiResponse";
+import type { ApiResponse } from "@shared/types/apiResponse";
 import type {
   OutcomeCreationRequest,
   OutcomeUpdateRequest,
@@ -31,7 +31,7 @@ const normalizeOutcome = (outcome: any): Outcome => ({
  */
 export const getAllOutcomes = async (): Promise<Outcome[]> => {
   try {
-    const response = await apiClient.get<ApiResponse<Outcome>>(
+    const response = await apiClient.get<ApiResponse<Outcome[]>>(
       `${API_ROUTES_PATH.FINANCE}/outcomes`,
     );
 
@@ -51,7 +51,7 @@ export const createOutcome = async (
   data: OutcomeCreationRequest,
 ): Promise<Outcome> => {
   try {
-    const response = await apiClient.post<ApiResponseData<Outcome>>(
+    const response = await apiClient.post<ApiResponse<Outcome>>(
       `${API_ROUTES_PATH.FINANCE}/outcomes/new-outcome`,
       data,
     );
@@ -72,7 +72,7 @@ export const createBulkOutcome = async (
   data: BulkOutcomeCreatePayload,
 ): Promise<Outcome[]> => {
   try {
-    const response = await apiClient.post<ApiResponseData<Outcome[]>>(
+    const response = await apiClient.post<ApiResponse<Outcome[]>>(
       `${API_ROUTES_PATH.FINANCE}/outcomes/bulk-outcomes`,
       data,
     );
@@ -95,7 +95,7 @@ export const updateOutcome = async (
 ): Promise<Outcome> => {
   try {
     const { id, ...updatePayload } = data;
-    const response = await apiClient.put<ApiResponseData<Outcome>>(
+    const response = await apiClient.put<ApiResponse<Outcome>>(
       `${API_ROUTES_PATH.FINANCE}/outcomes/${id}`,
       updatePayload,
     );
@@ -114,7 +114,7 @@ export const updateOutcome = async (
  */
 export const deleteOutcome = async (id: number): Promise<Outcome> => {
   try {
-    const response = await apiClient.delete<ApiResponseData<Outcome>>(
+    const response = await apiClient.delete<ApiResponse<Outcome>>(
       `${API_ROUTES_PATH.FINANCE}/outcomes/${id}`,
     );
     return response.data.data;

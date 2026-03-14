@@ -14,6 +14,7 @@ import MemberTable from "@modules/consolidation/components/tables/MemberTable";
 import MemberForm from "@modules/consolidation/components/forms/MemberForm";
 
 import type { User } from "@/modules/auth/types/user.type";
+import type { Member } from "@modules/consolidation/types/member.type";
 
 export default function MembersPage() {
   const controller = useMemberController();
@@ -110,9 +111,10 @@ export default function MembersPage() {
           </Typography>
           {controller.currentUser ? (
             <MemberTable
-              members={controller.members}
+              members={controller.members as Member[]}
               currentUser={controller.currentUser as User}
               highlightedRowId={controller.editingMember?.id}
+
               onEdit={(member) => {
                 if (controller.editingMember) return;
                 controller.handleStartEdit(member);

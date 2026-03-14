@@ -32,19 +32,19 @@ import SupervisorIcon from "@mui/icons-material/SupervisorAccount";
 import RestoreFromTrashIcon from "@mui/icons-material/RestoreFromTrash";
 
 // Tipos e Importaciones
-import type { User } from "../../types/user.type";
+import type { UserType } from "@economic-control/shared";
 import { APPS } from "@/shared/constants/app";
 
 interface UserTableProps {
-  users: User[];
-  currentUser: User;
-  onEdit: (user: User) => void;
-  onToggleVisibility: (user: User) => void;
+  users: UserType[];
+  currentUser: UserType;
+  onEdit: (user: UserType) => void;
+  onToggleVisibility: (user: UserType) => void;
   isLoading?: boolean;
 }
 
 type Order = "asc" | "desc";
-type OrderBy = keyof User | "fullName";
+type OrderBy = keyof UserType | "fullName";
 
 const APP_LABELS: Record<number, string> = {
   [APPS.ALL]: "Todas",
@@ -131,10 +131,10 @@ export default function UserTable({
 
   // --- Lógica de Ordenación Manual ---
   const sortedUsers = useMemo(() => {
-    const getValue = (user: User, column: OrderBy) => {
+    const getValue = (user: UserType, column: OrderBy) => {
       if (column === "fullName")
         return `${user.first_name} ${user.last_name}`.toLowerCase();
-      return (user[column as keyof User] as string | number) ?? "";
+      return (user[column as keyof UserType] as string | number) ?? "";
     };
 
     return [...filteredUsers].sort((a, b) => {
@@ -184,7 +184,7 @@ export default function UserTable({
   );
 
   // FUNCIÓN HELPER PARA VERIFICAR PERMISOS DE EDICIÓN/BORRADO
-  const canManageUser = (targetUser: User) => {
+  const canManageUser = (targetUser: UserType) => {
     // 1. Nadie (ni SuperUser) se borra a sí mismo desde la tabla (prevención de accidentes)
     if (targetUser.id === currentUser.id) return false;
 

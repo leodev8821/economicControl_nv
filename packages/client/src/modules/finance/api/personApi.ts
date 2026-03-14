@@ -15,7 +15,7 @@ import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
  */
 export const getAllPersons = async (): Promise<Person[]> => {
   try {
-    const response = await apiClient.get<ApiResponse<Person>>(
+    const response = await apiClient.get<ApiResponse<Person[]>>(
       `${API_ROUTES_PATH.FINANCE}/persons`,
     );
 
@@ -37,7 +37,7 @@ export const createPerson = async (
   person: PersonCreationRequest,
 ): Promise<Person> => {
   try {
-    const response = await apiClient.post<ApiResponse<Person>>(
+    const response = await apiClient.post<ApiResponse<Person[]>>(
       `${API_ROUTES_PATH.FINANCE}/persons/new-person`,
       person,
     );
@@ -59,7 +59,7 @@ export const updatePerson = async ({
   ...data
 }: PersonAttributes): Promise<Person> => {
   try {
-    const response = await apiClient.put<ApiResponse<Person>>(
+    const response = await apiClient.put<ApiResponse<Person[]>>(
       `${API_ROUTES_PATH.FINANCE}/persons/${id}`,
       data,
     );
@@ -77,7 +77,7 @@ export const updatePerson = async ({
  */
 export const deletePerson = async (id: number): Promise<Person> => {
   try {
-    const response = await apiClient.delete<ApiResponse<Person>>(
+    const response = await apiClient.delete<ApiResponse<Person[]>>(
       `${API_ROUTES_PATH.FINANCE}/persons/${id}`,
     );
     return response.data.data[0];

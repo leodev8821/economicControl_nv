@@ -75,7 +75,7 @@ const DashboardPage: React.FC = () => {
     );
   }
 
-  if (!balanceData || balanceData.length === 0) {
+  if (!balanceData || balanceData?.length === 0) {
     return (
       <Box p={3}>
         <Typography variant="body1" color="textSecondary">
@@ -182,7 +182,7 @@ const DashboardPage: React.FC = () => {
         </Grid>
       </Box>
 
-      {balanceData.map((cash) => {
+      {balanceData.map((cash: any) => {
         const incomePieData = transformToPieData(
           cash.breakdown.incomes_by_source,
         );

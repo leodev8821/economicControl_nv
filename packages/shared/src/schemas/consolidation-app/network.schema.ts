@@ -22,8 +22,8 @@ export const NetworkUpdateSchema = BaseNetworkSchema.partial();
 // ----------------------------------------------------------------------
 // 5. EXPORTACIÓN DE TIPOS E INTERFACES
 // ----------------------------------------------------------------------
-export type NetworkCreationRequest = z.infer<typeof NetworkCreationSchema>;
-export type NetworkUpdateRequest = z.infer<typeof NetworkUpdateSchema>;
+export type NetworkCreationDTO = z.infer<typeof NetworkCreationSchema>;
+export type NetworkUpdateDTO = z.infer<typeof NetworkUpdateSchema>;
 
 // Para la UI
 export type NetworkType = z.infer<typeof BaseNetworkSchema>;

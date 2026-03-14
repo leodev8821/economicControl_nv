@@ -14,11 +14,11 @@ export interface ConsolidationAttributes {
   id: number;
   user_id: number;
   member_id: number;
-  network_id: number;
-  how_know_us: HowKnowUsType;
+  network_id: number | null;
+  how_know_us: HowKnowUsType | null;
   invited_by: string | null;
   call_date: Date | null;
-  call_observations: CallObservationType;
+  call_observations: CallObservationType | null;
   other_observations: string | null;
   visit_date: Date | null;
   visit_observations: string | null;
@@ -30,10 +30,10 @@ export type ConsolidationSearchData = {
   user_id?: number;
   member_id?: number;
   network_id?: number;
-  how_know_us?: HowKnowUsType;
+  how_know_us?: HowKnowUsType | null;
   invited_by?: string | null;
   call_date?: Date | null;
-  call_observations?: CallObservationType;
+  call_observations?: CallObservationType | null;
   other_observations?: string | null;
   visit_date?: Date | null;
   visit_observations?: string | null;
@@ -45,10 +45,13 @@ export interface ConsolidationCreationAttributes extends Optional<
   ConsolidationAttributes,
   | "id"
   | "is_visible"
-  | "other_observations"
-  | "visit_observations"
+  | "network_id"
+  | "how_know_us"
+  | "invited_by"
   | "call_observations"
+  | "other_observations"
   | "call_date"
+  | "visit_observations"
   | "visit_date"
   | "invited_by"
 > {}
@@ -62,10 +65,10 @@ export class ConsolidationModel
   declare user_id: number;
   declare member_id: number;
   declare network_id: number;
-  declare how_know_us: HowKnowUsType;
+  declare how_know_us: HowKnowUsType | null;
   declare invited_by: string | null;
   declare call_date: Date | null;
-  declare call_observations: CallObservationType;
+  declare call_observations: CallObservationType | null;
   declare other_observations: string | null;
   declare visit_date: Date | null;
   declare visit_observations: string | null;
@@ -98,7 +101,7 @@ ConsolidationModel.init(
     },
     network_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: "networks",
         key: "id",
@@ -106,7 +109,7 @@ ConsolidationModel.init(
     },
     how_know_us: {
       type: DataTypes.ENUM(...HOW_KNOW_US),
-      allowNull: false,
+      allowNull: true,
     },
     invited_by: {
       type: DataTypes.STRING,
@@ -145,57 +148,15 @@ ConsolidationModel.init(
   },
 );
 
-export class ConsolidationActions {
-  public static async getAll(): Promise<ConsolidationAttributes[]> {
-    // Combinamos scopes: visible + populated (includes)
-    const consolidations = await ConsolidationModel.scope([
-      "visible",
-      "populated",
-    ]).findAll();
-    return consolidations.map((c) => c.get({ plain: true }));
-  }
+// Añade los scopes al modelo
+/* ConsolidationModel.addScope("visible", {
+  where: { is_visible: true },
+}); */
 
-  public static async getOne(
-    data: ConsolidationSearchData,
-  ): Promise<ConsolidationAttributes | null> {
-    const result = await ConsolidationModel.scope([
-      "visible",
-      "populated",
-    ]).findOne({
-      where: data,
-    });
-    return result ? result.get({ plain: true }) : null;
-  }
-
-  public static async create(
-    data: ConsolidationCreationAttributes,
-  ): Promise<ConsolidationAttributes> {
-    // Si necesitas transacciones internas, manténlas, pero la estructura externa sigue a User
-    return await connection.transaction(async (t) => {
-      const newConsolidation = await ConsolidationModel.create(data, {
-        transaction: t,
-      });
-      // Recargamos para traer las relaciones si es necesario, o devolvemos directo
-      return newConsolidation.get({ plain: true });
-    });
-  }
-
-  public static async delete(id: number): Promise<boolean> {
-    const [count] = await ConsolidationModel.update(
-      { is_visible: false },
-      { where: { id } },
-    );
-    return count > 0;
-  }
-
-  public static async update(
-    id: number,
-    data: Partial<ConsolidationCreationAttributes>,
-  ): Promise<ConsolidationAttributes | null> {
-    const [count] = await ConsolidationModel.update(data, { where: { id } });
-    if (!count) return null;
-
-    const updated = await ConsolidationModel.scope("populated").findByPk(id);
-    return updated ? updated.get({ plain: true }) : null;
-  }
-}
+ConsolidationModel.addScope("populated", {
+  include: [
+    { association: "User", attributes: ["id", "username"] },
+    { association: "Member", attributes: ["id", "first_name", "last_name"] },
+    { association: "Network", attributes: ["id", "name"] },
+  ],
+});

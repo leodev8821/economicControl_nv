@@ -1,7 +1,7 @@
 import type {
   NetworkType,
-  NetworkCreationRequest,
-  NetworkUpdateRequest,
+  NetworkCreationDTO,
+  NetworkUpdateDTO,
 } from "@economic-control/shared";
 
 export interface Network extends NetworkType {
@@ -9,5 +9,5 @@ export interface Network extends NetworkType {
 }
 
 export type NetworkAttributes = Network;
-export type NetworkCreate = NetworkCreationRequest;
-export type NetworkUpdate = NetworkUpdateRequest;
+export type NetworkCreate = NetworkCreationDTO;
+export type NetworkUpdate = NetworkUpdateDTO;

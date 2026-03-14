@@ -4,7 +4,7 @@ import { parseWithZod } from "@conform-to/zod/v4";
 import * as SharedMemberSchemas from "@economic-control/shared";
 
 import {
-  useReadMembers,
+  useMembers,
   useCreateMember,
   useCreateBulkMembers,
   useUpdateMember,
@@ -16,7 +16,7 @@ import { useAuth } from "@/modules/auth/hooks/useAuth";
 
 export default function useMemberController() {
   const [formKey, setFormKey] = useState(0);
-  const { data: members = [], isLoading, isError, error } = useReadMembers();
+  const { data: members = [], isLoading, isError, error } = useMembers();
 
   const [draft, setDraft] = useState<any>(null);
 
@@ -78,12 +78,13 @@ export default function useMemberController() {
     if (editingMember) {
       updateMutation.mutate(
         {
-          ...editingMember,
-          ...payload[0],
           id: editingMember.id,
-          user_id: payload[0].user_id ?? editingMember.user_id,
-          is_visible: payload[0].is_visible ?? editingMember.is_visible,
-        } as Member,
+          data: {
+            ...payload[0],
+            user_id: payload[0].user_id ?? editingMember.user_id,
+            is_visible: payload[0].is_visible ?? editingMember.is_visible,
+          },
+        },
         {
           onSuccess: () => {
             setEditingMember(null);
@@ -131,8 +132,7 @@ export default function useMemberController() {
         )
       ) {
         updateMutation.mutate(
-          // Forzamos el tipado para asegurar que pasamos el id y el nuevo estado
-          { id: member.id, is_visible: true } as unknown as Member,
+          { id: member.id, data: { is_visible: true } },
           {
             onSuccess: () => showSnackbar("Miembro restaurado correctamente"),
             onError: () => showSnackbar("Error al restaurar", "error"),
@@ -146,10 +146,13 @@ export default function useMemberController() {
           `¿Está seguro de ELIMINAR el Miembro con ID ${member.id}?`,
         )
       ) {
-        deleteMutation.mutate(member.id, {
-          onSuccess: () => showSnackbar("Miembro eliminado"),
-          onError: () => showSnackbar("Error al eliminar", "error"),
-        });
+        deleteMutation.mutate(
+          { id: member.id },
+          {
+            onSuccess: () => showSnackbar("Miembro eliminado"),
+            onError: () => showSnackbar("Error al eliminar", "error"),
+          },
+        );
       }
     }
   };

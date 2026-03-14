@@ -18,7 +18,7 @@ import AppTheme from "@core/theme/shared-theme/AppTheme";
 import ColorModeSelect from "@core/theme/shared-theme/ColorModeSelect";
 import { NVIcon } from "@shared/components/ui/CustomIcons";
 import { useAuth } from "@modules/auth/hooks/useAuth";
-import type { LoginCredentials } from "@modules/auth/types/user.type";
+import type { LoginType } from "@economic-control/shared";
 import { PERMISSION_REDIRECTS } from "@/core/api/appsApiRoute";
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -74,7 +74,7 @@ export default function SignIn() {
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
 
-  const [credentials, setCredentials] = useState<LoginCredentials>({
+  const [credentials, setCredentials] = useState<LoginType>({
     login_data: "",
     password: "",
   });
