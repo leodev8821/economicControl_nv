@@ -34,7 +34,7 @@ import { parseWithZod } from "@conform-to/zod/v4";
 import * as SharedMemberSchemas from "@economic-control/shared";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 import { useConsolidationLeaders } from "@/modules/auth/hooks/useUser";
-import type { User } from "@/modules/auth/types/user.type";
+import type { UserType } from "@economic-control/shared";
 
 // Constantes para MUI Select
 const ITEM_HEIGHT = 48;
@@ -334,7 +334,7 @@ function MemberRow({
   const canAssignLeader =
     user?.role_name === "Administrador" || user?.role_name === "SuperUser";
 
-  let leaders: User[] | undefined;
+  let leaders: UserType[] | undefined;
   if (canAssignLeader) {
     leaders = useConsolidationLeaders().data;
   }

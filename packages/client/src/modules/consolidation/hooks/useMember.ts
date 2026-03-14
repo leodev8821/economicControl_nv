@@ -18,7 +18,7 @@ import type {
 export const useMembers = (): UseQueryResult<MemberType[], Error> => {
   return useQuery<MemberType[], Error>({
     queryKey: ConsolidationQueryKeys.members.all(),
-    queryFn: memberApi.getAll,
+    queryFn: () => memberApi.getAll(),
     staleTime: 5 * 60 * 1000,
   });
 };

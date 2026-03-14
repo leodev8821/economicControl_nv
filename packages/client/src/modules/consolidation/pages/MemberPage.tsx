@@ -13,7 +13,7 @@ import useMemberController from "@modules/consolidation/hooks/useMemberControlle
 import MemberTable from "@modules/consolidation/components/tables/MemberTable";
 import MemberForm from "@modules/consolidation/components/forms/MemberForm";
 
-import type { User } from "@/modules/auth/types/user.type";
+import type { UserType } from "@economic-control/shared";
 import type { Member } from "@modules/consolidation/types/member.type";
 
 export default function MembersPage() {
@@ -112,9 +112,8 @@ export default function MembersPage() {
           {controller.currentUser ? (
             <MemberTable
               members={controller.members as Member[]}
-              currentUser={controller.currentUser as User}
+              currentUser={controller.currentUser as UserType}
               highlightedRowId={controller.editingMember?.id}
-
               onEdit={(member) => {
                 if (controller.editingMember) return;
                 controller.handleStartEdit(member);

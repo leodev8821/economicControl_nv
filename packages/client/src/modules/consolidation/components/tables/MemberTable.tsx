@@ -39,12 +39,12 @@ import { RestoreFromTrash } from "@mui/icons-material";
 
 // Tipos
 import type { Member } from "@modules/consolidation/types/member.type";
-import type { User } from "@/modules/auth/types/user.type";
+import type { UserType } from "@economic-control/shared";
 
 interface MemberTableProps {
   members: Member[];
   highlightedRowId?: number | null;
-  currentUser: User;
+  currentUser: UserType;
   onEdit: (member: Member) => void;
   //onDelete: (id: number) => void;
   onToggleVisibility: (member: Member) => void;

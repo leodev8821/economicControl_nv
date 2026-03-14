@@ -17,7 +17,7 @@ import type {
 export const useNetworks = (): UseQueryResult<NetworkType[], Error> => {
   return useQuery<NetworkType[], Error>({
     queryKey: ConsolidationQueryKeys.networks.all(),
-    queryFn: networkApi.getAll,
+    queryFn: () => networkApi.getAll(),
     staleTime: 5 * 60 * 1000,
   });
 };
