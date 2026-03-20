@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // ----------------------------------------------------------------------
-// 1. DEFINICIÓN DE CONSTANTES (Single Source of Truth)
+// DEFINICIÓN DE CONSTANTES (Single Source of Truth)
 // ----------------------------------------------------------------------
 export const CALL_OBSERVATIONS = [
   "Interesado",
@@ -22,7 +22,7 @@ export const HOW_KNOW_US = [
 export type HowKnowUsType = (typeof HOW_KNOW_US)[number];
 
 // ----------------------------------------------------------------------
-// 2. DEFINICIÓN BASE (Campos comunes y limpieza de datos)
+// DEFINICIÓN BASE (Campos comunes y limpieza de datos)
 // ----------------------------------------------------------------------
 const BaseConsolidationSchema = z.object({
   id: z.coerce
@@ -104,21 +104,21 @@ const BaseConsolidationSchema = z.object({
 });
 
 // ----------------------------------------------------------------------
-// 3. ESQUEMA de Creación
+// ESQUEMA de Creación
 // ----------------------------------------------------------------------
 export const ConsolidationCreationSchema = BaseConsolidationSchema.omit({
   id: true,
 });
 
 // ----------------------------------------------------------------------
-// 4. ESQUEMA de Actualización
+// ESQUEMA de Actualización
 // ----------------------------------------------------------------------
 export const ConsolidationUpdateSchema = BaseConsolidationSchema.omit({
   id: true,
 }).partial();
 
 // ----------------------------------------------------------------------
-// 5. ESQUEMA DE CARGA MASIVA
+// ESQUEMA DE CARGA MASIVA
 // ----------------------------------------------------------------------
 export const BulkConsolidationItemSchema = BaseConsolidationSchema.omit({
   id: true,
@@ -131,7 +131,7 @@ export const BulkConsolidationSchema = z.object({
 });
 
 // ----------------------------------------------------------------------
-// 6. EXPORTACIÓN DE TIPOS E INTERFACES
+// EXPORTACIÓN DE TIPOS E INTERFACES
 // ----------------------------------------------------------------------
 export type ConsolidationCreationDTO = z.infer<
   typeof ConsolidationCreationSchema
@@ -144,5 +144,33 @@ export type ConsolidationBulkCreateDTO = z.infer<
   typeof BulkConsolidationSchema
 >;
 
+// 🔹 Tipos mínimos de relaciones (solo lo que devuelve el scope)
+export type ConsolidationUser = {
+  id: number;
+  username: string;
+};
+
+export type ConsolidationMember = {
+  id: number;
+  first_name: string;
+  last_name: string;
+  gender: string;
+  phone?: string | null;
+  birth_date?: Date | string | null;
+  status?: string | null;
+  visit_date?: Date | null;
+};
+
+export type ConsolidationNetwork = {
+  id: number;
+  name: string;
+};
+
 // Para la UI
 export type ConsolidationType = z.infer<typeof BaseConsolidationSchema>;
+
+export type ConsolidationPopulatedType = ConsolidationType & {
+  User: ConsolidationUser;
+  Member: ConsolidationMember;
+  Network: ConsolidationNetwork | null;
+};

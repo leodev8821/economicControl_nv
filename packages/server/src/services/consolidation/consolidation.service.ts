@@ -120,7 +120,7 @@ async function createMultipleConsolidations(): Promise<
 async function getAll(
   filters?: ConsolidationSearchData,
 ): Promise<ConsolidationAttributes[]> {
-  const consolidations = await ConsolidationModel.findAll({
+  const consolidations = await ConsolidationModel.scope(["populated"]).findAll({
     where: filters ?? {},
   });
 
@@ -137,7 +137,7 @@ async function getById(
   id: number,
   t?: Transaction,
 ): Promise<ConsolidationAttributes | null> {
-  const model = await ConsolidationModel.findByPk(id, {
+  const model = await ConsolidationModel.scope(["populated"]).findByPk(id, {
     transaction: t,
   });
 

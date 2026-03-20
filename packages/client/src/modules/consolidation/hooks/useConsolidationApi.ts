@@ -8,7 +8,7 @@ import {
 import { consolidationApi } from "@modules/consolidation/api/consolidationApi";
 import { ConsolidationQueryKeys } from "@/core/api/queryKeys";
 import type {
-  ConsolidationType,
+  ConsolidationPopulatedType,
   ConsolidationCreationDTO,
   BulkConsolidationCreationDTO,
   ConsolidationUpdateDTO,
@@ -16,10 +16,10 @@ import type {
 
 // 🔹 Obtener todas las consolidaciones
 export const useConsolidations = (): UseQueryResult<
-  ConsolidationType[],
+  ConsolidationPopulatedType[],
   Error
 > => {
-  return useQuery<ConsolidationType[], Error>({
+  return useQuery<ConsolidationPopulatedType[], Error>({
     queryKey: ConsolidationQueryKeys.consolidations.all(),
     queryFn: () => consolidationApi.getAll(),
     staleTime: 5 * 60 * 1000,
@@ -29,8 +29,8 @@ export const useConsolidations = (): UseQueryResult<
 // 🔹 Obtener una consolidación por ID
 export const useConsolidation = (
   id: number,
-): UseQueryResult<ConsolidationType, Error> => {
-  return useQuery<ConsolidationType, Error>({
+): UseQueryResult<ConsolidationPopulatedType, Error> => {
+  return useQuery<ConsolidationPopulatedType, Error>({
     queryKey: ConsolidationQueryKeys.consolidations.one(id),
     queryFn: () => consolidationApi.getById(id),
     staleTime: 5 * 60 * 1000,
@@ -39,12 +39,16 @@ export const useConsolidation = (
 
 // 🔹 Crear una consolidación
 export const useCreateConsolidation = (): UseMutationResult<
-  ConsolidationType,
+  ConsolidationPopulatedType,
   Error,
   ConsolidationCreationDTO
 > => {
   const queryClient = useQueryClient();
-  return useMutation<ConsolidationType, Error, ConsolidationCreationDTO>({
+  return useMutation<
+    ConsolidationPopulatedType,
+    Error,
+    ConsolidationCreationDTO
+  >({
     mutationFn: (data: ConsolidationCreationDTO) =>
       consolidationApi.create(data),
     onSuccess: () => {
@@ -57,17 +61,17 @@ export const useCreateConsolidation = (): UseMutationResult<
 
 // 🔹 Crear múltiples consolidaciones
 export const useCreateBulkConsolidations = (): UseMutationResult<
-  ConsolidationType[],
+  ConsolidationPopulatedType[],
   Error,
-  BulkConsolidationCreationDTO[]
+  BulkConsolidationCreationDTO
 > => {
   const queryClient = useQueryClient();
   return useMutation<
-    ConsolidationType[],
+    ConsolidationPopulatedType[],
     Error,
-    BulkConsolidationCreationDTO[]
+    BulkConsolidationCreationDTO
   >({
-    mutationFn: (data: BulkConsolidationCreationDTO[]) =>
+    mutationFn: (data: BulkConsolidationCreationDTO) =>
       consolidationApi.createBulk(data),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -79,13 +83,13 @@ export const useCreateBulkConsolidations = (): UseMutationResult<
 
 // 🔹 Actualizar una consolidación
 export const useUpdateConsolidation = (): UseMutationResult<
-  ConsolidationType,
+  ConsolidationPopulatedType,
   Error,
   { id: number; data: ConsolidationUpdateDTO }
 > => {
   const queryClient = useQueryClient();
   return useMutation<
-    ConsolidationType,
+    ConsolidationPopulatedType,
     Error,
     { id: number; data: ConsolidationUpdateDTO }
   >({

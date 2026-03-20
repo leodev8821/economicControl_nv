@@ -10,7 +10,7 @@ import { ConsolidationQueryKeys } from "@/core/api/queryKeys";
 import type {
   MemberType,
   MemberCreateDTO,
-  BulkMemberCreateDTO,
+  BulkMemberDTO,
   MemberUpdateDTO,
 } from "@economic-control/shared";
 
@@ -53,12 +53,12 @@ export const useCreateMember = (): UseMutationResult<
 export const useCreateBulkMembers = (): UseMutationResult<
   MemberType[],
   Error,
-  BulkMemberCreateDTO[]
+  BulkMemberDTO
 > => {
   const queryClient = useQueryClient();
 
-  return useMutation<MemberType[], Error, BulkMemberCreateDTO[]>({
-    mutationFn: (data: BulkMemberCreateDTO[]) => memberApi.createBulk(data),
+  return useMutation<MemberType[], Error, BulkMemberDTO>({
+    mutationFn: (data: BulkMemberDTO) => memberApi.createBulk(data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ConsolidationQueryKeys.members.all(),

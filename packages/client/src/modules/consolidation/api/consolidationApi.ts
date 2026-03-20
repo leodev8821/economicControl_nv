@@ -4,14 +4,14 @@ import type {
   ConsolidationCreationDTO,
   BulkConsolidationCreationDTO,
   ConsolidationUpdateDTO,
-  ConsolidationType,
+  ConsolidationPopulatedType,
 } from "@economic-control/shared";
 
 /**
  * API para la gestión de consolidaciones.
  */
 export const consolidationApi = createCrudApi<
-  ConsolidationType,
+  ConsolidationPopulatedType,
   ConsolidationCreationDTO,
   ConsolidationUpdateDTO,
   BulkConsolidationCreationDTO

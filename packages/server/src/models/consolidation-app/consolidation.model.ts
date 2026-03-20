@@ -1,4 +1,3 @@
-// models/outcome.ts
 import { DataTypes, Model, type Optional } from "sequelize";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import {
@@ -156,7 +155,18 @@ ConsolidationModel.init(
 ConsolidationModel.addScope("populated", {
   include: [
     { association: "User", attributes: ["id", "username"] },
-    { association: "Member", attributes: ["id", "first_name", "last_name"] },
+    {
+      association: "Member",
+      attributes: [
+        "id",
+        "first_name",
+        "last_name",
+        "phone",
+        "birth_date",
+        "status",
+        "visit_date",
+      ],
+    },
     { association: "Network", attributes: ["id", "name"] },
   ],
 });

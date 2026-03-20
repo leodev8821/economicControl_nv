@@ -4,7 +4,7 @@ import type {
   MemberType,
   MemberCreateDTO,
   MemberUpdateDTO,
-  BulkMemberCreateDTO,
+  BulkMemberDTO,
 } from "@economic-control/shared";
 
 /**
@@ -14,5 +14,6 @@ export const memberApi = createCrudApi<
   MemberType,
   MemberCreateDTO,
   MemberUpdateDTO,
-  BulkMemberCreateDTO
+  any,
+  BulkMemberDTO
 >(`${API_ROUTES_PATH.CONSOLIDATION}/members`);

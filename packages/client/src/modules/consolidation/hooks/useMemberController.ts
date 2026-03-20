@@ -72,7 +72,7 @@ export default function useMemberController() {
       return;
     }
 
-    const payload = submission.value.members;
+    const payload = submission.value;
 
     // Modo edición → update
     if (editingMember) {
@@ -80,9 +80,10 @@ export default function useMemberController() {
         {
           id: editingMember.id,
           data: {
-            ...payload[0],
-            user_id: payload[0].user_id ?? editingMember.user_id,
-            is_visible: payload[0].is_visible ?? editingMember.is_visible,
+            ...payload.members[0],
+            user_id: payload.members[0].user_id ?? editingMember.user_id,
+            is_visible:
+              payload.members[0].is_visible ?? editingMember.is_visible,
           },
         },
         {

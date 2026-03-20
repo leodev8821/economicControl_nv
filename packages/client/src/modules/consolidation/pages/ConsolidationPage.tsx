@@ -3,6 +3,7 @@ import MuiAlert from "@mui/material/Alert";
 
 import NetworkForm from "../components/forms/NetworkForm";
 import NetworkTable from "../components/tables/NetworkTable";
+import ConsolidationTable from "../components/tables/ConsolidationTable";
 
 import useNetworkController from "../hooks/useNetworkController";
 
@@ -21,7 +22,7 @@ export default function ConsolidationPage() {
         />
       </Paper>
 
-      <Paper sx={{ p: 2 }}>
+      <Paper sx={{ p: 2, mb: 4 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>
           Directorio de Redes ({controller.networks.length})
         </Typography>
@@ -31,6 +32,14 @@ export default function ConsolidationPage() {
           onEdit={controller.startEdit}
           onToggleVisibility={controller.toggleVisibility}
         />
+      </Paper>
+
+      <Paper sx={{ p: 2, mb: 4 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Consolidación
+        </Typography>
+
+        <ConsolidationTable />
       </Paper>
 
       <Snackbar

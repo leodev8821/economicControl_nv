@@ -27,7 +27,7 @@ export function createCrudApi<
   CreateDTO = Partial<Entity>,
   UpdateDTO = Partial<Entity>,
   Filters = {},
-  BulkCreateDTO = Partial<Entity>,
+  BulkDTO = Partial<Entity>,
 >(baseUrl: string) {
   return {
     getAll: async (params?: QueryParams<Filters>): Promise<Entity[]> => {
@@ -42,11 +42,8 @@ export function createCrudApi<
       return typedApiClient.post<Entity, CreateDTO>(baseUrl, data);
     },
 
-    createBulk: async (data: BulkCreateDTO[]): Promise<Entity[]> => {
-      return typedApiClient.post<Entity[], BulkCreateDTO[]>(
-        `${baseUrl}/bulk`,
-        data,
-      );
+    createBulk: async (data: BulkDTO): Promise<Entity[]> => {
+      return typedApiClient.post<Entity[], BulkDTO>(`${baseUrl}/bulk`, data);
     },
 
     update: async (id: number, data: UpdateDTO): Promise<Entity> => {
