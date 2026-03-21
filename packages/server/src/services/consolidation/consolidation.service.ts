@@ -99,6 +99,8 @@ async function createMultipleConsolidations(): Promise<
         is_visible: true,
       }));
 
+    console.log(consolidations);
+
     // Insertar en bloque
     const createdConsolidations = await ConsolidationModel.bulkCreate(
       consolidations,

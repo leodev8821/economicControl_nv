@@ -119,7 +119,7 @@ export const consolidationController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al crear la consolidación.",
+        "Error al crear las consolidaciones.",
       );
     }
   },
