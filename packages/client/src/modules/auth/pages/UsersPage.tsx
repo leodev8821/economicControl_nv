@@ -148,9 +148,9 @@ const UserPage: React.FC = () => {
   if (!authUser || !hasPermission) return null;
 
   return (
-    <Box p={3}>
+    <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
       <Box mb={3}>
-        <Typography variant="h4" component="h1" gutterBottom color="primary">
+        <Typography variant="h4" component="h1" gutterBottom color="primary" sx={{ fontSize: { xs: "1.75rem", sm: "2rem", md: "2.125rem" } }}>
           Gestión de Usuarios
         </Typography>
         <Typography variant="body2" color="textSecondary">
@@ -171,9 +171,9 @@ const UserPage: React.FC = () => {
       <Paper
         id="user-form"
         elevation={3}
-        sx={{ p: 3, mb: 4, bgcolor: "background.paper" }}
+        sx={{ p: { xs: 2, sm: 3 }, mb: 4, bgcolor: "background.paper" }}
       >
-        <Typography variant="h6" color="secondary" gutterBottom>
+        <Typography variant="h5" color="secondary" gutterBottom sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}>
           {editingUser
             ? `Editando Usuario: ${editingUser.username}`
             : "Crear Nuevo Usuario"}
@@ -222,7 +222,7 @@ const UserPage: React.FC = () => {
         <Paper
           elevation={3}
           sx={{
-            p: 1,
+            p: { xs: 1, sm: 2 },
             borderRadius: 2,
             width: "100%",
             maxWidth: "1200px",
@@ -230,13 +230,17 @@ const UserPage: React.FC = () => {
           }}
         >
           <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={2}
-            p={2}
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: "space-between",
+              alignItems: { xs: "flex-start", sm: "center" },
+              mb: 2,
+              p: { xs: 1, sm: 2 },
+              gap: 1,
+            }}
           >
-            <Typography variant="h5">
+            <Typography variant="h5" sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}>
               Listado de Usuarios ({users.length})
             </Typography>
           </Box>

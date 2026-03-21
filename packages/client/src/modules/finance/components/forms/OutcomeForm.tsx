@@ -13,7 +13,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs, { Dayjs } from "dayjs";
-import { Button, Stack } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import { useForm } from "@conform-to/react";
 
 /** Schemas de validación */
@@ -27,7 +27,6 @@ import type { Outcome } from "@modules/finance/types/outcome.type";
 import { useWeeks } from "@modules/finance/hooks/useWeek";
 import { useCashes } from "@modules/finance/hooks/useCash";
 
-// Constantes para MUI Select
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -186,9 +185,15 @@ export default function OutcomeForm({
       onSubmit={handleSubmit}
       className="outcome-form"
     >
-      <h2>{isUpdateMode ? "Editar Gasto" : "Crear Nuevo Gasto"}</h2>
+      <Typography
+        variant="h5"
+        color="error"
+        gutterBottom
+        sx={{ textAlign: { xs: "center", sm: "left" } }}
+      >
+        {isUpdateMode ? "Editar Gasto" : "Crear Nuevo Gasto"}
+      </Typography>
 
-      {/* Errores a nivel de formulario (si existen) */}
       {form.errors && <div style={{ color: "red" }}>{form.errors}</div>}
 
       <Grid container spacing={2}>
@@ -383,12 +388,17 @@ export default function OutcomeForm({
         </Grid>
 
         <Grid size={12}>
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
+          <Stack
+            direction={{ xs: "column-reverse", sm: "row" }}
+            spacing={2}
+            justifyContent={{ xs: "stretch", sm: "flex-end" }}
+          >
             {isUpdateMode && onCancel && (
               <Button
                 variant="outlined"
                 onClick={onCancel}
                 disabled={isLoading}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
               >
                 Cancelar
               </Button>
@@ -397,7 +407,7 @@ export default function OutcomeForm({
               type="submit"
               variant="contained"
               disabled={isLoading}
-              sx={{ minWidth: 150 }}
+              sx={{ minWidth: 150, width: { xs: "100%", sm: "auto" } }}
             >
               {isLoading
                 ? "Guardando..."

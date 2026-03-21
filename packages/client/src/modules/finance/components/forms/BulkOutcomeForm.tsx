@@ -16,7 +16,6 @@ import {
   Divider,
   InputAdornment,
   useMediaQuery,
-  useTheme,
   Fade,
 } from "@mui/material";
 import {
@@ -61,8 +60,9 @@ export default function BulkOutcomeForm({
   );
   const { data: weeksResponse } = useWeeks();
   const availableWeeks = weeksResponse?.data ?? [];
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(
+    "(max-width: 599px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)"
+  );
   const LOCAL_STORAGE_KEY = "bulk_outcome_draft";
 
   // --- Lógica de Borrador ---

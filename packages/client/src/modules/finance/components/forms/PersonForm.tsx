@@ -5,7 +5,7 @@ import FormControl from "@mui/material/FormControl";
 import Grid from "@mui/material/Grid";
 import InputLabel from "@mui/material/InputLabel";
 import FormHelperText from "@mui/material/FormHelperText";
-import { Button, Stack } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import { useForm } from "@conform-to/react";
 
 /** Schemas de validación */
@@ -30,9 +30,6 @@ export default function PersonForm({
   isLoading = false,
   isUpdateMode = false,
 }: PersonFormProps) {
-  //const theme = useTheme();
-
-  // 1. Inicialización de Conform
   const [form, fields] = useForm({
     onValidate({ formData }) {
       return parseWithZod(formData, {
@@ -48,7 +45,6 @@ export default function PersonForm({
       : undefined,
   });
 
-  // 2. Manejador de Envío
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -77,12 +73,18 @@ export default function PersonForm({
       onSubmit={handleSubmit}
       className="person-form"
     >
-      <h2>{isUpdateMode ? "Editar Persona" : "Crear Nueva Persona"}</h2>
+      <Typography
+        variant="h5"
+        color="primary"
+        gutterBottom
+        sx={{ textAlign: { xs: "center", sm: "left" } }}
+      >
+        {isUpdateMode ? "Editar Persona" : "Crear Nueva Persona"}
+      </Typography>
 
       {form.errors && <div style={{ color: "red" }}>{form.errors}</div>}
 
       <Grid container spacing={2}>
-        {/* --- First Name --- */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <FormControl fullWidth error={!!fields.first_name.errors}>
             <InputLabel htmlFor={fields.first_name.id}>Nombre *</InputLabel>
@@ -100,7 +102,6 @@ export default function PersonForm({
           </FormControl>
         </Grid>
 
-        {/* --- Last Name --- */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <FormControl fullWidth error={!!fields.last_name.errors}>
             <InputLabel htmlFor={fields.last_name.id}>Apellido *</InputLabel>
@@ -118,7 +119,6 @@ export default function PersonForm({
           </FormControl>
         </Grid>
 
-        {/* --- DNI --- */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <FormControl fullWidth error={!!fields.dni.errors}>
             <InputLabel htmlFor={fields.dni.id}>DNI *</InputLabel>
@@ -137,12 +137,17 @@ export default function PersonForm({
         </Grid>
 
         <Grid size={12}>
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
+          <Stack
+            direction={{ xs: "column-reverse", sm: "row" }}
+            spacing={2}
+            justifyContent={{ xs: "stretch", sm: "flex-end" }}
+          >
             {isUpdateMode && onCancel && (
               <Button
                 variant="outlined"
                 onClick={onCancel}
                 disabled={isLoading}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
               >
                 Cancelar
               </Button>
@@ -151,7 +156,7 @@ export default function PersonForm({
               type="submit"
               variant="contained"
               disabled={isLoading}
-              sx={{ minWidth: 150 }}
+              sx={{ minWidth: 150, width: { xs: "100%", sm: "auto" } }}
             >
               {isLoading
                 ? "Guardando..."

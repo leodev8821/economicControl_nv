@@ -201,12 +201,29 @@ export const dataDisplayCustomizations: Components<Theme> = {
     styleOverrides: {
       actions: {
         display: 'flex',
-        gap: 8,
-        marginRight: 6,
+        gap: 4,
+        marginRight: 4,
         [`& .${iconButtonClasses.root}`]: {
           minWidth: 0,
-          width: 36,
-          height: 36,
+          width: 32,
+          height: 32,
+        },
+        '@media (max-width: 600px)': {
+          gap: 2,
+          '& .MuiTablePagination-select': {
+            marginLeft: 0,
+            marginRight: 0,
+          },
+        },
+      },
+      selectLabel: {
+        '@media (max-width: 600px)': {
+          display: 'none',
+        },
+      },
+      displayedRows: {
+        '@media (max-width: 600px)': {
+          display: 'none',
         },
       },
     },

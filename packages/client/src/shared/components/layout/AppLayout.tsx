@@ -225,13 +225,13 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
         }}
         color="default"
       >
-        <Toolbar>
+        <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2 }}
+            sx={{ mr: { xs: 1, sm: 2 } }}
           >
             <MenuIcon />
           </IconButton>
@@ -240,16 +240,15 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
             variant="h6"
             noWrap
             component="div"
-            sx={{ flexGrow: 1, fontWeight: "bold" }}
+            sx={{ flexGrow: 1, fontWeight: "bold", fontSize: { xs: "1rem", sm: "1.25rem" } }}
           >
             NV Control
           </Typography>
 
-          {/* ACCIONES DEL HEADER (Dark Mode + Logout) */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <ColorModeSelect />
-            <IconButton onClick={onLogout} color="error" title="Cerrar Sesión">
-              <Logout />
+          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1 } }}>
+            <ColorModeSelect sx={{ fontSize: { xs: 12, sm: 14 } }} />
+            <IconButton onClick={onLogout} color="error" title="Cerrar Sesión" size="small">
+              <Logout fontSize="small" />
             </IconButton>
           </Box>
         </Toolbar>
@@ -273,6 +272,9 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.enteringScreen,
             }),
+            [theme.breakpoints.down("md")]: {
+              width: collapsed ? drawerWidthClose : drawerWidthOpen,
+            },
           },
         }}
       >
@@ -342,13 +344,13 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 1, sm: 2, md: 3 },
           width: "100%",
           minHeight: "100vh",
           bgcolor: "background.default",
         }}
       >
-        <Toolbar /> {/* Espaciador superior */}
+        <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }} />
         {children}
       </Box>
     </Box>

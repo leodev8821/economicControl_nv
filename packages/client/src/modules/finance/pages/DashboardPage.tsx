@@ -63,12 +63,12 @@ const DashboardPage: React.FC = () => {
   const { mutate: executeSync, isPending } = useSyncBalances();
 
   if (isLoading) {
-    return <Box p={3}>Cargando datos del balance...</Box>;
+    return <Box p={{ xs: 2, sm: 3 }}>Cargando datos del balance...</Box>;
   }
 
   if (isError) {
     return (
-      <Box p={3} color="error.main">
+      <Box p={{ xs: 2, sm: 3 }} color="error.main">
         <Typography variant="h5">Error al cargar el balance</Typography>
         <Typography>{error.message}</Typography>
       </Box>
@@ -77,7 +77,7 @@ const DashboardPage: React.FC = () => {
 
   if (!balanceData || balanceData?.length === 0) {
     return (
-      <Box p={3}>
+      <Box p={{ xs: 2, sm: 3 }}>
         <Typography variant="body1" color="textSecondary">
           {apiResponseMessage || "No hay información de cajas disponible."}
         </Typography>
@@ -88,7 +88,7 @@ const DashboardPage: React.FC = () => {
   return (
     <Box
       className="dashboard-container"
-      sx={{ p: 3, position: "relative", minHeight: "400px" }}
+      sx={{ p: { xs: 1, sm: 2, md: 3 }, position: "relative", minHeight: "400px" }}
     >
       {isFetching && !isLoading && (
         <Box
@@ -115,49 +115,50 @@ const DashboardPage: React.FC = () => {
         </Box>
       )}
 
-      <Typography variant="h2" component="h1" gutterBottom>
+      <Typography variant="h3" component="h1" gutterBottom sx={{ fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" } }}>
         Bienvenido, {user?.first_name} {user?.last_name}
       </Typography>
       <Box
         sx={{
           display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
           justifyContent: "space-between",
-          alignItems: "center",
-          mb: 4,
+          alignItems: { xs: "stretch", sm: "center" },
+          gap: 2,
+          mb: { xs: 2, sm: 4 },
         }}
       >
-        <Grid container spacing={2} alignItems="center" sx={{ mb: 4 }}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Typography variant="h4">Dashboard Financiero</Typography>
-          </Grid>
+        <Typography variant="h4" sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" } }}>
+          Dashboard Financiero
+        </Typography>
 
-          {/* Renderizado Botón Condicional: Solo si es SuperUser */}
-          {isSuperUser && (
-            <Tooltip title="Recalcular saldos desde el historial de movimientos (Admin Only)">
-              <Button
-                variant="outlined"
-                color="warning"
-                startIcon={
-                  isPending ? <CircularProgress size={20} /> : <SyncIcon />
+        {isSuperUser && (
+          <Tooltip title="Recalcular saldos desde el historial de movimientos (Admin Only)">
+            <Button
+              variant="outlined"
+              color="warning"
+              startIcon={
+                isPending ? <CircularProgress size={20} /> : <SyncIcon />
+              }
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "¿Deseas recalcular los saldos de todas las cajas? Esta acción no se puede deshacer.",
+                  )
+                ) {
+                  executeSync();
                 }
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      "¿Deseas recalcular los saldos de todas las cajas? Esta acción no se puede deshacer.",
-                    )
-                  ) {
-                    executeSync();
-                  }
-                }}
-                disabled={isPending}
-                sx={{ fontWeight: "bold" }}
-              >
-                {isPending ? "Sincronizando..." : "Sincronizar Saldos"}
-              </Button>
-            </Tooltip>
-          )}
+              }}
+              disabled={isPending}
+              sx={{ fontWeight: "bold" }}
+            >
+              {isPending ? "Sincronizando..." : "Sincronizar Saldos"}
+            </Button>
+          </Tooltip>
+        )}
 
-          <Grid size={{ xs: 12, md: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Ver por</InputLabel>
               <Select
@@ -171,7 +172,7 @@ const DashboardPage: React.FC = () => {
             </FormControl>
           </Grid>
 
-          <Grid size={{ xs: 12, md: 3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             {filterType === "week" && (
               <WeekSelector
                 selectedWeek={selectedWeek}
@@ -191,20 +192,20 @@ const DashboardPage: React.FC = () => {
         );
 
         return (
-          <Box key={cash.cash_id} sx={{ mb: 6, mt: 4 }}>
-            {/* Encabezado de la Caja */}
+          <Box key={cash.cash_id} sx={{ mb: { xs: 4, sm: 6 }, mt: { xs: 2, sm: 4 } }}>
             <Box sx={{ mb: 2, borderBottom: 1, borderColor: "divider", pb: 1 }}>
               <Typography
                 variant="h5"
                 component="h2"
                 color="primary.main"
                 fontWeight="bold"
+                sx={{ fontSize: { xs: "1.1rem", sm: "1.25rem", md: "1.5rem" } }}
               >
                 📦 {cash.cash_name}
               </Typography>
             </Box>
 
-            <Grid container spacing={3}>
+            <Grid container spacing={{ xs: 2, sm: 3 }}>
               {/* === CARD 1: SALDO ACTUAL === */}
               <Grid size={{ xs: 12, md: 4 }}>
                 <Card

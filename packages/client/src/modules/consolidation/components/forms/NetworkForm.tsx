@@ -13,7 +13,6 @@ import {
   Divider,
   useMediaQuery,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 
 interface NetworkFormProps {
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
@@ -34,8 +33,9 @@ export default function NetworkForm({
   initialValues,
   isEditMode = false,
 }: NetworkFormProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(
+    "(max-width: 599px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)"
+  );
 
   const [form, fields] = useForm({
     id: isEditMode ? `edit-${initialValues?.id}` : "create-network",

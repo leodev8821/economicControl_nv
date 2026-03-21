@@ -21,13 +21,13 @@ const ModulePlaceholder: React.FC<ModulePlaceholderProps> = ({
     <Paper
       elevation={3}
       sx={{
-        p: 6,
+        p: { xs: 3, sm: 4, md: 6 },
         textAlign: "center",
         bgcolor: "background.paper",
       }}
     >
-      <Stack spacing={3} alignItems="center">
-        <ConstructionIcon sx={{ fontSize: 80 }} color="primary" />
+      <Stack spacing={{ xs: 2, sm: 3 }} alignItems="center">
+        <ConstructionIcon sx={{ fontSize: { xs: 60, sm: 80 } }} color="primary" />
 
         <Typography variant="h5">{title}</Typography>
 

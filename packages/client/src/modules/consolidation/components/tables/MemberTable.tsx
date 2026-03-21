@@ -23,6 +23,11 @@ import {
   MenuItem,
   Collapse,
   Stack,
+  useMediaQuery,
+  Card,
+  CardContent,
+  CardActions,
+  Chip,
 } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
 import dayjs from "dayjs";
@@ -80,10 +85,10 @@ export default function MemberTable({
   currentUser,
   onEdit,
   onToggleVisibility,
-  //onDelete,
   highlightedRowId,
 }: MemberTableProps) {
-  // --- Estados ---
+  const isMobile = useMediaQuery("(max-width: 899px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)");
+
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchText, setSearchText] = useState("");
@@ -561,157 +566,307 @@ export default function MemberTable({
         </Collapse>
       </Paper>
 
-      {/* Tabla */}
-      <TableContainer component={Paper} elevation={1} sx={{ borderRadius: 2 }}>
-        <Table sx={{ minWidth: 650 }} aria-label="member table">
-          <TableHead sx={{ bgcolor: "primary.main" }}>
-            <TableRow>
-              <SortableHeader id="username" label="Líder" />
-              <SortableHeader id="first_name" label="Nombre" />
-              <SortableHeader id="last_name" label="Apellido" />
-              <SortableHeader id="phone" label="Teléfono" />
-              <SortableHeader id="gender" label="Género" />
-              <SortableHeader id="birth_date" label="Nacimiento" />
-              <SortableHeader id="age" label="Edad" />
-              <SortableHeader id="status" label="Estado Civil" />
-              <SortableHeader id="visit_date" label="Fecha de Visita" />
+      {isMobile ? (
+        <Box>
+          {paginatedMembers.length > 0 ? (
+            paginatedMembers.map((row) => {
+              const isHidden = row.is_visible === false;
+              const isAdmin =
+                currentUser.role_name === "SuperUser" ||
+                currentUser.role_name === "Administrador";
+              const canDelete = canManageMember(row);
+              return (
+                <Card
+                  key={row.id}
+                  sx={{
+                    mb: 1,
+                    opacity: isHidden ? 0.6 : 1,
+                    borderLeft: highlightedRowId === row.id ? 4 : 0,
+                    borderColor: "warning.main",
+                  }}
+                >
+                  <CardContent sx={{ pb: 1, "&:last-child": { pb: 1 } }}>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
+                    >
+                      <Typography variant="subtitle1" fontWeight="bold">
+                        {row.first_name} {row.last_name}
+                      </Typography>
+                      <Chip
+                        label={row.gender || "-"}
+                        size="small"
+                        color={row.gender === "Masculino" ? "primary" : "secondary"}
+                      />
+                    </Box>
 
-              <TableCell
-                sx={{ fontWeight: "bold", color: "primary.contrastText" }}
-                align="center"
-              >
-                Acciones
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedMembers.length > 0 ? (
-              paginatedMembers.map((row) => {
-                const isHidden = row.is_visible === false;
-                const isAdmin =
-                  currentUser.role_name === "SuperUser" ||
-                  currentUser.role_name === "Administrador";
-                const canDelete = canManageMember(row);
-                return (
-                  <TableRow
-                    key={row.id}
-                    hover
-                    sx={{
-                      "&:last-child td, &:last-child th": { border: 0 },
-                      backgroundColor:
-                        highlightedRowId === row.id
-                          ? "warning.light"
-                          : "inherit",
-                      opacity: isHidden ? 0.6 : 1,
-                      bgcolor: isHidden
-                        ? "action.hover"
-                        : highlightedRowId === row.id
-                          ? "warning.light"
-                          : "inherit",
-                      transition: "background-color 0.2s ease",
-                    }}
-                  >
-                    <TableCell>{row.User?.username || "-"}</TableCell>
-                    <TableCell>{row.first_name || "-"}</TableCell>
-                    <TableCell>{row.last_name || "-"}</TableCell>
-                    <TableCell>{row.phone || "-"}</TableCell>
-                    <TableCell>{row.gender || "-"}</TableCell>
-                    <TableCell>
-                      {dayjs(row.birth_date).isValid()
-                        ? dayjs(row.birth_date).format("DD-MM-YYYY")
-                        : "-"}
-                    </TableCell>
+                    <Grid container spacing={1}>
+                      <Grid size={6}>
+                        <Typography variant="caption" color="text.secondary">
+                          Líder
+                        </Typography>
+                        <Typography variant="body2">
+                          {row.User?.username || "-"}
+                        </Typography>
+                      </Grid>
+                      <Grid size={6}>
+                        <Typography variant="caption" color="text.secondary">
+                          Teléfono
+                        </Typography>
+                        <Typography variant="body2">{row.phone || "-"}</Typography>
+                      </Grid>
+                      <Grid size={6}>
+                        <Typography variant="caption" color="text.secondary">
+                          Edad
+                        </Typography>
+                        <Typography variant="body2">
+                          {calculateAge(row.birth_date) ?? "-"}
+                        </Typography>
+                      </Grid>
+                      <Grid size={6}>
+                        <Typography variant="caption" color="text.secondary">
+                          Estado Civil
+                        </Typography>
+                        <Typography variant="body2">{row.status || "-"}</Typography>
+                      </Grid>
+                      <Grid size={12}>
+                        <Typography variant="caption" color="text.secondary">
+                          Fecha de Visita
+                        </Typography>
+                        <Typography variant="body2">
+                          {dayjs(row.visit_date).isValid()
+                            ? dayjs(row.visit_date).format("DD-MM-YYYY")
+                            : "-"}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
 
-                    <TableCell sx={{ fontWeight: "bold" }}>
-                      {calculateAge(row.birth_date) ?? "-"}
-                    </TableCell>
-                    <TableCell>{row.status || "-"}</TableCell>
-                    <TableCell>
-                      {dayjs(row.visit_date).isValid()
-                        ? dayjs(row.visit_date).format("DD-MM-YYYY")
-                        : "-"}
-                    </TableCell>
+                  <CardActions sx={{ justifyContent: "flex-end", pt: 0 }}>
+                    <Tooltip
+                      title={canDelete ? "Editar" : "Sin permiso"}
+                    >
+                      <span>
+                        <IconButton
+                          color="primary"
+                          onClick={() => onEdit(row)}
+                          disabled={!canDelete}
+                          size="small"
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
 
-                    {/* ACCIONES */}
-                    <TableCell align="center">
-                      <Tooltip
-                        title={
-                          canDelete ? "Editar" : "No tienes permiso para editar"
-                        }
-                      >
+                    {isAdmin && isHidden ? (
+                      <Tooltip title="Restaurar">
+                        <IconButton
+                          color="success"
+                          onClick={() => onToggleVisibility(row)}
+                          size="small"
+                        >
+                          <RestoreFromTrash />
+                        </IconButton>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip title={canDelete ? "Eliminar" : "Sin permiso"}>
                         <span>
                           <IconButton
-                            color="primary"
-                            onClick={() => onEdit(row)}
-                            disabled={!canDelete}
+                            color="error"
+                            onClick={() => onToggleVisibility(row)}
                             size="small"
+                            disabled={!canDelete}
                           >
-                            <EditIcon />
+                            <DeleteIcon />
                           </IconButton>
                         </span>
                       </Tooltip>
+                    )}
+                  </CardActions>
+                </Card>
+              );
+            })
+          ) : (
+            <Paper sx={{ p: 3, textAlign: "center" }}>
+              <Typography variant="body1" color="text.secondary">
+                No se encontraron miembros
+              </Typography>
+            </Paper>
+          )}
 
-                      {isAdmin && isHidden ? (
-                        <Tooltip title="Restaurar Miembro">
-                          <IconButton
-                            color="success"
-                            onClick={() => onToggleVisibility(row)}
-                            size="small"
-                          >
-                            <RestoreFromTrash />
-                          </IconButton>
-                        </Tooltip>
-                      ) : (
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredMembers.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Filas por página"
+          />
+        </Box>
+      ) : (
+        <TableContainer component={Paper} elevation={1} sx={{ borderRadius: 2, overflowX: "auto" }}>
+          <Table size="small" aria-label="member table">
+            <TableHead sx={{ bgcolor: "primary.main" }}>
+              <TableRow>
+                <SortableHeader id="username" label="Líder" />
+                <SortableHeader id="first_name" label="Nombre" />
+                <SortableHeader id="last_name" label="Apellido" />
+                <SortableHeader id="phone" label="Teléfono" />
+                <SortableHeader id="gender" label="Género" />
+                <SortableHeader id="birth_date" label="Nacimiento" />
+                <SortableHeader id="age" label="Edad" />
+                <SortableHeader id="status" label="Estado Civil" />
+                <SortableHeader id="visit_date" label="Fecha de Visita" />
+
+                <TableCell
+                  sx={{ fontWeight: "bold", color: "primary.contrastText" }}
+                  align="center"
+                >
+                  Acciones
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedMembers.length > 0 ? (
+                paginatedMembers.map((row) => {
+                  const isHidden = row.is_visible === false;
+                  const isAdmin =
+                    currentUser.role_name === "SuperUser" ||
+                    currentUser.role_name === "Administrador";
+                  const canDelete = canManageMember(row);
+                  return (
+                    <TableRow
+                      key={row.id}
+                      hover
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                        backgroundColor:
+                          highlightedRowId === row.id
+                            ? "warning.light"
+                            : "inherit",
+                        opacity: isHidden ? 0.6 : 1,
+                        bgcolor: isHidden
+                          ? "action.hover"
+                          : highlightedRowId === row.id
+                            ? "warning.light"
+                            : "inherit",
+                        transition: "background-color 0.2s ease",
+                      }}
+                    >
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        {row.User?.username || "-"}
+                      </TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        {row.first_name || "-"}
+                      </TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        {row.last_name || "-"}
+                      </TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        {row.phone || "-"}
+                      </TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        {row.gender || "-"}
+                      </TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        {dayjs(row.birth_date).isValid()
+                          ? dayjs(row.birth_date).format("DD-MM-YYYY")
+                          : "-"}
+                      </TableCell>
+
+                      <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                        {calculateAge(row.birth_date) ?? "-"}
+                      </TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        {row.status || "-"}
+                      </TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        {dayjs(row.visit_date).isValid()
+                          ? dayjs(row.visit_date).format("DD-MM-YYYY")
+                          : "-"}
+                      </TableCell>
+
+                      <TableCell align="center">
                         <Tooltip
                           title={
-                            canDelete
-                              ? isHidden
-                                ? "Ya eliminado"
-                                : "Eliminar"
-                              : "Solo el propietario o un administrador pueden eliminar"
+                            canDelete ? "Editar" : "No tienes permiso para editar"
                           }
                         >
                           <span>
                             <IconButton
-                              color="error"
-                              onClick={() => onToggleVisibility(row)}
+                              color="primary"
+                              onClick={() => onEdit(row)}
+                              disabled={!canDelete}
                               size="small"
-                              disabled={
-                                !canDelete || highlightedRowId === row.id
-                              }
                             >
-                              <DeleteIcon />
+                              <EditIcon />
                             </IconButton>
                           </span>
                         </Tooltip>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
-                  <Typography variant="body1" color="text.secondary">
-                    No se encontraron miembros
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
 
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredMembers.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Filas por página"
-        />
-      </TableContainer>
+                        {isAdmin && isHidden ? (
+                          <Tooltip title="Restaurar Miembro">
+                            <IconButton
+                              color="success"
+                              onClick={() => onToggleVisibility(row)}
+                              size="small"
+                            >
+                              <RestoreFromTrash />
+                            </IconButton>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip
+                            title={
+                              canDelete
+                                ? isHidden
+                                  ? "Ya eliminado"
+                                  : "Eliminar"
+                                : "Solo el propietario o un administrador pueden eliminar"
+                            }
+                          >
+                            <span>
+                              <IconButton
+                                color="error"
+                                onClick={() => onToggleVisibility(row)}
+                                size="small"
+                                disabled={
+                                  !canDelete || highlightedRowId === row.id
+                                }
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
+                    <Typography variant="body1" color="text.secondary">
+                      No se encontraron miembros
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredMembers.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Filas por página"
+          />
+        </TableContainer>
+      )}
     </Box>
   );
 }

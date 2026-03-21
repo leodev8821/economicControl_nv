@@ -23,6 +23,11 @@ import {
   MenuItem,
   Collapse,
   Stack,
+  useMediaQuery,
+  Card,
+  CardContent,
+  CardActions,
+  Chip,
 } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
 
@@ -66,6 +71,8 @@ export default function IncomeTable({
   onDelete,
   highlightedRowId,
 }: IncomeTableProps) {
+  const isMobile = useMediaQuery("(max-width: 899px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)");
+
   // --- Estados ---
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -339,7 +346,7 @@ export default function IncomeTable({
   return (
     <Box
       sx={{
-        p: 4,
+        p: { xs: 1, md: 4 },
         width: "100%",
         maxWidth: "1200px",
         mx: "auto",
@@ -348,15 +355,14 @@ export default function IncomeTable({
         gap: 3,
       }}
     >
-      {/* Panel Superior */}
       <Paper
         elevation={3}
         sx={{
-          p: 3,
+          p: { xs: 2, sm: 3 },
           display: "flex",
-          flexWrap: "wrap",
+          flexDirection: { xs: "column", md: "row" },
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: { xs: "stretch", md: "center" },
           gap: 2,
           borderRadius: 2,
         }}
@@ -365,24 +371,24 @@ export default function IncomeTable({
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 2,
-            p: 2,
+            gap: { xs: 1, sm: 2 },
+            p: { xs: 1.5, sm: 2 },
             bgcolor: "primary.main",
             color: "primary.contrastText",
             borderRadius: 2,
-            minWidth: "250px",
+            minWidth: { xs: "100%", sm: "200px", md: "250px" },
             boxShadow: 2,
           }}
         >
-          <CalculateIcon fontSize="large" />
+          <CalculateIcon fontSize="medium" />
           <Box>
             <Typography
               variant="caption"
-              sx={{ opacity: 0.9, letterSpacing: 1 }}
+              sx={{ opacity: 0.9, letterSpacing: 1, fontSize: { xs: "0.65rem", sm: "0.75rem" } }}
             >
               TOTAL FILTRADO
             </Typography>
-            <Typography variant="h4" fontWeight="bold">
+            <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" } }}>
               {totalAmount.toLocaleString("es-ES", {
                 style: "currency",
                 currency: "EUR",
@@ -393,6 +399,7 @@ export default function IncomeTable({
         <Box
           sx={{
             display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
             gap: 1,
             alignItems: "center",
           }}
@@ -409,8 +416,9 @@ export default function IncomeTable({
             variant="outlined"
             onClick={exportToCSV}
             startIcon={<DownloadIcon />}
+            size="small"
           >
-            Exportar CSV
+            Exportar
           </Button>
           <TextField
             placeholder="Buscar..."
@@ -418,7 +426,7 @@ export default function IncomeTable({
             size="small"
             value={searchText}
             onChange={handleSearchChange}
-            sx={{ minWidth: 300 }}
+            sx={{ minWidth: { xs: "100%", sm: 200, md: 300 } }}
             slotProps={{
               input: {
                 startAdornment: (
@@ -439,6 +447,8 @@ export default function IncomeTable({
           justifyContent="space-between"
           alignItems="center"
           mb={2}
+          flexWrap="wrap"
+          gap={2}
         >
           <Button
             startIcon={showFilters ? <FilterListOffIcon /> : <FilterListIcon />}
@@ -468,15 +478,14 @@ export default function IncomeTable({
                 ),
               },
             }}
-            sx={{ width: 300 }}
+            sx={{ minWidth: { xs: "100%", sm: 200, md: 300 } }}
           />
         </Stack>
 
         <Collapse in={showFilters}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Grid container spacing={2} alignItems="center">
-              {/* Filtro: Fuente */}
-              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid container spacing={2} alignItems="center" mt={1}>
+              <Grid size={12}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Fuente</InputLabel>
                   <Select
@@ -498,8 +507,34 @@ export default function IncomeTable({
                 </FormControl>
               </Grid>
 
-              {/* Filtro Caja */}
-              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Caja</InputLabel>
+                  <Select
+                    value={filters.cashId}
+                    label="Caja"
+                    onChange={(e) => {
+                      setFilters((prev) => ({
+                        ...prev,
+                        cashId: e.target.value,
+                      }));
+                      setPage(0);
+                    }}
+                  >
+                    <MenuItem value="all">
+                      <em>Todas las cajas</em>
+                    </MenuItem>
+                    {availableCashes.map((c) => (
+                      <MenuItem key={c.id} value={c.id}>
+                        {c.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Filtro Semana */}
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Caja</InputLabel>
                   <Select
@@ -554,7 +589,7 @@ export default function IncomeTable({
               </Grid>
 
               {/* Filtro: Rango Fechas */}
-              <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <DatePicker
                   label="Desde"
                   value={filters.startDate}
@@ -562,7 +597,7 @@ export default function IncomeTable({
                   slotProps={{ textField: { size: "small", fullWidth: true } }}
                 />
               </Grid>
-              <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <DatePicker
                   label="Hasta"
                   value={filters.endDate}
@@ -572,7 +607,7 @@ export default function IncomeTable({
               </Grid>
 
               {/* Filtro: Rango Montos */}
-              <Grid sx={{ xs: 6, sm: 3, md: 1.5 }}>
+              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
                 <TextField
                   label="Min €"
                   type="number"
@@ -584,7 +619,7 @@ export default function IncomeTable({
                   }
                 />
               </Grid>
-              <Grid sx={{ xs: 6, sm: 3, md: 1.5 }}>
+              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
                 <TextField
                   label="Max €"
                   type="number"
@@ -598,7 +633,7 @@ export default function IncomeTable({
               </Grid>
 
               {/* Filtro: Persona */}
-              <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
+              <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                 <TextField
                   label="Persona"
                   size="small"
@@ -610,7 +645,7 @@ export default function IncomeTable({
                 />
               </Grid>
 
-              <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
+              <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                 <TextField
                   label="Nombre"
                   size="small"
@@ -622,7 +657,7 @@ export default function IncomeTable({
                 />
               </Grid>
 
-              <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
+              <Grid size={{ xs: 12, sm: 4, md: 2 }}>
                 <TextField
                   label="Apellido"
                   size="small"
@@ -634,22 +669,9 @@ export default function IncomeTable({
                 />
               </Grid>
 
-              {/* Filtro: Semana */}
-              <Grid sx={{ xs: 6, sm: 3, md: 2 }}>
-                <TextField
-                  label="Semana"
-                  size="small"
-                  fullWidth
-                  value={filters.weekId}
-                  onChange={(e) =>
-                    setFilters({ ...filters, weekId: e.target.value })
-                  }
-                />
-              </Grid>
-
               {/* Botón Reset */}
               <Grid
-                sx={{ xs: 12, md: 2 }}
+                size={12}
                 display="flex"
                 justifyContent="flex-end"
               >
@@ -666,115 +688,189 @@ export default function IncomeTable({
         </Collapse>
       </Paper>
 
-      {/* Tabla */}
-      <TableContainer component={Paper} elevation={1} sx={{ borderRadius: 2 }}>
-        <Table sx={{ minWidth: 650 }} aria-label="income table">
-          <TableHead sx={{ bgcolor: "primary.main" }}>
-            <TableRow>
-              {/* Cabeceras Ordenables */}
-              <SortableHeader id="id" label="ID" />
-              <SortableHeader id="cash_id" label="Caja" />
-              <SortableHeader id="weekString" label="Semana" />
-              <SortableHeader id="date" label="Fecha" />
-              <SortableHeader id="amount" label="Monto" align="right" />
-              <SortableHeader id="source" label="Fuente" />
-              <SortableHeader id="personName" label="Nombre" />
-              <SortableHeader id="personLastName" label="Apellido" />
-              <SortableHeader id="personDni" label="NIF" />
+      {isMobile ? (
+        <Box>
+          {paginatedIncomes.length > 0 ? (
+            paginatedIncomes.map((row) => (
+              <Card key={row.id} sx={{ mb: 1, borderLeft: highlightedRowId === row.id ? 4 : 0, borderColor: "warning.main" }}>
+                <CardContent sx={{ pb: 1, "&:last-child": { pb: 1 } }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {row.Person?.first_name || "-"} {row.Person?.last_name || ""}
+                    </Typography>
+                    <Chip label={row.source || "-"} size="small" />
+                  </Box>
 
-              {/* Columna de Acciones (No ordenable) */}
-              <TableCell sx={{ fontWeight: "bold" }} align="center">
-                Acciones
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedIncomes.length > 0 ? (
-              paginatedIncomes.map((row) => (
-                <TableRow
-                  key={row.id}
-                  hover
-                  sx={{
-                    "&:last-child td, &:last-child th": { border: 0 },
-                    backgroundColor:
-                      highlightedRowId === row.id ? "warning.light" : "inherit",
-                    transition: "background-color 0.2s ease",
-                  }}
-                >
-                  <TableCell>{row.id}</TableCell>
-                  <TableCell>
-                    <Tooltip title={`ID de Caja: ${row.cash_id}`}>
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
+                  <Grid container spacing={1}>
+                    <Grid size={6}>
+                      <Typography variant="caption" color="text.secondary">Monto</Typography>
+                      <Typography variant="body2" sx={{ fontFamily: "monospace", fontWeight: 500 }}>
+                        {row.amount.toFixed(2)} €
+                      </Typography>
+                    </Grid>
+                    <Grid size={6}>
+                      <Typography variant="caption" color="text.secondary">Fecha</Typography>
+                      <Typography variant="body2">{formatDate(row.date)}</Typography>
+                    </Grid>
+                    <Grid size={6}>
+                      <Typography variant="caption" color="text.secondary">Caja</Typography>
+                      <Typography variant="body2">{row.Cash?.name || "-"}</Typography>
+                    </Grid>
+                    <Grid size={6}>
+                      <Typography variant="caption" color="text.secondary">Semana</Typography>
+                      <Typography variant="body2">
+                        {row.Week ? `S${row.Week.id}` : "-"}
+                      </Typography>
+                    </Grid>
+                    <Grid size={12}>
+                      <Typography variant="caption" color="text.secondary">NIF</Typography>
+                      <Typography variant="body2">{row.Person?.dni || "-"}</Typography>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+
+                <CardActions sx={{ justifyContent: "flex-end", pt: 0 }}>
+                  <Tooltip title="Editar">
+                    <IconButton color="primary" onClick={() => onEdit(row)} size="small">
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Eliminar">
+                    <IconButton
+                      color="error"
+                      onClick={() => onDelete(row.id)}
+                      size="small"
+                      disabled={highlightedRowId === row.id}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                </CardActions>
+              </Card>
+            ))
+          ) : (
+            <Paper sx={{ p: 3, textAlign: "center" }}>
+              <Typography variant="body1" color="text.secondary">
+                No se encontraron resultados
+              </Typography>
+            </Paper>
+          )}
+
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredIncomes.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Filas por página"
+          />
+        </Box>
+      ) : (
+        <TableContainer component={Paper} elevation={1} sx={{ borderRadius: 2, overflowX: "auto" }}>
+          <Table size="small" aria-label="income table">
+            <TableHead sx={{ bgcolor: "primary.main" }}>
+              <TableRow>
+                <SortableHeader id="id" label="ID" />
+                <SortableHeader id="cash_id" label="Caja" />
+                <SortableHeader id="weekString" label="Semana" />
+                <SortableHeader id="date" label="Fecha" />
+                <SortableHeader id="amount" label="Monto" align="right" />
+                <SortableHeader id="source" label="Fuente" />
+                <SortableHeader id="personName" label="Nombre" />
+                <SortableHeader id="personLastName" label="Apellido" />
+                <SortableHeader id="personDni" label="NIF" />
+
+                <TableCell sx={{ fontWeight: "bold" }} align="center">
+                  Acciones
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedIncomes.length > 0 ? (
+                paginatedIncomes.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    hover
+                    sx={{
+                      "&:last-child td, &:last-child th": { border: 0 },
+                      backgroundColor:
+                        highlightedRowId === row.id ? "warning.light" : "inherit",
+                      transition: "background-color 0.2s ease",
+                    }}
+                  >
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{row.id}</TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      <Tooltip title={`ID de Caja: ${row.cash_id}`}>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           {row.Cash?.name || `Caja ${row.cash_id}`}
                         </Typography>
-                      </Box>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell>
-                    {row.Week
-                      ? `S${row.Week.id} (${formatDate(row.Week.week_start)} - ${formatDate(row.Week.week_end)})`
-                      : "-"}
-                  </TableCell>
-                  <TableCell>{formatDate(row.date)}</TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{ fontFamily: "monospace", fontWeight: 500 }}
-                  >
-                    {row.amount.toFixed(2)} €
-                  </TableCell>
-                  <TableCell>{row.source || "-"}</TableCell>
-                  <TableCell>{row.Person?.first_name || "-"}</TableCell>
-                  <TableCell>{row.Person?.last_name || "-"}</TableCell>
-                  <TableCell>{row.Person?.dni || "-"}</TableCell>
-                  <TableCell align="center">
-                    <Tooltip title="Editar">
-                      <IconButton
-                        color="primary"
-                        onClick={() => onEdit(row)}
-                        size="small"
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Eliminar">
-                      <IconButton
-                        color="error"
-                        onClick={() => onDelete(row.id)}
-                        size="small"
-                        disabled={highlightedRowId === row.id}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      {row.Week
+                        ? `S${row.Week.id} (${formatDate(row.Week.week_start)} - ${formatDate(row.Week.week_end)})`
+                        : "-"}
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{formatDate(row.date)}</TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{ fontFamily: "monospace", fontWeight: 500, whiteSpace: "nowrap" }}
+                    >
+                      {row.amount.toFixed(2)} €
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{row.source || "-"}</TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{row.Person?.first_name || "-"}</TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{row.Person?.last_name || "-"}</TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{row.Person?.dni || "-"}</TableCell>
+                    <TableCell align="center">
+                      <Tooltip title="Editar">
+                        <IconButton
+                          color="primary"
+                          onClick={() => onEdit(row)}
+                          size="small"
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Eliminar">
+                        <IconButton
+                          color="error"
+                          onClick={() => onDelete(row.id)}
+                          size="small"
+                          disabled={highlightedRowId === row.id}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
+                    <Typography variant="body1" color="text.secondary">
+                      No se encontraron resultados
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
-                  <Typography variant="body1" color="text.secondary">
-                    No se encontraron resultados
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              )}
+            </TableBody>
+          </Table>
 
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredIncomes.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Filas por página"
-        />
-      </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredIncomes.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Filas por página"
+          />
+        </TableContainer>
+      )}
     </Box>
   );
 }

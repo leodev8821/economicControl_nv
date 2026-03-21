@@ -16,7 +16,6 @@ import {
   Divider,
   InputAdornment,
   useMediaQuery,
-  useTheme,
   Fade,
 } from "@mui/material";
 import {
@@ -62,8 +61,9 @@ export default function BulkIncomeForm({
   );
   const { data: weeksResponse } = useWeeks();
   const availableWeeks = weeksResponse?.data ?? [];
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(
+    "(max-width: 599px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)"
+  );
   const LOCAL_STORAGE_KEY = "bulk_income_draft";
 
   // Helper para guardar

@@ -23,6 +23,11 @@ import {
   MenuItem,
   Collapse,
   Stack,
+  useMediaQuery,
+  Card,
+  CardContent,
+  CardActions,
+  Chip,
 } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
 
@@ -61,6 +66,8 @@ export default function OutcomeTable({
   onDelete,
   highlightedRowId,
 }: OutcomeTableProps) {
+  const isMobile = useMediaQuery("(max-width: 899px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)");
+
   // --- Estados ---
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -305,7 +312,7 @@ export default function OutcomeTable({
   return (
     <Box
       sx={{
-        p: 4,
+        p: { xs: 1, md: 4 },
         width: "100%",
         maxWidth: "1200px",
         mx: "auto",
@@ -318,11 +325,11 @@ export default function OutcomeTable({
       <Paper
         elevation={3}
         sx={{
-          p: 3,
+          p: { xs: 2, sm: 3 },
           display: "flex",
-          flexWrap: "wrap",
+          flexDirection: { xs: "column", md: "row" },
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: { xs: "stretch", md: "center" },
           gap: 2,
           borderRadius: 2,
         }}
@@ -331,24 +338,24 @@ export default function OutcomeTable({
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 2,
-            p: 2,
+            gap: { xs: 1, sm: 2 },
+            p: { xs: 1.5, sm: 2 },
             bgcolor: "error.main",
             color: "error.contrastText",
             borderRadius: 2,
-            minWidth: "250px",
+            minWidth: { xs: "100%", sm: "200px", md: "250px" },
             boxShadow: 2,
           }}
         >
-          <TrendingDownIcon fontSize="large" />
+          <TrendingDownIcon fontSize="medium" />
           <Box>
             <Typography
               variant="caption"
-              sx={{ opacity: 0.9, letterSpacing: 1 }}
+              sx={{ opacity: 0.9, letterSpacing: 1, fontSize: { xs: "0.65rem", sm: "0.75rem" } }}
             >
               TOTAL GASTOS FILTRADOS
             </Typography>
-            <Typography variant="h4" fontWeight="bold">
+            <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" } }}>
               {totalAmount.toLocaleString("es-ES", {
                 style: "currency",
                 currency: "EUR",
@@ -359,6 +366,7 @@ export default function OutcomeTable({
         <Box
           sx={{
             display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
             gap: 1,
             alignItems: "center",
           }}
@@ -375,8 +383,9 @@ export default function OutcomeTable({
             variant="outlined"
             onClick={exportToCSV}
             startIcon={<DownloadIcon />}
+            size="small"
           >
-            Exportar CSV
+            Exportar
           </Button>
           <TextField
             placeholder="Buscar..."
@@ -384,7 +393,7 @@ export default function OutcomeTable({
             size="small"
             value={searchText}
             onChange={handleSearchChange}
-            sx={{ minWidth: 300 }}
+            sx={{ minWidth: { xs: "100%", sm: 200, md: 300 } }}
             slotProps={{
               input: {
                 startAdornment: (
@@ -405,6 +414,8 @@ export default function OutcomeTable({
           justifyContent="space-between"
           alignItems="center"
           mb={2}
+          flexWrap="wrap"
+          gap={2}
         >
           <Button
             startIcon={showFilters ? <FilterListOffIcon /> : <FilterListIcon />}
@@ -434,15 +445,14 @@ export default function OutcomeTable({
                 ),
               },
             }}
-            sx={{ width: 300 }}
+            sx={{ minWidth: { xs: "100%", sm: 200, md: 300 } }}
           />
         </Stack>
 
         <Collapse in={showFilters}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Grid container spacing={2} alignItems="center">
-              {/* Filtro: Categoría (Equivalente a Fuente en Income) */}
-              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid container spacing={2} alignItems="center" mt={1}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Categoría</InputLabel>
                   <Select
@@ -464,8 +474,7 @@ export default function OutcomeTable({
                 </FormControl>
               </Grid>
 
-              {/* Filtro Caja */}
-              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Caja</InputLabel>
                   <Select
@@ -484,15 +493,14 @@ export default function OutcomeTable({
                     </MenuItem>
                     {availableCashes.map((c) => (
                       <MenuItem key={c.id} value={c.id}>
-                        📦 {c.name}
+                        {c.name}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
               </Grid>
 
-              {/* Filtro Semana */}
-              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Semana</InputLabel>
                   <Select
@@ -519,8 +527,7 @@ export default function OutcomeTable({
                 </FormControl>
               </Grid>
 
-              {/* Filtro: Rango Fechas */}
-              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <DatePicker
                   label="Desde"
                   value={filters.startDate}
@@ -528,7 +535,7 @@ export default function OutcomeTable({
                   slotProps={{ textField: { size: "small", fullWidth: true } }}
                 />
               </Grid>
-              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <DatePicker
                   label="Hasta"
                   value={filters.endDate}
@@ -537,8 +544,7 @@ export default function OutcomeTable({
                 />
               </Grid>
 
-              {/* Filtro: Rango Montos */}
-              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
                 <TextField
                   label="Min €"
                   type="number"
@@ -550,7 +556,7 @@ export default function OutcomeTable({
                   }
                 />
               </Grid>
-              <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 6, sm: 3, md: 2 }}>
                 <TextField
                   label="Max €"
                   type="number"
@@ -563,9 +569,8 @@ export default function OutcomeTable({
                 />
               </Grid>
 
-              {/* Botón Reset */}
               <Grid
-                sx={{ xs: 12, sm: 6, md: 3 }}
+                size={12}
                 display="flex"
                 justifyContent="flex-end"
               >
@@ -582,109 +587,181 @@ export default function OutcomeTable({
         </Collapse>
       </Paper>
 
-      {/* Tabla */}
-      <TableContainer component={Paper} elevation={1} sx={{ borderRadius: 2 }}>
-        <Table sx={{ minWidth: 650 }} aria-label="outcome table">
-          <TableHead sx={{ bgcolor: "info.main" }}>
-            <TableRow>
-              <SortableHeader id="id" label="ID" />
-              <SortableHeader id="cash_id" label="Caja" />
-              <SortableHeader id="weekString" label="Semana" />
-              <SortableHeader id="date" label="Fecha" />
-              <SortableHeader id="amount" label="Monto" align="right" />
-              <SortableHeader id="category" label="Categoría" />
-              <SortableHeader id="description" label="Descripción" />
+      {isMobile ? (
+        <Box>
+          {paginatedOutcomes.length > 0 ? (
+            paginatedOutcomes.map((row) => (
+              <Card key={row.id} sx={{ mb: 1, borderLeft: highlightedRowId === row.id ? 4 : 0, borderColor: "warning.main" }}>
+                <CardContent sx={{ pb: 1, "&:last-child": { pb: 1 } }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {row.category || "-"}
+                    </Typography>
+                    <Chip label={row.description?.slice(0, 20) || "-"} size="small" />
+                  </Box>
 
-              <TableCell sx={{ fontWeight: "bold" }} align="center">
-                Acciones
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedOutcomes.length > 0 ? (
-              paginatedOutcomes.map((row) => (
-                <TableRow
-                  key={row.id}
-                  hover
-                  sx={{
-                    "&:last-child td, &:last-child th": { border: 0 },
-                    backgroundColor:
-                      highlightedRowId === row.id ? "warning.light" : "inherit",
-                    transition: "background-color 0.2s ease",
-                  }}
-                >
-                  <TableCell>{row.id}</TableCell>
-                  <TableCell>
-                    <Tooltip title={`ID de Caja: ${row.cash_id}`}>
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
+                  <Grid container spacing={1}>
+                    <Grid size={6}>
+                      <Typography variant="caption" color="text.secondary">Monto</Typography>
+                      <Typography variant="body2" sx={{ fontFamily: "monospace", fontWeight: 500 }}>
+                        {row.amount.toFixed(2)} €
+                      </Typography>
+                    </Grid>
+                    <Grid size={6}>
+                      <Typography variant="caption" color="text.secondary">Fecha</Typography>
+                      <Typography variant="body2">{formatDate(row.date)}</Typography>
+                    </Grid>
+                    <Grid size={6}>
+                      <Typography variant="caption" color="text.secondary">Caja</Typography>
+                      <Typography variant="body2">{row.Cash?.name || "-"}</Typography>
+                    </Grid>
+                    <Grid size={6}>
+                      <Typography variant="caption" color="text.secondary">Semana</Typography>
+                      <Typography variant="body2">
+                        {row.Week ? `S${row.Week.id}` : "-"}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+
+                <CardActions sx={{ justifyContent: "flex-end", pt: 0 }}>
+                  <Tooltip title="Editar">
+                    <IconButton color="primary" onClick={() => onEdit(row)} size="small">
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Eliminar">
+                    <IconButton
+                      color="error"
+                      onClick={() => onDelete(row.id)}
+                      size="small"
+                      disabled={highlightedRowId === row.id}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                </CardActions>
+              </Card>
+            ))
+          ) : (
+            <Paper sx={{ p: 3, textAlign: "center" }}>
+              <Typography variant="body1" color="text.secondary">
+                No se encontraron resultados
+              </Typography>
+            </Paper>
+          )}
+
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredOutcomes.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Filas por página"
+          />
+        </Box>
+      ) : (
+        <TableContainer component={Paper} elevation={1} sx={{ borderRadius: 2, overflowX: "auto" }}>
+          <Table size="small" aria-label="outcome table">
+            <TableHead sx={{ bgcolor: "info.main" }}>
+              <TableRow>
+                <SortableHeader id="id" label="ID" />
+                <SortableHeader id="cash_id" label="Caja" />
+                <SortableHeader id="weekString" label="Semana" />
+                <SortableHeader id="date" label="Fecha" />
+                <SortableHeader id="amount" label="Monto" align="right" />
+                <SortableHeader id="category" label="Categoría" />
+                <SortableHeader id="description" label="Descripción" />
+
+                <TableCell sx={{ fontWeight: "bold" }} align="center">
+                  Acciones
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedOutcomes.length > 0 ? (
+                paginatedOutcomes.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    hover
+                    sx={{
+                      "&:last-child td, &:last-child th": { border: 0 },
+                      backgroundColor:
+                        highlightedRowId === row.id ? "warning.light" : "inherit",
+                      transition: "background-color 0.2s ease",
+                    }}
+                  >
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{row.id}</TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      <Tooltip title={`ID de Caja: ${row.cash_id}`}>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           {row.Cash?.name || `Caja ${row.cash_id}`}
                         </Typography>
-                      </Box>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell>
-                    {row.Week
-                      ? `S${row.Week.id} (${formatDate(row.Week.week_start)} - ${formatDate(row.Week.week_end)})`
-                      : "-"}
-                  </TableCell>
-                  <TableCell>{formatDate(row.date)}</TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{ fontFamily: "monospace", fontWeight: 500 }}
-                  >
-                    {row.amount.toFixed(2)} €
-                  </TableCell>
-                  <TableCell>{row.category || "-"}</TableCell>
-                  <TableCell>{row.description || "-"}</TableCell>
-                  <TableCell align="center">
-                    <Tooltip title="Editar">
-                      <IconButton
-                        color="primary"
-                        onClick={() => onEdit(row)}
-                        size="small"
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Eliminar">
-                      <IconButton
-                        color="error"
-                        onClick={() => onDelete(row.id)}
-                        size="small"
-                        disabled={highlightedRowId === row.id}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      {row.Week
+                        ? `S${row.Week.id} (${formatDate(row.Week.week_start)} - ${formatDate(row.Week.week_end)})`
+                        : "-"}
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{formatDate(row.date)}</TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{ fontFamily: "monospace", fontWeight: 500, whiteSpace: "nowrap" }}
+                    >
+                      {row.amount.toFixed(2)} €
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{row.category || "-"}</TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{row.description || "-"}</TableCell>
+                    <TableCell align="center">
+                      <Tooltip title="Editar">
+                        <IconButton
+                          color="primary"
+                          onClick={() => onEdit(row)}
+                          size="small"
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Eliminar">
+                        <IconButton
+                          color="error"
+                          onClick={() => onDelete(row.id)}
+                          size="small"
+                          disabled={highlightedRowId === row.id}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
+                    <Typography variant="body1" color="text.secondary">
+                      No se encontraron resultados
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
-                  <Typography variant="body1" color="text.secondary">
-                    No se encontraron resultados
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              )}
+            </TableBody>
+          </Table>
 
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredOutcomes.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Filas por página"
-        />
-      </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredOutcomes.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage="Filas por página"
+          />
+        </TableContainer>
+      )}
     </Box>
   );
 }

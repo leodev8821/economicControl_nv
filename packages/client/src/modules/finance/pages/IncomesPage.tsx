@@ -138,10 +138,8 @@ const IncomesPage: React.FC = () => {
       ? draft
       : undefined;
 
-  // 1. Renderizado Principal
   return (
-    <Box p={3}>
-      {/* Indicador de que una mutación está en curso*/}
+    <Box p={{ xs: 1, sm: 2, md: 3 }}>
       {(deleteMutation.isPending || updateMutation.isPending) && (
         <Typography color="primary">
           Realizando acción en el servidor...
@@ -171,7 +169,7 @@ const IncomesPage: React.FC = () => {
         </Alert>
       )}
 
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" } }}>
         Gestión de Ingresos
       </Typography>
 
@@ -185,7 +183,7 @@ const IncomesPage: React.FC = () => {
         </Alert>
       )}
 
-      <Paper ref={formRef} elevation={3} sx={{ p: 3, mb: 4, bgcolor: "paper" }}>
+      <Paper ref={formRef} elevation={3} sx={{ p: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 4 }, bgcolor: "paper" }}>
         {/* Banner de Borrador Recuperado */}
         {draft && !editingIncome && (
           <Alert
@@ -251,8 +249,8 @@ const IncomesPage: React.FC = () => {
           </Typography>
         </Box>
       ) : (
-        <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
-          <Typography variant="h5" sx={{ mb: 2, p: 1 }}>
+        <Paper elevation={3} sx={{ p: { xs: 1, sm: 2 }, borderRadius: 2 }}>
+          <Typography variant="h5" sx={{ mb: 2, p: 1, fontSize: { xs: "1rem", sm: "1.25rem" } }}>
             Historial de Ingresos ({incomes.length})
           </Typography>
           <IncomeTable

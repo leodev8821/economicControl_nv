@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useForm, getFormProps } from "@conform-to/react";
 /**MUI */
-import { type Theme, useTheme } from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles";
+import type { Theme } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import {
   FormControl,
@@ -76,8 +77,9 @@ export default function MemberForm({
   disableAdd = false,
   isEditMode = false,
 }: MemberFormProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(
+    "(max-width: 599px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)"
+  );
   const LOCAL_STORAGE_KEY = "members_draft";
 
   // Helper para guardar

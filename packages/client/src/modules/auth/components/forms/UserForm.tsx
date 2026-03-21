@@ -578,10 +578,11 @@ export default function UserForm({
         <Grid size={{ xs: 12 }}>
           <Divider sx={{ my: 1 }} />
           <Stack
-            direction="row"
+            direction={{ xs: "column", sm: "row" }}
             justifyContent="space-between"
-            alignItems="center"
+            alignItems={{ xs: "flex-start", sm: "center" }}
             sx={{ mb: 2 }}
+            spacing={1}
           >
             <Typography variant="subtitle1" fontWeight="bold">
               Acceso a Aplicaciones
@@ -603,10 +604,10 @@ export default function UserForm({
           {selectedApps.map((appItem, index) => (
             <Stack
               key={index}
-              direction="row"
+              direction={{ xs: "column", sm: "row" }}
               spacing={2}
               sx={{ mb: 2 }}
-              alignItems="center"
+              alignItems={{ xs: "stretch", sm: "center" }}
             >
               <FormControl fullWidth size="small">
                 <InputLabel>Aplicación</InputLabel>
@@ -631,7 +632,7 @@ export default function UserForm({
 
               <Typography
                 variant="caption"
-                sx={{ whiteSpace: "nowrap", color: "text.secondary", px: 2 }}
+                sx={{ whiteSpace: "nowrap", color: "text.secondary", textAlign: { xs: "center", sm: "left" } }}
               >
                 Rol: (Heredado)
               </Typography>
@@ -659,11 +660,25 @@ export default function UserForm({
 
         {/* Actions */}
         <Grid size={{ xs: 12 }}>
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
-            <Button variant="outlined" onClick={onCancel} disabled={isLoading}>
+          <Stack
+            direction={{ xs: "column-reverse", sm: "row" }}
+            spacing={2}
+            justifyContent={{ xs: "stretch", sm: "flex-end" }}
+          >
+            <Button
+              variant="outlined"
+              onClick={onCancel}
+              disabled={isLoading}
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+            >
               Cancelar
             </Button>
-            <Button type="submit" variant="contained" disabled={isLoading}>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={isLoading}
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+            >
               {isLoading
                 ? "Procesando..."
                 : isUpdateMode

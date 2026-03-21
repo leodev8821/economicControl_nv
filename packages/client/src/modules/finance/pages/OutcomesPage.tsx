@@ -129,7 +129,7 @@ const OutcomesPage: React.FC = () => {
     : draft || undefined;
 
   return (
-    <Box p={3}>
+    <Box p={{ xs: 1, sm: 2, md: 3 }}>
       {(deleteMutation.isPending || updateMutation.isPending) && (
         <Typography color="error" sx={{ mb: 1, fontWeight: "bold" }}>
           Procesando cambio en el servidor...
@@ -154,11 +154,11 @@ const OutcomesPage: React.FC = () => {
         </Alert>
       )}
 
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" } }}>
         Gestión de Egresos
       </Typography>
 
-      <Paper ref={formRef} elevation={3} sx={{ p: 3, mb: 4 }}>
+      <Paper ref={formRef} elevation={3} sx={{ p: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 4 } }}>
         {draft && !editingOutcome && (
           <Alert
             severity="warning"
@@ -195,8 +195,8 @@ const OutcomesPage: React.FC = () => {
           </Typography>
         </Box>
       ) : (
-        <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
-          <Typography variant="h5" sx={{ mb: 2, p: 1 }}>
+        <Paper elevation={3} sx={{ p: { xs: 1, sm: 2 }, borderRadius: 2 }}>
+          <Typography variant="h5" sx={{ mb: 2, p: 1, fontSize: { xs: "1rem", sm: "1.25rem" } }}>
             Historial de Egresos ({outcomes.length})
           </Typography>
           <OutcomeTable

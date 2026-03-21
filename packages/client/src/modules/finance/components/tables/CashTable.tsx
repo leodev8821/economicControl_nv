@@ -109,7 +109,7 @@ export default function CashTable({
   return (
     <Box
       sx={{
-        p: 2, // Reducido un poco para que encaje mejor en el contenedor padre
+        p: { xs: 1, sm: 2 },
         width: "100%",
         mx: "auto",
       }}

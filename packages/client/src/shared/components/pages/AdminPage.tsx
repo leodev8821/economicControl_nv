@@ -23,8 +23,8 @@ const AdminPage: React.FC = () => {
   if (!authUser || !hasPermission) return null;
 
   return (
-    <Box p={3}>
-      <Box mb={3}>
+    <Box p={{ xs: 1, sm: 2, md: 3 }}>
+      <Box mb={{ xs: 2, sm: 3 }}>
         <Typography variant="h4" component="h1" gutterBottom color="primary">
           Administración
         </Typography>
@@ -36,7 +36,7 @@ const AdminPage: React.FC = () => {
       <Paper
         elevation={3}
         sx={{
-          p: 6,
+          p: { xs: 2, sm: 4, md: 6 },
           textAlign: "center",
           bgcolor: "background.paper",
         }}

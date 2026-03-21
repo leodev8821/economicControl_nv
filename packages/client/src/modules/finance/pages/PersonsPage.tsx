@@ -71,8 +71,7 @@ const PersonsPage: React.FC = () => {
   };
 
   return (
-    <Box p={3}>
-      {/* Indicador de mutación */}
+    <Box p={{ xs: 1, sm: 2, md: 3 }}>
       {(deleteMutation.isPending ||
         updateMutation.isPending ||
         createMutation.isPending) && (
@@ -81,7 +80,6 @@ const PersonsPage: React.FC = () => {
         </Typography>
       )}
 
-      {/* Mensaje de error de mutación */}
       {(deleteMutation.isError ||
         updateMutation.isError ||
         createMutation.isError) && (
@@ -93,7 +91,7 @@ const PersonsPage: React.FC = () => {
         </Typography>
       )}
 
-      <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: "background.paper" }}>
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 4 }, bgcolor: "background.paper" }}>
         <PersonForm
           initialValues={editingPerson}
           onSubmit={handleFormSubmit}
@@ -130,12 +128,11 @@ const PersonsPage: React.FC = () => {
         </Typography>
       )}
 
-      {/* Table */}
       {!isLoading && !isError && persons.length > 0 && (
         <Paper
           elevation={3}
           sx={{
-            p: 1,
+            p: { xs: 1, sm: 2 },
             borderRadius: 2,
             width: "100%",
             maxWidth: "1200px",
@@ -144,11 +141,13 @@ const PersonsPage: React.FC = () => {
         >
           <Box
             display="flex"
+            flexDirection={{ xs: "column", sm: "row" }}
             justifyContent="space-between"
-            alignItems="center"
-            mb={3}
+            alignItems={{ xs: "stretch", sm: "center" }}
+            mb={{ xs: 2, sm: 3 }}
+            gap={1}
           >
-            <Typography variant="h4">
+            <Typography variant="h4" sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}>
               Listado de Personas ({persons.length})
             </Typography>
           </Box>

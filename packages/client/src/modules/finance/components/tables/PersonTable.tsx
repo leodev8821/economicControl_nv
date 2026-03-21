@@ -65,7 +65,7 @@ export default function PersonTable({
   ];
 
   return (
-    <Box sx={{ height: 400, width: "100%" }}>
+    <Box sx={{ height: { xs: 350, sm: 400 }, width: "100%", p: { xs: 1, sm: 0 } }}>
       <DataGrid
         rows={persons}
         columns={columns}

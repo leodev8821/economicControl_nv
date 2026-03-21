@@ -56,7 +56,7 @@ const CashDenominationPage: React.FC = () => {
   if (isLoading)
     return (
       <Box
-        p={4}
+        p={{ xs: 2, sm: 4 }}
         display="flex"
         justifyContent="center"
         alignItems="center"
@@ -70,7 +70,7 @@ const CashDenominationPage: React.FC = () => {
 
   if (isError)
     return (
-      <Box p={3}>
+      <Box p={{ xs: 2, sm: 3 }}>
         <Alert severity="error">
           Error al cargar denominaciones: {error?.message}
         </Alert>
@@ -78,33 +78,33 @@ const CashDenominationPage: React.FC = () => {
     );
 
   return (
-    <Box p={3} sx={{ maxWidth: "1400px", mx: "auto" }}>
-      {/* Cabecera de Página */}
+    <Box p={{ xs: 1, sm: 2, md: 3 }} sx={{ maxWidth: "1400px", mx: "auto" }}>
       <Box
         display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
-        alignItems="center"
+        alignItems={{ xs: "stretch", sm: "center" }}
         mb={3}
+        gap={2}
       >
-        <Typography variant="h4" fontWeight="bold" color="text.primary">
+        <Typography variant="h4" fontWeight="bold" color="text.primary" sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" } }}>
           Arqueo de Caja
         </Typography>
 
-        {/* Total Flotante Superior (Visible si hay scroll en pantallas pequeñas) */}
         <Paper
           elevation={3}
           sx={{
-            px: 3,
+            px: { xs: 2, sm: 3 },
             py: 1,
             bgcolor: "primary.dark",
             color: "white",
             borderRadius: 2,
             display: "flex",
             alignItems: "center",
-            gap: 2,
+            gap: { xs: 1, sm: 2 },
           }}
         >
-          <CalculateIcon />
+          <CalculateIcon fontSize="small" />
           <Box textAlign="right">
             <Typography variant="caption" sx={{ opacity: 0.8 }}>
               TOTAL FINAL

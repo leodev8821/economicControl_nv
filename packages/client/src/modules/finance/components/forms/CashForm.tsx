@@ -31,15 +31,14 @@ export default function CashForm({
   isLoading = false,
   isUpdateMode = false,
 }: CashFormProps) {
-  // 1. Inicialización de Conform
   const [form, fields] = useForm({
     onValidate({ formData }) {
       return parseWithZod(formData, {
         schema: SharedCashSchemas.CashCreationSchema,
       });
     },
-    shouldValidate: "onBlur", // Valida al salir del campo
-    shouldRevalidate: "onInput", // Vuelve a validar al escribir
+    shouldValidate: "onBlur",
+    shouldRevalidate: "onInput",
     defaultValue: initialValues
       ? ({
           ...initialValues,
@@ -48,28 +47,22 @@ export default function CashForm({
       : undefined,
   });
 
-  // 2. Manejador de Envío
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Guardar referencia al formulario
     const formEl = event.currentTarget;
     const formData = new FormData(formEl);
 
-    // 2a. Validación Final en el Cliente
     const submission = parseWithZod(formData, {
       schema: SharedCashSchemas.CashCreationSchema,
     });
 
-    // Si la validación local falla (ej. campo requerido vacío), Conform actualiza los errores.
     if (submission.status !== "success") {
       return;
     }
 
-    // Pass clean data to parent
     onSubmit(submission.value);
 
-    // Reset if not in update mode
     if (!isUpdateMode) {
       formEl.reset();
     }
@@ -82,17 +75,20 @@ export default function CashForm({
       onSubmit={handleSubmit}
       className="cash-form"
     >
-      <Typography variant="h6" color="secondary" gutterBottom>
+      <Typography
+        variant="h5"
+        color="secondary"
+        gutterBottom
+        sx={{ textAlign: { xs: "center", sm: "left" } }}
+      >
         {isUpdateMode
           ? `Editar Caja: ${initialValues?.name}`
           : "Crear Nueva Caja"}
       </Typography>
 
-      {/* Errores a nivel de formulario (si existen) */}
       {form.errors && <div style={{ color: "red" }}>{form.errors}</div>}
 
       <Grid container spacing={2}>
-        {/* --- Campo name (Requerido) --- */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <FormControl fullWidth error={!!fields.name.errors}>
             <InputLabel htmlFor={fields.name.id}>
@@ -114,7 +110,6 @@ export default function CashForm({
           </FormControl>
         </Grid>
 
-        {/* --- Campo actual_amount (Requerido) --- */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <FormControl fullWidth error={!!fields.actual_amount.errors}>
             <InputLabel htmlFor={fields.actual_amount.id}>
@@ -141,12 +136,17 @@ export default function CashForm({
         </Grid>
 
         <Grid size={12}>
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
+          <Stack
+            direction={{ xs: "column-reverse", sm: "row" }}
+            spacing={2}
+            justifyContent={{ xs: "stretch", sm: "flex-end" }}
+          >
             {isUpdateMode && onCancel && (
               <Button
                 variant="outlined"
                 onClick={onCancel}
                 disabled={isLoading}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
               >
                 Cancelar
               </Button>
@@ -155,7 +155,7 @@ export default function CashForm({
               type="submit"
               variant="contained"
               disabled={isLoading}
-              sx={{ minWidth: 150 }}
+              sx={{ minWidth: 150, width: { xs: "100%", sm: "auto" } }}
             >
               {isLoading
                 ? "Guardando..."

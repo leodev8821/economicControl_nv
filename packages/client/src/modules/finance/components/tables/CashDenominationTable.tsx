@@ -84,17 +84,17 @@ export default function CashDenominationTable({
         height: "100%",
         display: "flex",
         flexDirection: "column",
+        overflowX: "auto",
       }}
     >
-      {/* Título integrado en la tabla */}
       <Box
         sx={{
-          p: 2,
+          p: { xs: 1.5, sm: 2 },
           bgcolor: headerColor,
           color: "white",
         }}
       >
-        <Typography variant="h6" fontWeight="bold">
+        <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}>
           {title}
         </Typography>
       </Box>

@@ -161,10 +161,9 @@ const CashesPage: React.FC = () => {
   }
 
   return (
-    <Box p={3} sx={{ maxWidth: "1400px", mx: "auto" }}>
-      {/* --- SECCIÓN 1: GESTIÓN DE CAJAS (CRUD) --- */}
-      <Box mb={6}>
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
+    <Box p={{ xs: 1, sm: 2, md: 3 }} sx={{ maxWidth: "1400px", mx: "auto" }}>
+      <Box mb={{ xs: 3, sm: 6 }}>
+        <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" } }}>
           Gestión de Cajas
         </Typography>
 
@@ -184,8 +183,7 @@ const CashesPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* Formulario */}
-        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+        <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 4 }, borderRadius: 2 }}>
           <CashForm
             initialValues={editingCash}
             onSubmit={handleFormSubmit}
@@ -230,8 +228,9 @@ const CashesPage: React.FC = () => {
       <Box>
         <Box
           display="flex"
+          flexDirection={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
-          alignItems="center"
+          alignItems={{ xs: "stretch", sm: "center" }}
           mb={3}
           flexWrap="wrap"
           gap={2}
@@ -302,17 +301,16 @@ const CashesPage: React.FC = () => {
                 </Typography>
               </Paper>
 
-              {/* Cuadro: Diferencia (El "Chivato") */}
               <Paper
                 elevation={4}
                 sx={{
-                  px: 3,
+                  px: { xs: 2, sm: 3 },
                   py: 1,
                   borderRadius: 2,
                   bgcolor: isBalanced ? "success.main" : "error.main",
                   color: "white",
-                  minWidth: "200px",
-                  transition: "all 0.3s ease", // Animación suave al cambiar de color
+                  minWidth: { xs: "150px", sm: "200px" },
+                  transition: "all 0.3s ease",
                 }}
               >
                 <Typography variant="caption" sx={{ opacity: 0.9 }}>
@@ -329,18 +327,17 @@ const CashesPage: React.FC = () => {
                 </Box>
               </Paper>
 
-              {/* Total Flotante */}
               <Paper
                 elevation={4}
                 sx={{
-                  px: 3,
+                  px: { xs: 2, sm: 3 },
                   py: 1,
                   bgcolor: "primary.dark",
                   color: "white",
                   borderRadius: 2,
                   display: "flex",
                   alignItems: "center",
-                  gap: 2,
+                  gap: { xs: 1, sm: 2 },
                 }}
               >
                 <CalculateIcon fontSize="large" />
