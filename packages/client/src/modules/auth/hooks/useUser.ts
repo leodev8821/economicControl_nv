@@ -68,7 +68,8 @@ export const useConsolidationLeaders = (): UseQueryResult<
     ? undefined
     : user?.permissions[0]?.application_id;
 
-  const filterRoleId = 4;
+  //const filterRoleId = 4;
+  const filterRoleId = hasGlobalAccess ? undefined : 4;
 
   return useQuery<UserType[], Error>({
     queryKey: AuthQueryKeys.users.all(),

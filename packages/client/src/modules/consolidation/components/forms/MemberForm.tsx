@@ -416,7 +416,7 @@ function MemberRow({
               </Select>
               {rowFields.user_id.errors && (
                 <Typography variant="caption" color="error" sx={{ ml: 1.5 }}>
-                  {rowFields.leader_id.errors.join(", ")}
+                  {rowFields.user_id.errors.join(", ")}
                 </Typography>
               )}
             </FormControl>
