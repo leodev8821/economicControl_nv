@@ -70,6 +70,18 @@ async function createMultipleConsolidations(): Promise<
 
     if (!members.length) throw new Error("No hay miembros registrados");
 
+    // ⚠️ DEBUG: Identificar miembros sin user_id
+    const membersWithoutUser = members.filter((m) => m.user_id == null);
+
+    if (membersWithoutUser.length) {
+      console.warn(
+        "Miembros sin user_id:",
+        membersWithoutUser.map((m) => m.id),
+      );
+    }
+
+    const validMembers = members.filter((m) => m.user_id != null);
+
     // Obtener los member_id que ya tienen consolidación
     const existing = await ConsolidationModel.findAll({
       attributes: ["member_id"],
@@ -78,15 +90,17 @@ async function createMultipleConsolidations(): Promise<
 
     const existingMemberIds = new Set(existing.map((c) => c.member_id));
 
-    // Filtrar los miembros que no tienen consolidación
-    const missingMembers = members.filter((m) => !existingMemberIds.has(m.id));
+    // Filtrar los miembros que no tienen consolidación y tienen user_id
+    const missingMembers = validMembers.filter(
+      (m) => !existingMemberIds.has(m.id),
+    );
 
     if (!missingMembers.length) return [];
 
     // Construir las consolidaciones
     const consolidations: ConsolidationCreationAttributes[] =
       missingMembers.map((member) => ({
-        user_id: member.user_id!,
+        user_id: member.user_id as number,
         member_id: member.id,
         network_id: null,
         how_know_us: null,
@@ -98,8 +112,6 @@ async function createMultipleConsolidations(): Promise<
         visit_observations: null,
         is_visible: true,
       }));
-
-    console.log("Consolidations a crear:", consolidations);
 
     // Insertar en bloque
     try {
