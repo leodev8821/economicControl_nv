@@ -63,7 +63,7 @@ export class ConsolidationModel
   declare id: number;
   declare user_id: number;
   declare member_id: number;
-  declare network_id: number;
+  declare network_id: number | null;
   declare how_know_us: HowKnowUsType | null;
   declare invited_by: string | null;
   declare call_date: Date | null;

@@ -99,18 +99,23 @@ async function createMultipleConsolidations(): Promise<
         is_visible: true,
       }));
 
-    console.log(consolidations);
+    console.log("Consolidations a crear:", consolidations);
 
     // Insertar en bloque
-    const createdConsolidations = await ConsolidationModel.bulkCreate(
-      consolidations,
-      {
-        transaction: t,
-        validate: true,
-      },
-    );
+    try {
+      const createdConsolidations = await ConsolidationModel.bulkCreate(
+        consolidations,
+        {
+          transaction: t,
+          validate: true,
+        },
+      );
 
-    return createdConsolidations.map((c) => c.get({ plain: true }));
+      return createdConsolidations.map((c) => c.get({ plain: true }));
+    } catch (err) {
+      console.error("ERROR EN BULK CREATE:", err);
+      throw err;
+    }
   });
 }
 

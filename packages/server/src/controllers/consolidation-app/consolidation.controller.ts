@@ -113,6 +113,8 @@ export const consolidationController = {
         data: newConsolidations,
       });
     } catch (error: any) {
+      console.error("ERROR REAL:", error);
+
       if (error.message === "No hay miembros registrados") {
         return res.status(400).json({ ok: false, message: error.message });
       }
