@@ -8,7 +8,7 @@ import {
 } from "@economic-control/shared";
 import { memberService } from "@services/consolidation/member.service.js";
 
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   user: {
     id: number;
     username: string;
@@ -81,9 +81,9 @@ export const memberController = {
   createMember: async (req: Request, res: Response) => {
     try {
       const validationResult = MemberCreationSchema.safeParse(req.body);
-      const currentUserId = (req as AuthRequest).user.id;
+      const currentUser = (req as AuthRequest).user;
 
-      if (!currentUserId) {
+      if (!currentUser) {
         return res.status(401).json({
           ok: false,
           message: "Usuario no autenticado.",
@@ -100,7 +100,7 @@ export const memberController = {
 
       const newMember = await memberService.create(
         validationResult.data,
-        currentUserId,
+        currentUser,
       );
 
       return res.status(201).json({
@@ -122,9 +122,9 @@ export const memberController = {
     try {
       const validationResult = BulkMemberSchema.safeParse(req.body);
 
-      const currentUserId = (req as AuthRequest).user.id;
+      const currentUser = (req as AuthRequest).user;
 
-      if (!currentUserId) {
+      if (!currentUser) {
         return res.status(401).json({
           ok: false,
           message: "Usuario no autenticado.",
@@ -143,7 +143,7 @@ export const memberController = {
 
       const newMembers = await memberService.createMultipleMembers(
         members,
-        currentUserId,
+        currentUser,
       );
 
       return res.status(201).json({

@@ -264,17 +264,20 @@ export default function ConsolidationTable() {
     setEditedRow((prev) => ({ ...prev, [field]: value }));
   };
 
+  const requiresInvitedBy = ["Amigo/Familiar", "Otro"].includes(
+    editedRow.how_know_us as string,
+  );
+
   const handleSave = (id: number) => {
     const payload = {
       how_know_us: editedRow.how_know_us || null,
-      invited_by:
-        editedRow.how_know_us === HOW_KNOW_US[3]
-          ? editedRow.invited_by || null
-          : null,
-      call_observations: editedRow.call_observations || null,
+      invited_by: requiresInvitedBy
+        ? editedRow.invited_by?.trim() || null
+        : null,
+      call_observations: editedRow.call_observations?.trim() || null,
       other_observations:
         editedRow.call_observations === CALL_OBSERVATIONS[5]
-          ? editedRow.other_observations || null
+          ? editedRow.other_observations?.trim() || null
           : null,
       visit_observations: editedRow.visit_observations?.trim() || null,
 
@@ -496,6 +499,7 @@ export default function ConsolidationTable() {
                 <TableCell sx={{ color: "white" }}>Edad</TableCell>
                 <TableCell sx={{ color: "white" }}>Estado Civil</TableCell>
                 <TableCell sx={{ color: "white" }}>Fecha de llegada</TableCell>
+                <TableCell sx={{ color: "white" }}>Género</TableCell>
                 <TableCell sx={{ color: "white" }}>Red</TableCell>
                 <TableCell sx={{ color: "white" }}>Fecha de llamada</TableCell>
                 <TableCell sx={{ color: "white" }}>
@@ -556,6 +560,7 @@ export default function ConsolidationTable() {
                     </TableCell>
                     <TableCell>{row.Member?.status}</TableCell>
                     <TableCell>{formatDate(row.Member?.visit_date)}</TableCell>
+                    <TableCell>{row.Member?.gender}</TableCell>
 
                     <TableCell>
                       {isEditing ? (
@@ -721,10 +726,22 @@ export default function ConsolidationTable() {
                             ))}
                           </Select>
 
-                          {editedRow.how_know_us === HOW_KNOW_US[3] && (
+                          {editedRow.how_know_us === HOW_KNOW_US[0] && (
                             <TextField
                               size="small"
                               placeholder="¿Quién invitó?"
+                              value={editedRow.invited_by ?? ""}
+                              onChange={(e) =>
+                                handleChange("invited_by", e.target.value)
+                              }
+                              autoFocus
+                            />
+                          )}
+
+                          {editedRow.how_know_us === HOW_KNOW_US[3] && (
+                            <TextField
+                              size="small"
+                              placeholder="Especifique"
                               value={editedRow.invited_by ?? ""}
                               onChange={(e) =>
                                 handleChange("invited_by", e.target.value)
@@ -738,13 +755,23 @@ export default function ConsolidationTable() {
                           <Typography variant="body2">
                             {row.how_know_us || "-"}
                           </Typography>
+                          {row.how_know_us === "Amigo/Familiar" &&
+                            row.invited_by && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ display: "block" }}
+                              >
+                                Inv.: {row.invited_by}
+                              </Typography>
+                            )}
                           {row.how_know_us === "Otro" && row.invited_by && (
                             <Typography
                               variant="caption"
                               color="text.secondary"
                               sx={{ display: "block" }}
                             >
-                              Inv.: {row.invited_by}
+                              Especifique: {row.invited_by}
                             </Typography>
                           )}
                         </Box>

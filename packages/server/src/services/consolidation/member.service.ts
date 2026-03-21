@@ -15,6 +15,7 @@ import {
 import { getSequelizeConfig } from "@config/sequelize.config.js";
 import { consolidationService } from "./consolidation.service.js";
 import { Transaction } from "sequelize";
+import { AuthRequest } from "@controllers/consolidation-app/member.controller.js";
 
 const connection = getSequelizeConfig();
 
@@ -77,17 +78,23 @@ async function getById(
 /**
  * Crea un nuevo miembro en la base de datos.
  * @param data datos de la persona a crear.
- * @param currentUserId id del usuario autenticado (desde JWT)
+ * @param currentUser id del usuario autenticado (desde JWT)
  */
 async function create(
   data: MemberCreateDTO,
-  currentUserId: number,
+  currentUser: AuthRequest["user"],
 ): Promise<MemberAttributes> {
+  const isAdmin =
+    currentUser.role_name === "Administrador" ||
+    currentUser.role_name === "SuperUser";
+
+  const finalUserId = isAdmin && data.user_id ? data.user_id : currentUser.id;
+
   return await connection.transaction(async (t) => {
     const newMember = await MemberModel.create(
       {
         ...data,
-        user_id: currentUserId,
+        user_id: finalUserId,
       },
       { transaction: t },
     );
@@ -95,7 +102,7 @@ async function create(
     // 🔹 Crear consolidation automáticamente
     await consolidationService.create(
       {
-        user_id: currentUserId,
+        user_id: finalUserId,
         member_id: newMember.id,
         network_id: null,
         how_know_us: null,
@@ -122,14 +129,25 @@ async function create(
  */
 async function createMultipleMembers(
   dataList: BulkMemberCreateDTO[],
-  currentUserId: number,
+  currentUser: AuthRequest["user"],
 ): Promise<MemberAttributes[]> {
+  const isAdmin =
+    currentUser.role_name === "Administrador" ||
+    currentUser.role_name === "SuperUser";
+
   return await connection.transaction(async (t) => {
     // Transformamos la data antes de insertar (ej. formatear la fecha)
     const normalizedData = dataList.map((item) => {
+      const finalUserId =
+        isAdmin && item.user_id ? item.user_id : currentUser.id;
+
+      if (item.user_id && !isAdmin) {
+        throw new Error("No autorizado para asignar líder");
+      }
+
       return {
         ...item,
-        user_id: currentUserId,
+        user_id: finalUserId,
       };
     });
 
@@ -141,8 +159,8 @@ async function createMultipleMembers(
 
     // Crear consolidations para cada miembro
     const consolidations: ConsolidationCreationAttributes[] = newMembers.map(
-      (member) => ({
-        user_id: currentUserId,
+      (member, index) => ({
+        user_id: normalizedData[index].user_id,
         member_id: member.id,
         network_id: null,
         how_know_us: null,

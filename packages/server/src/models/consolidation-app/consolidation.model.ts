@@ -161,6 +161,7 @@ ConsolidationModel.addScope("populated", {
         "id",
         "first_name",
         "last_name",
+        "gender",
         "phone",
         "birth_date",
         "status",

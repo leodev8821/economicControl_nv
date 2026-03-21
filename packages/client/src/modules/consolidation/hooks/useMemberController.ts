@@ -74,6 +74,11 @@ export default function useMemberController() {
 
     const payload = submission.value;
 
+    const membersWithUser = payload.members.map((member) => ({
+      ...member,
+      user_id: member.user_id || currentUser?.id,
+    }));
+
     // Modo edición → update
     if (editingMember) {
       updateMutation.mutate(
@@ -81,7 +86,10 @@ export default function useMemberController() {
           id: editingMember.id,
           data: {
             ...payload.members[0],
-            user_id: payload.members[0].user_id ?? editingMember.user_id,
+            user_id:
+              payload.members[0].user_id ||
+              editingMember.user_id ||
+              currentUser?.id,
             is_visible:
               payload.members[0].is_visible ?? editingMember.is_visible,
           },
@@ -99,16 +107,19 @@ export default function useMemberController() {
     }
 
     // Modo creación (Bulk o Single)
-    createBulkMutation.mutate(payload, {
-      onSuccess: () => {
-        localStorage.removeItem("members_draft");
-        //setDraft(null);
-        setEditingMember(null);
-        setFormKey((prev) => prev + 1);
-        showSnackbar("Miembros registrados correctamente");
+    createBulkMutation.mutate(
+      { members: membersWithUser },
+      {
+        onSuccess: () => {
+          localStorage.removeItem("members_draft");
+          //setDraft(null);
+          setEditingMember(null);
+          setFormKey((prev) => prev + 1);
+          showSnackbar("Miembros registrados correctamente");
+        },
+        onError: () => showSnackbar("Error al guardar", "error"),
       },
-      onError: () => showSnackbar("Error al guardar", "error"),
-    });
+    );
   };
 
   const handleStartEdit = (member: Member) => {
