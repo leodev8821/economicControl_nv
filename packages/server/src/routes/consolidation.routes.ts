@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { consolidationController } from "../controllers/consolidation-app/consolidation.controller.js";
-import { memberController } from "../controllers/consolidation-app/member.controller.js";
-import { networkController } from "../controllers/consolidation-app/network.controller.js";
+import { consolidationController } from "@controllers/consolidation-app/consolidation.controller.js";
+import { memberController } from "@controllers/consolidation-app/member.controller.js";
+import { networkController } from "@controllers/consolidation-app/network.controller.js";
+import { requireRole } from "@middlewares/auth.middleware.js";
 
 const router: Router = Router();
 
@@ -23,9 +24,21 @@ router.delete("/members/:id", memberController.deleteMember);
 router.get("/networks", networkController.allNetworks);
 router.get("/networks/:id", networkController.oneNetwork);
 
-router.post("/networks", networkController.createNetwork);
-router.put("/networks/:id", networkController.updateNetwork);
-router.delete("/networks/:id", networkController.deleteNetwork);
+router.post(
+  "/networks",
+  requireRole("SuperUser", "Administrador"),
+  networkController.createNetwork,
+);
+router.put(
+  "/networks/:id",
+  requireRole("SuperUser", "Administrador"),
+  networkController.updateNetwork,
+);
+router.delete(
+  "/networks/:id",
+  requireRole("SuperUser", "Administrador"),
+  networkController.deleteNetwork,
+);
 
 // =================================================================
 // 🤝 CONSOLIDATIONS
@@ -42,6 +55,7 @@ router.post(
 router.put("/consolidations/:id", consolidationController.updateConsolidation);
 router.delete(
   "/consolidations/:id",
+  requireRole("SuperUser", "Administrador"),
   consolidationController.deleteConsolidation,
 );
 

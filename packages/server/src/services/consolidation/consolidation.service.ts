@@ -70,7 +70,7 @@ async function createMultipleConsolidations(): Promise<
 
     if (!members.length) throw new Error("No hay miembros registrados");
 
-    // ⚠️ DEBUG: Identificar miembros sin user_id
+    // DEBUG: Identificar miembros sin user_id
     const membersWithoutUser = members.filter((m) => m.user_id == null);
 
     if (membersWithoutUser.length) {
@@ -103,8 +103,6 @@ async function createMultipleConsolidations(): Promise<
         user_id: member.user_id as number,
         member_id: member.id,
         network_id: null,
-        how_know_us: null,
-        invited_by: null,
         call_date: null,
         call_observations: null,
         other_observations: null,

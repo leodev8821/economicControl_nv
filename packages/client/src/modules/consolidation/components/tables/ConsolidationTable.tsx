@@ -14,7 +14,6 @@ import {
   Select,
   MenuItem,
   Typography,
-  TableSortLabel,
   Snackbar,
   CircularProgress,
   Collapse,
@@ -28,6 +27,7 @@ import {
   CardActions,
   Chip,
   Divider,
+  TableSortLabel,
 } from "@mui/material";
 
 import EditIcon from "@mui/icons-material/Edit";
@@ -51,7 +51,11 @@ import {
 
 import { z } from "zod";
 
-import { HOW_KNOW_US, CALL_OBSERVATIONS } from "@economic-control/shared";
+import {
+  CALL_OBSERVATIONS,
+  HOW_KNOW_US,
+  STATUS,
+} from "@economic-control/shared";
 
 import {
   type ConsolidationPopulatedType,
@@ -72,6 +76,17 @@ const validateWithZod = (payload: any) => {
   }
 
   return { data: result.data };
+};
+
+/**
+ * Calcula la edad a partir de un string de fecha.
+ * Soporta formatos YYYY-MM-DD (Base de datos) y DD-MM-YYYY (Formulario/Borrador)
+ */
+const calculateAge = (birthDateStr: any): number | null => {
+  if (!birthDateStr) return null;
+  let birthDate = dayjs(birthDateStr);
+  if (!birthDate.isValid()) birthDate = dayjs(birthDateStr, "DD-MM-YYYY");
+  return birthDate.isValid() ? dayjs().diff(birthDate, "year") : null;
 };
 
 const useDateField = (initialValue: any) => {
@@ -99,12 +114,12 @@ export default function ConsolidationTable() {
 
   const { user: authUser } = useAuth();
 
-  const isMobile = useMediaQuery("(max-width: 899px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)");
+  const isMobile = useMediaQuery(
+    "(max-width: 899px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)",
+  );
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
-
 
   const { isAdmin, currentUserId } = useMemo(
     () => ({
@@ -122,7 +137,9 @@ export default function ConsolidationTable() {
     status: "all",
     leader: "all",
     network: "all",
+    age: "",
     visitDate: null as Dayjs | null,
+    how_know_us: "all",
   });
 
   const [search, _setSearch] = useState("");
@@ -203,6 +220,18 @@ export default function ConsolidationTable() {
         if (fDate !== rDate) return false;
       }
 
+      if (
+        filters.how_know_us !== "all" &&
+        row.Member?.how_know_us !== filters.how_know_us
+      )
+        return false;
+
+      if (
+        filters.age !== "" &&
+        calculateAge(row.Member?.birth_date) !== Number(filters.age)
+      )
+        return false;
+
       return true;
     });
   }, [data, search, filters, isAdmin, currentUserId]);
@@ -234,17 +263,6 @@ export default function ConsolidationTable() {
     );
   }, [sortedData, page, rowsPerPage]);
 
-  /**
-   * Calcula la edad a partir de un string de fecha.
-   * Soporta formatos YYYY-MM-DD (Base de datos) y DD-MM-YYYY (Formulario/Borrador)
-   */
-  const calculateAge = (birthDateStr: any): number | null => {
-    if (!birthDateStr) return null;
-    let birthDate = dayjs(birthDateStr);
-    if (!birthDate.isValid()) birthDate = dayjs(birthDateStr, "DD-MM-YYYY");
-    return birthDate.isValid() ? dayjs().diff(birthDate, "year") : null;
-  };
-
   const formatDate = (date: any) =>
     date ? dayjs(date).format("DD-MM-YYYY") : "-";
 
@@ -274,16 +292,8 @@ export default function ConsolidationTable() {
     setEditedRow((prev) => ({ ...prev, [field]: value }));
   };
 
-  const requiresInvitedBy = ["Amigo/Familiar", "Otro"].includes(
-    editedRow.how_know_us as string,
-  );
-
   const handleSave = (id: number) => {
     const payload = {
-      how_know_us: editedRow.how_know_us || null,
-      invited_by: requiresInvitedBy
-        ? editedRow.invited_by?.trim() || null
-        : null,
       call_observations: editedRow.call_observations?.trim() || null,
       other_observations:
         editedRow.call_observations === CALL_OBSERVATIONS[5]
@@ -385,7 +395,9 @@ export default function ConsolidationTable() {
                   status: "all",
                   leader: "all",
                   network: "all",
+                  age: "",
                   visitDate: null,
+                  how_know_us: "all",
                 })
               }
             >
@@ -462,6 +474,56 @@ export default function ConsolidationTable() {
                   slotProps={{ textField: { size: "small", fullWidth: true } }}
                 />
               </Grid>
+
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <TextField
+                  label="Edad"
+                  value={filters.age}
+                  onChange={(e) =>
+                    setFilters({ ...filters, age: e.target.value })
+                  }
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Estado Civil</InputLabel>
+                  <Select
+                    label="Estado Civil"
+                    value={filters.status}
+                    onChange={(e) =>
+                      setFilters({ ...filters, status: e.target.value })
+                    }
+                  >
+                    <MenuItem value="all">Todos</MenuItem>
+                    {STATUS.map((status) => (
+                      <MenuItem key={status} value={status}>
+                        {status}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Cómo nos conoció</InputLabel>
+                  <Select
+                    label="Cómo nos conoció"
+                    value={filters.how_know_us}
+                    onChange={(e) =>
+                      setFilters({ ...filters, how_know_us: e.target.value })
+                    }
+                  >
+                    <MenuItem value="all">Todos</MenuItem>
+                    {HOW_KNOW_US.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
           </Paper>
         </Collapse>
@@ -485,7 +547,11 @@ export default function ConsolidationTable() {
                 >
                   <CardContent sx={{ pb: 1, "&:last-child": { pb: 1 } }}>
                     <Box
-                      sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mb: 1,
+                      }}
                     >
                       <Typography variant="subtitle1" fontWeight="bold">
                         {row.Member?.first_name} {row.Member?.last_name}
@@ -493,7 +559,11 @@ export default function ConsolidationTable() {
                       <Chip
                         label={row.Member?.gender || "-"}
                         size="small"
-                        color={row.Member?.gender === "Masculino" ? "primary" : "secondary"}
+                        color={
+                          row.Member?.gender === "Masculino"
+                            ? "primary"
+                            : "secondary"
+                        }
                       />
                     </Box>
 
@@ -506,6 +576,16 @@ export default function ConsolidationTable() {
                           {row.User?.username || "-"}
                         </Typography>
                       </Grid>
+
+                      <Grid size={6}>
+                        <Typography variant="caption" color="text.secondary">
+                          Nombre y Apellido
+                        </Typography>
+                        <Typography variant="body2">
+                          {row.Member?.first_name} {row.Member?.last_name}
+                        </Typography>
+                      </Grid>
+
                       <Grid size={6}>
                         <Typography variant="caption" color="text.secondary">
                           Teléfono
@@ -514,6 +594,7 @@ export default function ConsolidationTable() {
                           {row.Member?.phone || "-"}
                         </Typography>
                       </Grid>
+
                       <Grid size={6}>
                         <Typography variant="caption" color="text.secondary">
                           Edad
@@ -522,6 +603,7 @@ export default function ConsolidationTable() {
                           {calculateAge(row.Member?.birth_date) ?? "-"}
                         </Typography>
                       </Grid>
+
                       <Grid size={6}>
                         <Typography variant="caption" color="text.secondary">
                           Red
@@ -583,8 +665,9 @@ export default function ConsolidationTable() {
                           ¿Cómo nos conoció?
                         </Typography>
                         <Typography variant="body2">
-                          {row.how_know_us || "-"}
-                          {row.invited_by && ` (${row.invited_by})`}
+                          {row.Member?.how_know_us || "-"}
+                          {row.Member?.invited_by &&
+                            ` (${row.Member?.invited_by})`}
                         </Typography>
                       </Grid>
                     </Grid>
@@ -594,7 +677,10 @@ export default function ConsolidationTable() {
                         <Divider sx={{ my: 1 }} />
                         <Grid container spacing={1}>
                           <Grid size={12}>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               Fecha de llamada
                             </Typography>
                             <DatePicker
@@ -609,7 +695,10 @@ export default function ConsolidationTable() {
                             />
                           </Grid>
                           <Grid size={12}>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               Fecha de visita
                             </Typography>
                             <DatePicker
@@ -629,7 +718,10 @@ export default function ConsolidationTable() {
                                 label="Obs. Llamada"
                                 value={editedRow.call_observations ?? ""}
                                 onChange={(e) =>
-                                  handleChange("call_observations", e.target.value)
+                                  handleChange(
+                                    "call_observations",
+                                    e.target.value,
+                                  )
                                 }
                               >
                                 {CALL_OBSERVATIONS.map((o) => (
@@ -649,7 +741,10 @@ export default function ConsolidationTable() {
                                 placeholder="Especifique..."
                                 value={editedRow.other_observations ?? ""}
                                 onChange={(e) =>
-                                  handleChange("other_observations", e.target.value)
+                                  handleChange(
+                                    "other_observations",
+                                    e.target.value,
+                                  )
                                 }
                               />
                             </Grid>
@@ -661,42 +756,13 @@ export default function ConsolidationTable() {
                               label="Obs. Visita"
                               value={editedRow.visit_observations ?? ""}
                               onChange={(e) =>
-                                handleChange("visit_observations", e.target.value)
+                                handleChange(
+                                  "visit_observations",
+                                  e.target.value,
+                                )
                               }
                             />
                           </Grid>
-                          <Grid size={12}>
-                            <FormControl fullWidth size="small">
-                              <InputLabel>¿Cómo nos conoció?</InputLabel>
-                              <Select
-                                label="¿Cómo nos conoció?"
-                                value={editedRow.how_know_us ?? ""}
-                                onChange={(e) =>
-                                  handleChange("how_know_us", e.target.value)
-                                }
-                              >
-                                {HOW_KNOW_US.map((o) => (
-                                  <MenuItem key={o} value={o}>
-                                    {o}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          {(editedRow.how_know_us === HOW_KNOW_US[0] ||
-                            editedRow.how_know_us === HOW_KNOW_US[3]) && (
-                            <Grid size={12}>
-                              <TextField
-                                size="small"
-                                fullWidth
-                                label="Invitado por"
-                                value={editedRow.invited_by ?? ""}
-                                onChange={(e) =>
-                                  handleChange("invited_by", e.target.value)
-                                }
-                              />
-                            </Grid>
-                          )}
                         </Grid>
                       </Box>
                     )}
@@ -763,7 +829,13 @@ export default function ConsolidationTable() {
               <TableHead sx={{ bgcolor: "primary.main" }}>
                 <TableRow>
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Líder
+                    <TableSortLabel
+                      active={orderBy === "username"}
+                      direction={order}
+                      onClick={() => handleSort("username")}
+                    >
+                      Líder
+                    </TableSortLabel>
                   </TableCell>
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
                     Nombre y Apellido
@@ -787,6 +859,12 @@ export default function ConsolidationTable() {
                     Red
                   </TableCell>
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
+                    Cómo nos conoció
+                  </TableCell>
+                  <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
+                    Quien lo trajo
+                  </TableCell>
+                  <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
                     Fecha de llamada
                   </TableCell>
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
@@ -797,15 +875,6 @@ export default function ConsolidationTable() {
                   </TableCell>
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
                     Obs. visita
-                  </TableCell>
-                  <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    <TableSortLabel
-                      active={orderBy === "how_know_us"}
-                      direction={order}
-                      onClick={() => handleSort("how_know_us")}
-                    >
-                      ¿Cómo nos conoció?
-                    </TableSortLabel>
                   </TableCell>
                   <TableCell sx={{ color: "yellow", fontWeight: "bold" }}>
                     Acciones
@@ -888,6 +957,14 @@ export default function ConsolidationTable() {
                       </TableCell>
 
                       <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        {row.Member?.how_know_us}
+                      </TableCell>
+
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        {row.Member?.invited_by}
+                      </TableCell>
+
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
                         {isEditing ? (
                           <DatePicker
                             value={callDateField.value}
@@ -919,7 +996,10 @@ export default function ConsolidationTable() {
                               size="small"
                               value={editedRow.call_observations ?? ""}
                               onChange={(e) =>
-                                handleChange("call_observations", e.target.value)
+                                handleChange(
+                                  "call_observations",
+                                  e.target.value,
+                                )
                               }
                             >
                               {CALL_OBSERVATIONS.map((o) => (
@@ -936,7 +1016,10 @@ export default function ConsolidationTable() {
                                 placeholder="Especifique..."
                                 value={editedRow.other_observations ?? ""}
                                 onChange={(e) =>
-                                  handleChange("other_observations", e.target.value)
+                                  handleChange(
+                                    "other_observations",
+                                    e.target.value,
+                                  )
                                 }
                               />
                             )}
@@ -991,79 +1074,6 @@ export default function ConsolidationTable() {
                           <Typography variant="body2" noWrap>
                             {row.visit_observations || "-"}
                           </Typography>
-                        )}
-                      </TableCell>
-
-                      <TableCell sx={{ whiteSpace: "nowrap", maxWidth: 150 }}>
-                        {isEditing ? (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 0.5,
-                            }}
-                          >
-                            <Select
-                              size="small"
-                              value={editedRow.how_know_us ?? ""}
-                              onChange={(e) =>
-                                handleChange("how_know_us", e.target.value)
-                              }
-                            >
-                              {HOW_KNOW_US.map((o) => (
-                                <MenuItem key={o} value={o}>
-                                  {o}
-                                </MenuItem>
-                              ))}
-                            </Select>
-
-                            {editedRow.how_know_us === HOW_KNOW_US[0] && (
-                              <TextField
-                                size="small"
-                                placeholder="¿Quién invitó?"
-                                value={editedRow.invited_by ?? ""}
-                                onChange={(e) =>
-                                  handleChange("invited_by", e.target.value)
-                                }
-                              />
-                            )}
-
-                            {editedRow.how_know_us === HOW_KNOW_US[3] && (
-                              <TextField
-                                size="small"
-                                placeholder="Especifique"
-                                value={editedRow.invited_by ?? ""}
-                                onChange={(e) =>
-                                  handleChange("invited_by", e.target.value)
-                                }
-                              />
-                            )}
-                          </Box>
-                        ) : (
-                          <Box>
-                            <Typography variant="body2" noWrap>
-                              {row.how_know_us || "-"}
-                            </Typography>
-                            {row.how_know_us === "Amigo/Familiar" &&
-                              row.invited_by && (
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  noWrap
-                                >
-                                  Inv.: {row.invited_by}
-                                </Typography>
-                              )}
-                            {row.how_know_us === "Otro" && row.invited_by && (
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                noWrap
-                              >
-                                Especifique: {row.invited_by}
-                              </Typography>
-                            )}
-                          </Box>
                         )}
                       </TableCell>
 

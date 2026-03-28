@@ -78,7 +78,7 @@ export default function MemberForm({
   isEditMode = false,
 }: MemberFormProps) {
   const isMobile = useMediaQuery(
-    "(max-width: 599px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)"
+    "(max-width: 599px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)",
   );
   const LOCAL_STORAGE_KEY = "members_draft";
 
@@ -118,6 +118,8 @@ export default function MemberForm({
           birth_date: "",
           status: "",
           visit_date: "",
+          how_know_us: "",
+          invited_by: "",
         },
       ],
     },
@@ -131,6 +133,8 @@ export default function MemberForm({
       members: memberList.map((member) => {
         // Accedemos al valor actual de cada campo dentro del objeto del array
         const nestedFields = (member as any).getFieldset();
+        const isInvitedByVisible =
+          nestedFields.how_know_us.value === SharedMemberSchemas.HOW_KNOW_US[0];
         return {
           // Usamos value (lo que escribió el usuario) o initialValue (lo que venía de props)
           first_name:
@@ -155,6 +159,15 @@ export default function MemberForm({
             nestedFields.visit_date.value ??
             nestedFields.visit_date.initialValue ??
             "",
+          how_know_us:
+            nestedFields.how_know_us.value ??
+            nestedFields.how_know_us.initialValue ??
+            "",
+          invited_by: isInvitedByVisible
+            ? (nestedFields.invited_by.value ??
+              nestedFields.invited_by.initialValue ??
+              "")
+            : null,
         };
       }),
     };
@@ -178,6 +191,8 @@ export default function MemberForm({
           birth_date: "",
           status: "",
           visit_date: "",
+          how_know_us: "",
+          invited_by: "",
         },
       ],
     });
@@ -265,6 +280,8 @@ export default function MemberForm({
                     birth_date: "",
                     status: "",
                     visit_date: "",
+                    how_know_us: "",
+                    invited_by: "",
                   },
                 })
               }
@@ -583,6 +600,58 @@ function MemberRow({
             )}
           </FormControl>
         </Grid>
+
+        <Grid size={{ xs: 6, sm: 2 }}>
+          <FormControl
+            fullWidth
+            size="small"
+            error={!!rowFields.how_know_us.errors}
+          >
+            <InputLabel>Cómo nos conoció</InputLabel>
+            <Select
+              key={rowFields.how_know_us.key}
+              label="Cómo nos conoció"
+              name={rowFields.how_know_us.name}
+              defaultValue={rowFields.how_know_us.initialValue ?? ""}
+              disabled={isLoading}
+              MenuProps={MenuProps}
+            >
+              {SharedMemberSchemas.HOW_KNOW_US.map((s) => (
+                <MenuItem
+                  key={s}
+                  value={s}
+                  style={getStyles("how_know_us", s, theme)}
+                >
+                  {s}
+                </MenuItem>
+              ))}
+            </Select>
+            {rowFields.how_know_us.errors && (
+              <Typography variant="caption" color="error" sx={{ ml: 1.5 }}>
+                {rowFields.how_know_us.errors.join(", ")}
+              </Typography>
+            )}
+          </FormControl>
+        </Grid>
+
+        {rowFields.how_know_us.value === SharedMemberSchemas.HOW_KNOW_US[0] ? (
+          <Grid size={{ xs: 6, sm: 2 }}>
+            <TextField
+              key={rowFields.invited_by.key}
+              label="¿Quién invitó?"
+              type="string"
+              name={rowFields.invited_by.name}
+              defaultValue={rowFields.invited_by.initialValue}
+              fullWidth
+              size="small"
+              disabled={isLoading}
+              error={!!rowFields.invited_by.errors}
+              helperText={rowFields.invited_by.errors?.join(", ")}
+            />
+          </Grid>
+        ) : (
+          <input type="hidden" name={rowFields.invited_by.name} value="" />
+        )}
 
         <Grid
           size={{ xs: 2, sm: 0.8 }}

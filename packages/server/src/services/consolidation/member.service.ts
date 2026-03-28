@@ -15,7 +15,8 @@ import {
 import { getSequelizeConfig } from "@config/sequelize.config.js";
 import { consolidationService } from "./consolidation.service.js";
 import { Transaction } from "sequelize";
-import { AuthRequest } from "@controllers/consolidation-app/member.controller.js";
+import { JwtPayload } from "src/auth/auth.types.js";
+import { ROLE_TYPES } from "@economic-control/shared";
 
 const connection = getSequelizeConfig();
 
@@ -82,11 +83,11 @@ async function getById(
  */
 async function create(
   data: MemberCreateDTO,
-  currentUser: AuthRequest["user"],
+  currentUser: JwtPayload & { permissions: any[] },
 ): Promise<MemberAttributes> {
   const isAdmin =
-    currentUser.role_name === "Administrador" ||
-    currentUser.role_name === "SuperUser";
+    currentUser.role_name === ROLE_TYPES.ADMINISTRADOR ||
+    currentUser.role_name === ROLE_TYPES.SUPER_USER;
 
   const finalUserId = isAdmin && data.user_id ? data.user_id : currentUser.id;
 
@@ -105,8 +106,6 @@ async function create(
         user_id: finalUserId,
         member_id: newMember.id,
         network_id: null,
-        how_know_us: null,
-        invited_by: null,
         call_date: null,
         call_observations: null,
         other_observations: null,
@@ -129,14 +128,13 @@ async function create(
  */
 async function createMultipleMembers(
   dataList: BulkMemberCreateDTO[],
-  currentUser: AuthRequest["user"],
+  currentUser: JwtPayload & { permissions: any[] },
 ): Promise<MemberAttributes[]> {
   const isAdmin =
-    currentUser.role_name === "Administrador" ||
-    currentUser.role_name === "SuperUser";
+    currentUser.role_name === ROLE_TYPES.ADMINISTRADOR ||
+    currentUser.role_name === ROLE_TYPES.SUPER_USER;
 
   return await connection.transaction(async (t) => {
-    // Transformamos la data antes de insertar (ej. formatear la fecha)
     const normalizedData = dataList.map((item) => {
       const finalUserId =
         isAdmin && item.user_id ? item.user_id : currentUser.id;
@@ -163,8 +161,6 @@ async function createMultipleMembers(
         user_id: normalizedData[index].user_id,
         member_id: member.id,
         network_id: null,
-        how_know_us: null,
-        invited_by: null,
         call_date: null,
         call_observations: null,
         other_observations: null,

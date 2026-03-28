@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { HowKnowUsType } from "./member.schema.js";
 
 // ----------------------------------------------------------------------
 // DEFINICIÓN DE CONSTANTES (Single Source of Truth)
@@ -12,14 +13,6 @@ export const CALL_OBSERVATIONS = [
   "Otro",
 ] as const;
 export type CallObservationType = (typeof CALL_OBSERVATIONS)[number];
-
-export const HOW_KNOW_US = [
-  "Amigo/Familiar",
-  "Internet",
-  "Redes Sociales",
-  "Otro",
-] as const;
-export type HowKnowUsType = (typeof HOW_KNOW_US)[number];
 
 // ----------------------------------------------------------------------
 // DEFINICIÓN BASE (Campos comunes y limpieza de datos)
@@ -52,19 +45,6 @@ const BaseConsolidationSchema = z.object({
       message: "El ID de la red es obligatorio",
     })
     .positive("El ID de la red debe ser un número entero positivo")
-    .nullable(),
-
-  how_know_us: z
-    .enum(HOW_KNOW_US, {
-      message: "La forma de conocernos es obligatoria",
-    })
-    .nullable(),
-
-  invited_by: z
-    .string({
-      message: "El nombre de quien ha invitado es obligatorio",
-    })
-    .optional()
     .nullable(),
 
   call_date: z.coerce
@@ -159,6 +139,8 @@ export type ConsolidationMember = {
   birth_date?: Date | string | null;
   status?: string | null;
   visit_date?: Date | null;
+  how_know_us?: HowKnowUsType | null;
+  invited_by?: string | null;
 };
 
 export type ConsolidationNetwork = {

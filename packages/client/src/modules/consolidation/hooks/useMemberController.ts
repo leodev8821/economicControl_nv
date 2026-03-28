@@ -74,8 +74,19 @@ export default function useMemberController() {
 
     const payload = submission.value;
 
+    const requiresInvitedBy = ["Amigo/Familiar", "Otro"].includes(
+      payload.members[0].how_know_us as string,
+    );
+
+    if (requiresInvitedBy && !payload.members[0].invited_by) {
+      showSnackbar("Debes indicar quién te refirió", "error");
+      return;
+    }
+
     const membersWithUser = payload.members.map((member) => ({
       ...member,
+      how_know_us: member.how_know_us || null,
+      invited_by: requiresInvitedBy ? member.invited_by?.trim() || null : null,
       user_id: member.user_id || currentUser?.id,
     }));
 

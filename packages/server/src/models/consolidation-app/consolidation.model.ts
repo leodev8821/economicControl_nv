@@ -2,9 +2,7 @@ import { DataTypes, Model, type Optional } from "sequelize";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
 import {
   CALL_OBSERVATIONS,
-  HOW_KNOW_US,
   type CallObservationType,
-  type HowKnowUsType,
 } from "@economic-control/shared";
 
 const connection = getSequelizeConfig();
@@ -14,8 +12,6 @@ export interface ConsolidationAttributes {
   user_id: number;
   member_id: number;
   network_id: number | null;
-  how_know_us: HowKnowUsType | null;
-  invited_by: string | null;
   call_date: Date | null;
   call_observations: CallObservationType | null;
   other_observations: string | null;
@@ -29,8 +25,6 @@ export type ConsolidationSearchData = {
   user_id?: number;
   member_id?: number;
   network_id?: number;
-  how_know_us?: HowKnowUsType | null;
-  invited_by?: string | null;
   call_date?: Date | null;
   call_observations?: CallObservationType | null;
   other_observations?: string | null;
@@ -45,14 +39,11 @@ export interface ConsolidationCreationAttributes extends Optional<
   | "id"
   | "is_visible"
   | "network_id"
-  | "how_know_us"
-  | "invited_by"
   | "call_observations"
   | "other_observations"
   | "call_date"
   | "visit_observations"
   | "visit_date"
-  | "invited_by"
 > {}
 
 /** Clase del modelo tipada */
@@ -64,8 +55,6 @@ export class ConsolidationModel
   declare user_id: number;
   declare member_id: number;
   declare network_id: number | null;
-  declare how_know_us: HowKnowUsType | null;
-  declare invited_by: string | null;
   declare call_date: Date | null;
   declare call_observations: CallObservationType | null;
   declare other_observations: string | null;
@@ -105,14 +94,6 @@ ConsolidationModel.init(
         model: "networks",
         key: "id",
       },
-    },
-    how_know_us: {
-      type: DataTypes.ENUM(...HOW_KNOW_US),
-      allowNull: true,
-    },
-    invited_by: {
-      type: DataTypes.STRING,
-      allowNull: true,
     },
     call_date: {
       type: DataTypes.DATE,
@@ -166,6 +147,8 @@ ConsolidationModel.addScope("populated", {
         "birth_date",
         "status",
         "visit_date",
+        "how_know_us",
+        "invited_by",
       ],
     },
     { association: "Network", attributes: ["id", "name"] },

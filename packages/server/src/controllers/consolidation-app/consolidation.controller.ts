@@ -91,7 +91,11 @@ export const consolidationController = {
         data: newConsolidation,
       });
     } catch (error: any) {
-      if (error.message === "Usuario, miembro o red no encontrado") {
+      if (
+        error.message === "El usuario especificado no existe" ||
+        error.message === "El miembro especificado no existe" ||
+        error.message === "La red especificada no existe"
+      ) {
         return res.status(400).json({ ok: false, message: error.message });
       }
       return ControllerErrorHandler(

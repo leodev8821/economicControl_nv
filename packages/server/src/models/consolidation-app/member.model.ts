@@ -2,7 +2,13 @@ import { DataTypes, Model as SequelizeModel, type Optional } from "sequelize";
 
 import { getSequelizeConfig } from "@config/sequelize.config.js";
 
-import { GENDER, STATUS, type StatusType } from "@economic-control/shared";
+import {
+  GENDER,
+  STATUS,
+  type StatusType,
+  HOW_KNOW_US,
+  type HowKnowUsType,
+} from "@economic-control/shared";
 
 const connection = getSequelizeConfig();
 
@@ -19,6 +25,8 @@ export interface MemberAttributes {
   status: StatusType;
   visit_date: string;
   is_visible: boolean;
+  how_know_us: HowKnowUsType | null;
+  invited_by: string | null;
 }
 
 export type MemberSearchData = {
@@ -32,13 +40,15 @@ export type MemberSearchData = {
   status?: StatusType;
   visit_date?: string;
   is_visible?: boolean;
+  how_know_us?: HowKnowUsType | null;
+  invited_by?: string | null;
 };
 
 /** Campos opcionales al crear (id autoincremental, is_visible tiene un valor por defecto) */
 
 export interface MemberCreationAttributes extends Optional<
   MemberAttributes,
-  "id" | "is_visible" | "user_id"
+  "id" | "is_visible" | "user_id" | "how_know_us" | "invited_by"
 > {}
 
 /** Clase tipada de Sequelize */
@@ -56,6 +66,8 @@ export class MemberModel
   declare status: StatusType;
   declare visit_date: string;
   declare is_visible: boolean;
+  declare how_know_us: HowKnowUsType | null;
+  declare invited_by: string | null;
 }
 
 /** Inicialización del modelo */
@@ -116,6 +128,14 @@ MemberModel.init(
     is_visible: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+    },
+    how_know_us: {
+      type: DataTypes.ENUM(...HOW_KNOW_US),
+      allowNull: true,
+    },
+    invited_by: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
 

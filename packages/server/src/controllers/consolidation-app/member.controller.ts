@@ -8,15 +8,6 @@ import {
 } from "@economic-control/shared";
 import { memberService } from "@services/consolidation/member.service.js";
 
-export interface AuthRequest extends Request {
-  user: {
-    id: number;
-    username: string;
-    role_name: string;
-    permissions: any[];
-  };
-}
-
 export const memberController = {
   // Obtiene todos los registros de personas
   allMembers: async (_req: Request, res: Response) => {
@@ -81,7 +72,7 @@ export const memberController = {
   createMember: async (req: Request, res: Response) => {
     try {
       const validationResult = MemberCreationSchema.safeParse(req.body);
-      const currentUser = (req as AuthRequest).user;
+      const currentUser = req.user;
 
       if (!currentUser) {
         return res.status(401).json({
@@ -122,7 +113,7 @@ export const memberController = {
     try {
       const validationResult = BulkMemberSchema.safeParse(req.body);
 
-      const currentUser = (req as AuthRequest).user;
+      const currentUser = req.user;
 
       if (!currentUser) {
         return res.status(401).json({

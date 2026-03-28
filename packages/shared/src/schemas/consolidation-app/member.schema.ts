@@ -15,6 +15,13 @@ export type StatusType = (typeof STATUS)[number];
 export const GENDER = ["Masculino", "Femenino"] as const;
 export type GenderType = (typeof GENDER)[number];
 
+export const HOW_KNOW_US = [
+  "Amigo/Familiar",
+  "Internet",
+  "Redes Sociales",
+  "Otro",
+] as const;
+export type HowKnowUsType = (typeof HOW_KNOW_US)[number];
 // ----------------------------------------------------------------------
 // DEFINICIÓN BASE (Campos comunes y limpieza de datos)
 // ----------------------------------------------------------------------
@@ -39,6 +46,19 @@ const BaseMemberSchema = z.object({
     .min(1)
     .max(10),
   is_visible: z.boolean().default(true).optional(),
+  how_know_us: z
+    .enum(HOW_KNOW_US, {
+      message: "La forma de conocernos es obligatoria",
+    })
+    .nullable(),
+
+  invited_by: z
+    .string({
+      message: "El nombre de quien ha invitado es obligatorio",
+    })
+    .optional()
+    .nullable()
+    .or(z.literal("")),
 });
 
 // ----------------------------------------------------------------------

@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { type JwtPayload } from "./auth.types.js";
+import { type JwtPayload } from "../auth/auth.types.js";
 import { tokenUtils } from "../utils/token.utils.js";
 import { UserRole } from "../models/auth/user.model.js";
 import { UserPermissionActions } from "../models/auth/user-permission.model.js";
@@ -34,12 +34,11 @@ export const decodeAccessToken = (
       .json({ ok: false, message: "Access token inválido" });
   }
 
-  (req as any).user = {
+  req.user = {
     ...decoded,
     permissions: decoded.permissions || [],
   };
 
-  // Mantenemos estas por compatibilidad si otros controladores las usan
   req.id = decoded.id;
   req.userRole = decoded.role_name;
   next();

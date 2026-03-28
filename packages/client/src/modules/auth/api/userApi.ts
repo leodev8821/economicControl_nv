@@ -9,7 +9,7 @@ import type {
 
 type UserFilters = {
   applicationId?: number | undefined;
-  roleId?: number | undefined;
+  roleId?: number | number[] | undefined;
 };
 
 /**

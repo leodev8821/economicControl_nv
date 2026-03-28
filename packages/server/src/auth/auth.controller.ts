@@ -74,6 +74,9 @@ export const authController = {
   refreshToken: async (req: Request, res: Response) => {
     const payload = req.userPayload;
 
+    if (!payload)
+      return res.status(401).json({ ok: false, message: "No autorizado" });
+
     const { accessToken, refreshToken } =
       await authService.refreshSession(payload);
 

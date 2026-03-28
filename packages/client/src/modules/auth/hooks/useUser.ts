@@ -63,20 +63,16 @@ export const useConsolidationLeaders = (): UseQueryResult<
       (p: { application_id: number }) => p.application_id === APPS.ALL,
     );
 
-  // 2. Extraemos el ID de aplicación para el filtro
-  const filterAppId = hasGlobalAccess
-    ? undefined
-    : user?.permissions[0]?.application_id;
+  const filterAppId = hasGlobalAccess ? undefined : 3;
 
-  //const filterRoleId = 4;
-  const filterRoleId = hasGlobalAccess ? undefined : 4;
+  const filterRoleIds = [1, 4];
 
   return useQuery<UserType[], Error>({
-    queryKey: AuthQueryKeys.users.all(),
+    queryKey: [...AuthQueryKeys.users.all(), filterAppId, filterRoleIds],
     queryFn: () =>
       userApi.getAll({
         applicationId: filterAppId,
-        roleId: filterRoleId,
+        roleId: filterRoleIds,
       }),
     staleTime: 5 * 60 * 1000,
     enabled: !!user,

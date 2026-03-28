@@ -2,8 +2,11 @@ import { Router } from "express";
 import authRouter from "./auth.routes.js";
 import financeRouter from "./finance.routes.js";
 import consolidationRouter from "./consolidation.routes.js";
-import { decodeAccessToken, checkAppAccess } from "../auth/auth.middleware.js";
-import { APP_IDS } from "../shared/app.constants.js";
+import {
+  decodeAccessToken,
+  checkAppAccess,
+} from "@middlewares/auth.middleware.js";
+import { APP_IDS } from "@shared/app.constants.js";
 
 const mainRouter: Router = Router();
 

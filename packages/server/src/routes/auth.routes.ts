@@ -8,7 +8,7 @@ import {
   decodeAccessToken,
   decodeRefreshToken,
   requireRole,
-} from "../auth/auth.middleware.js";
+} from "@middlewares/auth.middleware.js";
 
 const authRouter: Router = Router();
 
@@ -25,10 +25,18 @@ authRouter.post("/logout", authController.logoutUser);
 authRouter.post("/forgot-password", authController.forgotPassword);
 authRouter.post("/reset-password", authController.resetPassword);
 authRouter.get("/profile", decodeAccessToken, (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ ok: false, message: "No autorizado" });
+  }
+
   res.json({
-    id: req.id,
-    username: req.username,
-    role_name: req.userRole,
+    ok: true,
+    data: {
+      id: req.user.id,
+      username: req.user.username,
+      role_name: req.user.role_name,
+      permissions: req.user.permissions,
+    },
   });
 });
 
@@ -92,11 +100,13 @@ authRouter.get(
 authRouter.post(
   "/applications",
   decodeAccessToken,
+  requireRole("SuperUser", "Administrador"),
   applicationsController.createApplication,
 );
 authRouter.delete(
   "/applications/:id",
   decodeAccessToken,
+  requireRole("SuperUser", "Administrador"),
   applicationsController.deleteApplication,
 );
 
@@ -107,6 +117,7 @@ authRouter.delete(
 authRouter.get(
   "/permissions/user/:userId",
   decodeAccessToken,
+  requireRole("SuperUser", "Administrador"),
   userPermissionsController.getPermissionsByUser,
 );
 
@@ -114,6 +125,7 @@ authRouter.get(
 authRouter.post(
   "/permissions",
   decodeAccessToken,
+  requireRole("SuperUser", "Administrador"),
   userPermissionsController.assignRole,
 );
 
@@ -128,6 +140,7 @@ authRouter.post(
 authRouter.delete(
   "/permissions/:userId/:appId",
   decodeAccessToken,
+  requireRole("SuperUser", "Administrador"),
   userPermissionsController.revokeAccess,
 );
 

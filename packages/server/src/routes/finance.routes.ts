@@ -3,18 +3,18 @@ import {
   CashDenominationBodySchema,
   CashDenominationUpdateSchema,
 } from "@economic-control/shared";
-import { validate } from "../middleware/validate.middleware.js";
+import { validate } from "@middlewares/validate.middleware.js";
 
-import { cashesController } from "../controllers/finance-app/cashes.controller.js";
-import { dashboardController } from "../controllers/finance-app/dashboard.controller.js";
-import { incomesController } from "../controllers/finance-app/incomes.controller.js";
-import { outcomesController } from "../controllers/finance-app/outcomes.controller.js";
-import { personsController } from "../controllers/finance-app/persons.controller.js";
-import { reportsController } from "../controllers/finance-app/reports.controller.js";
-import { weeksController } from "../controllers/finance-app/weeks.controller.js";
-import { cashDenominationController } from "../controllers/finance-app/cash-denomination.controller.js";
-import { adminController } from "../controllers/finance-app/admin.controller.js";
-import { decodeAccessToken, requireRole } from "../auth/auth.middleware.js";
+import { cashesController } from "@controllers/finance-app/cashes.controller.js";
+import { dashboardController } from "@controllers/finance-app/dashboard.controller.js";
+import { incomesController } from "@controllers/finance-app/incomes.controller.js";
+import { outcomesController } from "@controllers/finance-app/outcomes.controller.js";
+import { personsController } from "@controllers/finance-app/persons.controller.js";
+import { reportsController } from "@controllers/finance-app/reports.controller.js";
+import { weeksController } from "@controllers/finance-app/weeks.controller.js";
+import { cashDenominationController } from "@controllers/finance-app/cash-denomination.controller.js";
+import { adminController } from "@controllers/finance-app/admin.controller.js";
+import { requireRole } from "@middlewares/auth.middleware.js";
 
 const router: Router = Router();
 
@@ -23,7 +23,6 @@ const router: Router = Router();
 // =================================================================
 router.get(
   "/admin/sync-balances",
-  decodeAccessToken,
   requireRole("SuperUser"),
   adminController.syncBalances,
 );

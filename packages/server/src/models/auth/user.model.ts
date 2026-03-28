@@ -7,7 +7,7 @@ import {
 } from "sequelize";
 import bcrypt from "bcryptjs";
 import { getSequelizeConfig } from "@config/sequelize.config.js";
-import { ROLE_TYPES, RoleModel } from "@models/auth/role.model.js";
+import { ROLE_TYPES } from "@models/auth/role.model.js";
 import { UserPermissionModel } from "@models/auth/user-permission.model.js";
 import { MemberModel } from "@models/consolidation-app/member.model.js";
 import { APP_IDS } from "@shared/app.constants.js";
@@ -211,38 +211,53 @@ export class UserActions {
    */
   public static async getAll(
     appId?: number,
-    roleId?: number,
+    roleIds?: number | number[],
     includeHidden: boolean = false,
   ): Promise<UserAttributes[]> {
     try {
       const whereClause: any = includeHidden ? {} : { is_visible: true };
+      const roles = roleIds
+        ? Array.isArray(roleIds)
+          ? roleIds
+          : [roleIds]
+        : [];
 
       const permissionsInclude: any = {
         model: UserPermissionModel,
         as: "permissions",
         required: false,
+        where: {},
       };
 
-      const roleInclude: any = {
-        model: RoleModel,
-        as: "Role",
-        required: false,
-      };
+      // Filtro por rol y aplicación
+      if (roles.length > 0) {
+        const orConditions: any[] = [{ role_name: "SuperUser" }];
 
-      if (appId && appId > APP_IDS.ALL) {
-        permissionsInclude.where = { application_id: appId };
-        permissionsInclude.required = true;
+        if (appId) {
+          orConditions.push({
+            [Op.and]: [
+              {
+                "$permissions.application_id$": {
+                  [Op.in]: [appId, APP_IDS.ALL],
+                },
+              },
+              { "$permissions.role_id$": { [Op.in]: roles } },
+            ],
+          });
+        }
+
+        whereClause[Op.or] = orConditions;
       }
 
-      if (roleId) {
-        roleInclude.where = { id: roleId };
-        roleInclude.required = true;
+      if (Object.keys(permissionsInclude.where).length === 0) {
+        delete permissionsInclude.where;
       }
 
       const users = await UserModel.findAll({
         where: whereClause,
-        include: [permissionsInclude, roleInclude],
+        include: [permissionsInclude],
         attributes: { exclude: ["password"] },
+        subQuery: false,
       });
 
       return users.map((u) => u.get({ plain: true }));

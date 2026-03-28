@@ -44,7 +44,7 @@ import { RestoreFromTrash } from "@mui/icons-material";
 
 // Tipos
 import type { Member } from "@modules/consolidation/types/member.type";
-import type { UserType } from "@economic-control/shared";
+import { HOW_KNOW_US, type UserType } from "@economic-control/shared";
 
 interface MemberTableProps {
   members: Member[];
@@ -87,7 +87,9 @@ export default function MemberTable({
   onToggleVisibility,
   highlightedRowId,
 }: MemberTableProps) {
-  const isMobile = useMediaQuery("(max-width: 899px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)");
+  const isMobile = useMediaQuery(
+    "(max-width: 899px) and (orientation: portrait), (max-height: 500px) and (orientation: landscape)",
+  );
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -102,6 +104,8 @@ export default function MemberTable({
     phone: "",
     visitDate: "",
     leader: "all",
+    howKnowUs: "all",
+    invitedBy: "",
   };
 
   const [filters, setFilters] = useState(initialFilters);
@@ -202,6 +206,16 @@ export default function MemberTable({
         if (filterDate !== memberDate) return false;
       }
 
+      // Filtro por Cómo nos conoció
+      if (filters.howKnowUs !== "all") {
+        if (member.how_know_us !== filters.howKnowUs) return false;
+      }
+
+      // Filtro por quién invitó
+      if (filters.invitedBy) {
+        if (member.invited_by !== filters.invitedBy) return false;
+      }
+
       return true;
     });
   }, [members, currentUser, filters, searchText]);
@@ -296,6 +310,8 @@ export default function MemberTable({
       "Edad",
       "Estado Civil",
       "Fecha de Visita",
+      "Cómo nos conoció",
+      "Quién invitó",
     ];
 
     const rows = sortedMembers.map((member) => [
@@ -308,6 +324,8 @@ export default function MemberTable({
       calculateAge(member.birth_date) ?? "",
       member.status || "",
       member.visit_date || "",
+      member.how_know_us || "",
+      member.invited_by || "",
     ]);
 
     const csvContent = [headers, ...rows].map((e) => e.join(";")).join("\n");
@@ -553,6 +571,37 @@ export default function MemberTable({
               />
             </Grid>
 
+            <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Cómo nos conoció</InputLabel>
+                <Select
+                  value={filters.howKnowUs}
+                  onChange={(e) =>
+                    setFilters({ ...filters, howKnowUs: e.target.value })
+                  }
+                >
+                  <MenuItem value="all">Todos</MenuItem>
+                  {HOW_KNOW_US.map((howKnowUs) => (
+                    <MenuItem key={howKnowUs} value={howKnowUs}>
+                      {howKnowUs}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid sx={{ xs: 12, sm: 6, md: 3 }}>
+              <TextField
+                label="Quién invitó"
+                size="small"
+                fullWidth
+                value={filters.invitedBy}
+                onChange={(e) =>
+                  setFilters({ ...filters, invitedBy: e.target.value })
+                }
+              />
+            </Grid>
+
             <Grid
               sx={{ xs: 12, sm: 12, md: 2 }}
               display="flex"
@@ -587,7 +636,11 @@ export default function MemberTable({
                 >
                   <CardContent sx={{ pb: 1, "&:last-child": { pb: 1 } }}>
                     <Box
-                      sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mb: 1,
+                      }}
                     >
                       <Typography variant="subtitle1" fontWeight="bold">
                         {row.first_name} {row.last_name}
@@ -595,7 +648,9 @@ export default function MemberTable({
                       <Chip
                         label={row.gender || "-"}
                         size="small"
-                        color={row.gender === "Masculino" ? "primary" : "secondary"}
+                        color={
+                          row.gender === "Masculino" ? "primary" : "secondary"
+                        }
                       />
                     </Box>
 
@@ -612,7 +667,9 @@ export default function MemberTable({
                         <Typography variant="caption" color="text.secondary">
                           Teléfono
                         </Typography>
-                        <Typography variant="body2">{row.phone || "-"}</Typography>
+                        <Typography variant="body2">
+                          {row.phone || "-"}
+                        </Typography>
                       </Grid>
                       <Grid size={6}>
                         <Typography variant="caption" color="text.secondary">
@@ -626,7 +683,9 @@ export default function MemberTable({
                         <Typography variant="caption" color="text.secondary">
                           Estado Civil
                         </Typography>
-                        <Typography variant="body2">{row.status || "-"}</Typography>
+                        <Typography variant="body2">
+                          {row.status || "-"}
+                        </Typography>
                       </Grid>
                       <Grid size={12}>
                         <Typography variant="caption" color="text.secondary">
@@ -638,13 +697,27 @@ export default function MemberTable({
                             : "-"}
                         </Typography>
                       </Grid>
+                      <Grid size={6}>
+                        <Typography variant="caption" color="text.secondary">
+                          Cómo nos conoció
+                        </Typography>
+                        <Typography variant="body2">
+                          {row.how_know_us || "-"}
+                        </Typography>
+                      </Grid>
+                      <Grid size={6}>
+                        <Typography variant="caption" color="text.secondary">
+                          Quién invitó
+                        </Typography>
+                        <Typography variant="body2">
+                          {row.invited_by || "-"}
+                        </Typography>
+                      </Grid>
                     </Grid>
                   </CardContent>
 
                   <CardActions sx={{ justifyContent: "flex-end", pt: 0 }}>
-                    <Tooltip
-                      title={canDelete ? "Editar" : "Sin permiso"}
-                    >
+                    <Tooltip title={canDelete ? "Editar" : "Sin permiso"}>
                       <span>
                         <IconButton
                           color="primary"
@@ -705,7 +778,11 @@ export default function MemberTable({
           />
         </Box>
       ) : (
-        <TableContainer component={Paper} elevation={1} sx={{ borderRadius: 2, overflowX: "auto" }}>
+        <TableContainer
+          component={Paper}
+          elevation={1}
+          sx={{ borderRadius: 2, overflowX: "auto" }}
+        >
           <Table size="small" aria-label="member table">
             <TableHead sx={{ bgcolor: "primary.main" }}>
               <TableRow>
@@ -718,6 +795,8 @@ export default function MemberTable({
                 <SortableHeader id="age" label="Edad" />
                 <SortableHeader id="status" label="Estado Civil" />
                 <SortableHeader id="visit_date" label="Fecha de Visita" />
+                <SortableHeader id="how_know_us" label="Cómo nos conoció" />
+                <SortableHeader id="invited_by" label="Quién invitó" />
 
                 <TableCell
                   sx={{ fontWeight: "bold", color: "primary.contrastText" }}
@@ -775,22 +854,36 @@ export default function MemberTable({
                           : "-"}
                       </TableCell>
 
-                      <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                      <TableCell
+                        sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}
+                      >
                         {calculateAge(row.birth_date) ?? "-"}
                       </TableCell>
+
                       <TableCell sx={{ whiteSpace: "nowrap" }}>
                         {row.status || "-"}
                       </TableCell>
+
                       <TableCell sx={{ whiteSpace: "nowrap" }}>
                         {dayjs(row.visit_date).isValid()
                           ? dayjs(row.visit_date).format("DD-MM-YYYY")
                           : "-"}
                       </TableCell>
 
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        {row.how_know_us || "-"}
+                      </TableCell>
+
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        {row.invited_by || "-"}
+                      </TableCell>
+
                       <TableCell align="center">
                         <Tooltip
                           title={
-                            canDelete ? "Editar" : "No tienes permiso para editar"
+                            canDelete
+                              ? "Editar"
+                              : "No tienes permiso para editar"
                           }
                         >
                           <span>
