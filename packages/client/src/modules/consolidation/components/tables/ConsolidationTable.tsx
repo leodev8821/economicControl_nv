@@ -244,10 +244,32 @@ export default function ConsolidationTable() {
   const sortedData = useMemo(() => {
     return [...filteredData].sort((a, b) => {
       const getValue = (item: ConsolidationPopulatedType, col: string) => {
-        if (col === "age") return calculateAge(item.Member?.birth_date) ?? 0;
-        if (col === "leader") return item.Member?.User?.username || "";
-        if (col === "network") return item.Network?.name || "";
-        return (item as any)[col] ?? "";
+        switch (col) {
+          case "age":
+            return calculateAge(item.Member?.birth_date) ?? 0;
+          case "leader":
+            return item.Member?.User?.username || "";
+          case "network":
+            return item.Network?.name || "";
+          case "first_name":
+            return item.Member?.first_name || "";
+          case "phone":
+            return item.Member?.phone || "";
+          case "status":
+            return item.Member?.status || "";
+          case "visit_date":
+            return item.Member?.visit_date || "";
+          case "gender":
+            return item.Member?.gender || "";
+          case "how_know_us":
+            return item.Member?.how_know_us || "";
+          case "invited_by":
+            return item.Member?.invited_by || "";
+          case "consolidation_visit_date":
+            return item.visit_date || "";
+          default:
+            return (item as any)[col] ?? "";
+        }
       };
 
       const valA = getValue(a, orderBy);
@@ -834,52 +856,249 @@ export default function ConsolidationTable() {
                 <TableRow>
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
                     <TableSortLabel
-                      active={orderBy === "username"}
-                      direction={order}
-                      onClick={() => handleSort("username")}
+                      active={orderBy === "leader"}
+                      direction={orderBy === "leader" ? order : "asc"}
+                      onClick={() => handleSort("leader")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
                     >
                       Líder
                     </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Nombre y Apellido
+                    <TableSortLabel
+                      active={orderBy === "first_name"}
+                      direction={orderBy === "first_name" ? order : "asc"}
+                      onClick={() => handleSort("first_name")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Nombre y Apellido
+                    </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Teléfono
+                    <TableSortLabel
+                      active={orderBy === "phone"}
+                      direction={orderBy === "phone" ? order : "asc"}
+                      onClick={() => handleSort("phone")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Teléfono
+                    </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Edad
+                    <TableSortLabel
+                      active={orderBy === "age"}
+                      direction={orderBy === "age" ? order : "asc"}
+                      onClick={() => handleSort("age")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Edad
+                    </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Estado Civil
+                    <TableSortLabel
+                      active={orderBy === "status"}
+                      direction={orderBy === "status" ? order : "asc"}
+                      onClick={() => handleSort("status")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Estado Civil
+                    </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Fecha de llegada
+                    <TableSortLabel
+                      active={orderBy === "visit_date"}
+                      direction={orderBy === "visit_date" ? order : "asc"}
+                      onClick={() => handleSort("visit_date")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Fecha de llegada
+                    </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Género
+                    <TableSortLabel
+                      active={orderBy === "gender"}
+                      direction={orderBy === "gender" ? order : "asc"}
+                      onClick={() => handleSort("gender")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Género
+                    </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Red
+                    <TableSortLabel
+                      active={orderBy === "network"}
+                      direction={orderBy === "network" ? order : "asc"}
+                      onClick={() => handleSort("network")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Red
+                    </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Cómo nos conoció
+                    <TableSortLabel
+                      active={orderBy === "how_know_us"}
+                      direction={orderBy === "how_know_us" ? order : "asc"}
+                      onClick={() => handleSort("how_know_us")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Cómo nos conoció
+                    </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Quien lo trajo
+                    <TableSortLabel
+                      active={orderBy === "invited_by"}
+                      direction={orderBy === "invited_by" ? order : "asc"}
+                      onClick={() => handleSort("invited_by")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Quien lo trajo
+                    </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Fecha de llamada
+                    <TableSortLabel
+                      active={orderBy === "call_date"}
+                      direction={orderBy === "call_date" ? order : "asc"}
+                      onClick={() => handleSort("call_date")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Fecha de llamada
+                    </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Obs. llamada
+                    <TableSortLabel
+                      active={orderBy === "call_observations"}
+                      direction={
+                        orderBy === "call_observations" ? order : "asc"
+                      }
+                      onClick={() => handleSort("call_observations")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Obs. llamada
+                    </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Fecha de visita
+                    <TableSortLabel
+                      active={orderBy === "consolidation_visit_date"}
+                      direction={
+                        orderBy === "consolidation_visit_date" ? order : "asc"
+                      }
+                      onClick={() => handleSort("consolidation_visit_date")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Fecha de visita
+                    </TableSortLabel>
                   </TableCell>
+
                   <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>
-                    Obs. visita
+                    <TableSortLabel
+                      active={orderBy === "visit_observations"}
+                      direction={
+                        orderBy === "visit_observations" ? order : "asc"
+                      }
+                      onClick={() => handleSort("visit_observations")}
+                      sx={{
+                        color: "inherit",
+                        "&.Mui-active": { color: "white" },
+                        "& .MuiTableSortLabel-icon": {
+                          color: "white !important",
+                        },
+                      }}
+                    >
+                      Obs. visita
+                    </TableSortLabel>
                   </TableCell>
+
+                  {/* La columna de acciones no necesita TableSortLabel */}
                   <TableCell sx={{ color: "yellow", fontWeight: "bold" }}>
                     Acciones
                   </TableCell>

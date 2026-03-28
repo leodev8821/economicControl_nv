@@ -5,9 +5,9 @@ import * as path from "path";
 const rootDir = path.resolve(__dirname, "..", "..");
 
 const BACKEND_PORT = 3000;
-const FRONTEND_PORT = 5173; // Puerto del servidor de desarrollo de Vite
+const FRONTEND_PORT = 5173;
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`;
-const API_PREFIX = "/ec/api/v1"; // Prefijo que usaremos en las llamadas de Axios
+const API_PREFIX = "/ec/api/v1";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -27,6 +27,21 @@ export default defineConfig({
         rootDir,
         "packages/shared/src/index.ts",
       ),
+    },
+  },
+
+  build: {
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Si la librería viene de node_modules, métela en 'vendor'
+          if (id.includes("node_modules")) {
+            // Esto agrupa React, MUI, Zod, Axios, etc. en un solo archivo sólido
+            return "vendor";
+          }
+        },
+      },
     },
   },
 
