@@ -8,7 +8,6 @@ import {
   ConsolidationModel,
   ConsolidationSearchData,
 } from "@models/consolidation-app/consolidation.model.js";
-import { UserModel } from "@models/auth/user.model.js";
 import { MemberModel } from "@models/consolidation-app/member.model.js";
 import { NetworkModel } from "@models/consolidation-app/network.model.js";
 import { getSequelizeConfig } from "@config/sequelize.config.js";
@@ -26,12 +25,10 @@ async function create(
   transaction?: Transaction,
 ): Promise<ConsolidationAttributes> {
   const execute = async (t: Transaction) => {
-    const [user, member] = await Promise.all([
-      UserModel.findByPk(dto.user_id, { transaction: t }),
-      MemberModel.findByPk(dto.member_id, { transaction: t }),
-    ]);
+    const member = await MemberModel.findByPk(dto.member_id, {
+      transaction: t,
+    });
 
-    if (!user) throw new Error("El usuario especificado no existe");
     if (!member) throw new Error("El miembro especificado no existe");
 
     if (dto.network_id !== null && dto.network_id !== undefined) {
@@ -100,7 +97,6 @@ async function createMultipleConsolidations(): Promise<
     // Construir las consolidaciones
     const consolidations: ConsolidationCreationAttributes[] =
       missingMembers.map((member) => ({
-        user_id: member.user_id as number,
         member_id: member.id,
         network_id: null,
         call_date: null,

@@ -177,8 +177,9 @@ export default function ConsolidationTable() {
   const availableLeaders = useMemo(() => {
     const leadersMap = new Map();
     data.forEach((row) => {
-      if (row.User) {
-        leadersMap.set(row.User.id, row.User.username);
+      const leader = row.Member?.User;
+      if (leader) {
+        leadersMap.set(leader.id, leader.username);
       }
     });
     return Array.from(leadersMap.entries()).map(([id, username]) => ({
@@ -190,7 +191,10 @@ export default function ConsolidationTable() {
   // --- 2. Filtrado Avanzado ---
   const filteredData = useMemo(() => {
     return data.filter((row) => {
-      if (!isAdmin && row.user_id !== currentUserId) return false;
+      const rowLeaderId = row.Member?.user_id;
+      const rowLeaderUsername = row.Member?.User?.username;
+
+      if (!isAdmin && rowLeaderId !== currentUserId) return false;
 
       // Filtro Global (Buscador superior)
       if (search) {
@@ -199,7 +203,7 @@ export default function ConsolidationTable() {
           `${row.Member?.first_name} ${row.Member?.last_name}`
             .toLowerCase()
             .includes(term) ||
-          row.User?.username?.toLowerCase().includes(term) ||
+          rowLeaderUsername?.toLowerCase().includes(term) ||
           row.Network?.name?.toLowerCase().includes(term)
         );
       }
@@ -211,7 +215,7 @@ export default function ConsolidationTable() {
         return false;
       if (filters.network !== "all" && row.Network?.name !== filters.network)
         return false;
-      if (filters.leader !== "all" && row.User?.username !== filters.leader)
+      if (filters.leader !== "all" && rowLeaderUsername !== filters.leader)
         return false;
 
       if (filters.visitDate) {
@@ -241,7 +245,7 @@ export default function ConsolidationTable() {
     return [...filteredData].sort((a, b) => {
       const getValue = (item: ConsolidationPopulatedType, col: string) => {
         if (col === "age") return calculateAge(item.Member?.birth_date) ?? 0;
-        if (col === "leader") return item.User?.username || "";
+        if (col === "leader") return item.Member?.User?.username || "";
         if (col === "network") return item.Network?.name || "";
         return (item as any)[col] ?? "";
       };
@@ -573,7 +577,7 @@ export default function ConsolidationTable() {
                           Líder
                         </Typography>
                         <Typography variant="body2">
-                          {row.User?.username || "-"}
+                          {row.Member?.User?.username || "-"}
                         </Typography>
                       </Grid>
 
@@ -907,7 +911,7 @@ export default function ConsolidationTable() {
                       }}
                     >
                       <TableCell sx={{ whiteSpace: "nowrap" }}>
-                        {row.User?.username}
+                        {row.Member?.User?.username}
                       </TableCell>
 
                       <TableCell sx={{ whiteSpace: "nowrap" }}>

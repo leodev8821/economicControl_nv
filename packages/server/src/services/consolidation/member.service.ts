@@ -103,7 +103,6 @@ async function create(
     // 🔹 Crear consolidation automáticamente
     await consolidationService.create(
       {
-        user_id: finalUserId,
         member_id: newMember.id,
         network_id: null,
         call_date: null,
@@ -157,8 +156,7 @@ async function createMultipleMembers(
 
     // Crear consolidations para cada miembro
     const consolidations: ConsolidationCreationAttributes[] = newMembers.map(
-      (member, index) => ({
-        user_id: normalizedData[index].user_id,
+      (member) => ({
         member_id: member.id,
         network_id: null,
         call_date: null,
@@ -200,6 +198,7 @@ async function update(
     if (!count) return null;
 
     const updatedPerson = await MemberModel.findByPk(id, {
+      include: getIncludeConfig(),
       transaction: t,
     });
 

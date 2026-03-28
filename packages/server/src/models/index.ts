@@ -86,21 +86,6 @@ CashDenomination.belongsTo(Cash, {
 // =================================================================
 // Consolidation App
 // =================================================================
-// --- Consolidation <--> User ---
-Consolidation.belongsTo(User, {
-  foreignKey: "user_id",
-  targetKey: "id",
-  as: "User",
-  onDelete: "CASCADE",
-  onUpdate: "CASCADE",
-});
-
-User.hasMany(Consolidation, {
-  foreignKey: "user_id",
-  sourceKey: "id",
-  as: "Consolidations",
-});
-
 // --- Consolidation <-> Member  ---
 Consolidation.belongsTo(Member, {
   foreignKey: "member_id",

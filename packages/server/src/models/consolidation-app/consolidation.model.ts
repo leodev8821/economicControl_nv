@@ -9,7 +9,6 @@ const connection = getSequelizeConfig();
 
 export interface ConsolidationAttributes {
   id: number;
-  user_id: number;
   member_id: number;
   network_id: number | null;
   call_date: Date | null;
@@ -22,7 +21,6 @@ export interface ConsolidationAttributes {
 
 export type ConsolidationSearchData = {
   id?: number;
-  user_id?: number;
   member_id?: number;
   network_id?: number;
   call_date?: Date | null;
@@ -52,7 +50,6 @@ export class ConsolidationModel
   implements ConsolidationAttributes
 {
   declare id: number;
-  declare user_id: number;
   declare member_id: number;
   declare network_id: number | null;
   declare call_date: Date | null;
@@ -70,14 +67,6 @@ ConsolidationModel.init(
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-    },
-    user_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "users",
-        key: "id",
-      },
     },
     member_id: {
       type: DataTypes.INTEGER,
@@ -149,6 +138,12 @@ ConsolidationModel.addScope("populated", {
         "visit_date",
         "how_know_us",
         "invited_by",
+      ],
+      include: [
+        {
+          association: "User",
+          attributes: ["id", "username"],
+        },
       ],
     },
     { association: "Network", attributes: ["id", "name"] },

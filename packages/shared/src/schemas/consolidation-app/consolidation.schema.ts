@@ -25,13 +25,6 @@ const BaseConsolidationSchema = z.object({
     })
     .positive("El ID del registro debe ser un número entero positivo"),
 
-  user_id: z.coerce
-    .number()
-    .int({
-      message: "El ID del usuario es obligatorio",
-    })
-    .positive("El ID del usuario debe ser un número entero positivo"),
-
   member_id: z.coerce
     .number()
     .int({
@@ -134,6 +127,8 @@ export type ConsolidationMember = {
   id: number;
   first_name: string;
   last_name: string;
+  user_id: number | null;
+  User: ConsolidationUser;
   gender: string;
   phone?: string | null;
   birth_date?: Date | string | null;
@@ -152,7 +147,6 @@ export type ConsolidationNetwork = {
 export type ConsolidationType = z.infer<typeof BaseConsolidationSchema>;
 
 export type ConsolidationPopulatedType = ConsolidationType & {
-  User: ConsolidationUser;
   Member: ConsolidationMember;
   Network: ConsolidationNetwork | null;
 };

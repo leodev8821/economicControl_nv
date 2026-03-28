@@ -92,7 +92,6 @@ export const consolidationController = {
       });
     } catch (error: any) {
       if (
-        error.message === "El usuario especificado no existe" ||
         error.message === "El miembro especificado no existe" ||
         error.message === "La red especificada no existe"
       ) {
