@@ -124,7 +124,6 @@ ConsolidationModel.init(
 
 ConsolidationModel.addScope("populated", {
   include: [
-    { association: "User", attributes: ["id", "username"] },
     {
       association: "Member",
       attributes: [
@@ -138,6 +137,7 @@ ConsolidationModel.addScope("populated", {
         "visit_date",
         "how_know_us",
         "invited_by",
+        "user_id",
       ],
       include: [
         {
