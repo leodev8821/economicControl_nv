@@ -1,8 +1,9 @@
-import type { CashCreationRequest } from "@economic-control/shared";
+import type { CashCreationDTO } from "@economic-control/shared";
 
-export interface Cash extends CashCreationRequest {
+export interface Cash extends CashCreationDTO {
   id: number;
   name: string;
+  actual_amount: number;
 }
 
 export type CashAttributes = Cash;

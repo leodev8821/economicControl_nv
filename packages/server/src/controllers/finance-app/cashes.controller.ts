@@ -1,32 +1,27 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
-import type { CashSearchData } from "../../models/finance-app/cash.model.js";
+import ControllerErrorHandler from "@utils/ControllerErrorHandler.js";
+import type { CashSearchData, CashAttributes } from "@models/finance-app/cash.model.js";
 import {
-  CashActions,
-  CashAttributes,
-  CashCreationAttributes,
-} from "../../models/finance-app/cash.model.js";
-import {
-  CashCreationSchema,
-  CashCreationRequest,
-  CashUpdateSchema,
-  CashUpdateRequest,
+  CashCreationDTO,
+  CashUpdateDTO,
 } from "@economic-control/shared";
+import { cashService } from "@services/finance-app/cash.service.js";
 
 export const cashesController = {
   // Obtiene todas las cajas
   allCashes: async (_req: Request, res: Response) => {
     try {
-      const cashes: CashAttributes[] = await CashActions.getAll();
+      const cashes: CashAttributes[] = await cashService.getAll();
 
       return res.status(200).json({
         ok: true,
         message:
-          cashes.length === 0
-            ? "No hay cajas registradas."
-            : "Cajas obtenidas correctamente.",
+          cashes.length > 0
+            ? "Cajas obtenidas correctamente."
+            : "No hay cajas registradas.",
         data: cashes,
       });
+
     } catch (error) {
       return ControllerErrorHandler(res, error, "Error al obtener las cajas.");
     }
@@ -35,23 +30,16 @@ export const cashesController = {
   // Obtiene una caja por ID o nombre
   oneCash: async (req: Request, res: Response) => {
     try {
-      const { id, name } = req.params;
+      const { term } = req.params;
       const searchCriteria: CashSearchData = {};
 
-      if (id) {
-        searchCriteria.id = parseInt(id as string, 10);
-      }
-      if (name) {
-        searchCriteria.name = name as string;
+      if (!isNaN(Number(term))) {
+        searchCriteria.id = parseInt(term as string, 10);
+      } else {
+        searchCriteria.name = term as string;
       }
 
-      const cash = await CashActions.getOne(searchCriteria);
-
-      if (!cash) {
-        return res.status(404).json({
-          message: "No se encontró la caja con los parámetros proporcionados.",
-        });
-      }
+      const cash = await cashService.getOne(searchCriteria);
 
       return res.status(200).json({
         ok: true,
@@ -66,21 +54,9 @@ export const cashesController = {
   // Crea una nueva caja
   createCash: async (req: Request, res: Response) => {
     try {
-      const validationResult = CashCreationSchema.safeParse(req.body);
+      const cashData: CashCreationDTO = req.body;
 
-      if (!validationResult.success) {
-        return res.status(400).json({
-          ok: false,
-          message: "Datos de nueva caja inválidos.",
-          errors: validationResult.error.issues,
-        });
-      }
-
-      const cashData: CashCreationRequest = validationResult.data;
-
-      const newCash = await CashActions.create(
-        cashData as CashCreationAttributes,
-      );
+      const newCash = await cashService.create(cashData);
 
       return res.status(201).json({
         ok: true,
@@ -102,17 +78,7 @@ export const cashesController = {
           .json({ ok: false, message: "ID de caja inválido" });
       }
 
-      const validationResult = CashUpdateSchema.safeParse(req.body);
-
-      if (!validationResult.success) {
-        return res.status(400).json({
-          ok: false,
-          message: "Datos de actualización de caja inválidos.",
-          errors: validationResult.error.issues,
-        });
-      }
-
-      const updateData: CashUpdateRequest = validationResult.data;
+      const updateData: CashUpdateDTO = req.body;
 
       if (Object.keys(updateData).length === 0) {
         return res.status(400).json({
@@ -121,10 +87,7 @@ export const cashesController = {
         });
       }
 
-      const updatedCash = await CashActions.update(
-        cashId,
-        updateData as Partial<CashCreationAttributes>,
-      );
+      const updatedCash = await cashService.update(cashId, updateData);
 
       if (!updatedCash) {
         return res
@@ -152,7 +115,7 @@ export const cashesController = {
           .json({ ok: false, message: "ID de caja inválido" });
       }
 
-      const deleted = await CashActions.delete({ id: cashId });
+      const deleted = await cashService.remove(cashId);
 
       if (!deleted) {
         return res.status(404).json({

@@ -2,7 +2,8 @@ import { DataTypes, Model, fn, col, type Optional, Op } from "sequelize";
 import { getSequelizeConfig } from "@config/sequelize.config.js";
 import { PersonModel } from "./person.model.js";
 import { WeekModel } from "./week.model.js";
-import { CashModel, CashActions } from "./cash.model.js";
+import { CashModel } from "./cash.model.js";
+import { cashService } from "@services/finance-app/cash.service.js";
 import { INCOME_SOURCES, type IncomeSource } from "@economic-control/shared";
 import { DashboardFilter } from "@shared/dashboard.types.js";
 
@@ -32,13 +33,12 @@ export type IncomeSearchData = {
 export interface IncomeCreationAttributes extends Optional<
   IncomeAttributes,
   "id" | "person_id"
-> {}
+> { }
 
 // Definición del modelo
 export class IncomeModel
   extends Model<IncomeAttributes, IncomeCreationAttributes>
-  implements IncomeAttributes
-{
+  implements IncomeAttributes {
   declare id: number;
   declare person_id: number | null;
   declare cash_id: number;
@@ -47,28 +47,6 @@ export class IncomeModel
   declare amount: number;
   declare source: IncomeSource;
 }
-
-// 💡 Constante para la configuración de inclusión (JOINs)
-/* const INCOME_INCLUDE_CONFIG = [
-  {
-    model: PersonModel,
-    as: "Person",
-    attributes: ["id", "dni", "first_name", "last_name"],
-    required: false,
-  },
-  {
-    model: CashModel,
-    as: "Cash",
-    attributes: ["id", "name", "actual_amount"],
-    required: true,
-  },
-  {
-    model: WeekModel,
-    as: "Week",
-    attributes: ["id", "week_start", "week_end"],
-    required: true,
-  },
-]; */
 
 // Inicialización del modelo
 IncomeModel.init(
@@ -231,7 +209,7 @@ export class IncomeActions {
           parseFloat(String(data.amount));
 
         // 3. Actualizar la caja DENTRO de la transacción
-        await CashActions.update(data.cash_id, { actual_amount: newAmount }, t);
+        await cashService.update(data.cash_id, { actual_amount: newAmount }, t);
       }
 
       return newIncome.get({ plain: true });
@@ -248,7 +226,7 @@ export class IncomeActions {
     const deletedCount = await IncomeModel.destroy({ where: data });
 
     if (deletedCount > 0 && incomeToDelete) {
-      const currentCash = await CashActions.getOne({
+      const currentCash = await cashService.getOne({
         id: incomeToDelete.cash_id,
       });
 
@@ -256,7 +234,7 @@ export class IncomeActions {
         const newAmount =
           parseFloat(String(currentCash.actual_amount)) -
           parseFloat(String(incomeToDelete.amount));
-        await CashActions.update(incomeToDelete.cash_id, {
+        await cashService.update(incomeToDelete.cash_id, {
           actual_amount: newAmount,
         });
       }
@@ -287,7 +265,7 @@ export class IncomeActions {
       const isAmountChanged =
         data.amount !== undefined &&
         parseFloat(String(data.amount)) !==
-          parseFloat(String(originalIncome.amount));
+        parseFloat(String(originalIncome.amount));
       const isCashIdChanged =
         data.cash_id !== undefined && data.cash_id !== originalIncome.cash_id;
 
@@ -305,17 +283,17 @@ export class IncomeActions {
         const newCashId = data.cash_id !== undefined ? data.cash_id : oldCashId;
 
         // --- 1. Revertir la transacción original (Restar el monto anterior) ---
-        let oldCash = await CashActions.getOne({ id: oldCashId }, t);
+        let oldCash = await cashService.getOne({ id: oldCashId }, t);
         if (oldCash) {
           // Cálculo: Saldo actual de la caja antigua - Monto antiguo (reversión de suma)
           const oldCashNewAmount =
             parseFloat(String(oldCash.actual_amount)) - oldAmount;
-          await CashActions.update(
+          await cashService.update(
             oldCashId,
             { actual_amount: oldCashNewAmount },
             t,
           );
-          oldCash = await CashActions.getOne({ id: oldCashId }, t); // Refrescar el objeto oldCash
+          oldCash = await cashService.getOne({ id: oldCashId }, t); // Refrescar el objeto oldCash
         }
 
         // --- 2. Aplicar la nueva transacción (Sumar el nuevo monto) ---
@@ -324,13 +302,13 @@ export class IncomeActions {
         let targetCash =
           oldCashId === newCashId
             ? oldCash
-            : await CashActions.getOne({ id: targetCashId }, t);
+            : await cashService.getOne({ id: targetCashId }, t);
 
         if (targetCash) {
           // Cálculo: Saldo actual de la caja objetivo + Nuevo monto
           const newCashNewAmount =
             parseFloat(String(targetCash.actual_amount)) + newAmount;
-          await CashActions.update(
+          await cashService.update(
             targetCashId,
             { actual_amount: newCashNewAmount },
             t,

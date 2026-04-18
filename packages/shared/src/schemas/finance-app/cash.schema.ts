@@ -28,8 +28,8 @@ export const CashUpdateSchema = BaseCashSchema.partial();
 // ----------------------------------------------------------------------
 // 4. EXPORTACIÓN DE TIPOS E INTERFACES
 // ----------------------------------------------------------------------
-export type CashCreationRequest = z.infer<typeof CashCreationSchema>;
-export type CashUpdateRequest = z.infer<typeof CashUpdateSchema>;
+export type CashCreationDTO = z.infer<typeof CashCreationSchema>;
+export type CashUpdateDTO = z.infer<typeof CashUpdateSchema>;
 
 // Para UI
 export type CashType = z.infer<typeof BaseCashSchema>;

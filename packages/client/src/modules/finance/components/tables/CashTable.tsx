@@ -9,13 +9,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import Chip from "@mui/material/Chip";
-import type { Cash } from "@modules/finance/types/cash.type";
+import type { CashType } from "@economic-control/shared";
 
 interface CashTableProps {
-  cashes: Cash[];
-  onEdit: (cash: Cash) => void;
+  cashes: CashType[];
+  onEdit: (cash: CashType) => void;
   onDelete: (id: GridRowId) => void;
-  // Nuevas props para el manejo de la selección
   selectedCashId?: number;
   onSelect?: (id: number) => void;
 }
@@ -27,7 +26,7 @@ export default function CashTable({
   selectedCashId,
   onSelect,
 }: CashTableProps) {
-  const columns: GridColDef<Cash>[] = [
+  const columns: GridColDef<CashType>[] = [
     {
       field: "status",
       headerName: "Estado",
@@ -69,7 +68,7 @@ export default function CashTable({
       field: "actions",
       headerName: "Acciones",
       type: "actions",
-      width: 150, // Aumentamos un poco el ancho para el nuevo botón
+      width: 150,
       getActions: (params) => {
         const actions = [
           <GridActionsCellItem

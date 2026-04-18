@@ -162,7 +162,7 @@ export const cashDenominationController = {
         });
       }
 
-      return res.json({
+      return res.status(200).json({
         ok: true,
         data: updated,
         message: "Denominación actualizada correctamente",

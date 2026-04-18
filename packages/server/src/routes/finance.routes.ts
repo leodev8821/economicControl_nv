@@ -1,5 +1,7 @@
 import { Router } from "express";
 import {
+  CashCreationSchema,
+  CashUpdateSchema,
   CashDenominationBodySchema,
   CashDenominationUpdateSchema,
 } from "@economic-control/shared";
@@ -30,11 +32,17 @@ router.get(
 // =================================================================
 // 💰 CAJAS (CASHES)
 // =================================================================
-router.get("/cashes", cashesController.allCashes);
+/* router.get("/cashes", cashesController.allCashes);
 router.get("/cashes/:id", cashesController.oneCash);
 router.get("/cashes/name/:name", cashesController.oneCash);
 router.post("/cashes/new-cash", cashesController.createCash);
 router.put("/cashes/:id", cashesController.updateCash);
+router.delete("/cashes/:id", cashesController.deleteCash); */
+
+router.get("/cashes", cashesController.allCashes);
+router.get("/cashes/:term", cashesController.oneCash);
+router.post("/cashes", validate(CashCreationSchema), cashesController.createCash);
+router.put("/cashes/:id", validate(CashUpdateSchema), cashesController.updateCash);
 router.delete("/cashes/:id", cashesController.deleteCash);
 
 // =================================================================

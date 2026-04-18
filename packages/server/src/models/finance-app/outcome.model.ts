@@ -1,7 +1,8 @@
 // models/outcome.ts
 import { col, DataTypes, fn, Model, Op, type Optional } from "sequelize";
 import { getSequelizeConfig } from "../../config/sequelize.config.js";
-import { CashModel, CashActions } from "./cash.model.js";
+import { CashModel } from "./cash.model.js";
+import { cashService } from "@services/finance-app/cash.service.js";
 import { WeekModel } from "./week.model.js";
 import {
   OUTCOME_CATEGORIES,
@@ -33,13 +34,12 @@ export type OutcomeSearchData = {
 export interface OutcomeCreationAttributes extends Optional<
   OutcomeAttributes,
   "id"
-> {}
+> { }
 
 /** Clase del modelo tipada */
 export class OutcomeModel
   extends Model<OutcomeAttributes, OutcomeCreationAttributes>
-  implements OutcomeAttributes
-{
+  implements OutcomeAttributes {
   declare id: number;
   declare cash_id: number;
   declare week_id: number;
@@ -48,22 +48,6 @@ export class OutcomeModel
   declare description: string;
   declare category: OutcomeCategories;
 }
-
-// 💡 Constante para la configuración de inclusión (JOINs)
-/* const OUTCOME_INCLUDE_CONFIG = [
-  {
-    model: CashModel,
-    as: "Cash",
-    attributes: ["id", "name", "actual_amount"],
-    required: true,
-  },
-  {
-    model: WeekModel,
-    as: "Week",
-    attributes: ["id", "week_start", "week_end"],
-    required: true,
-  },
-]; */
 
 /** Inicialización del modelo */
 OutcomeModel.init(
@@ -199,7 +183,7 @@ export class OutcomeActions {
       });
 
       // 2. Obtener la caja bloqueando la fila dentro de la transacción
-      const currentCash = await CashActions.getOne({ id: data.cash_id }, t);
+      const currentCash = await cashService.getOne({ id: data.cash_id }, t);
 
       if (currentCash) {
         // Cálculo: Saldo actual - Monto del egreso
@@ -208,7 +192,7 @@ export class OutcomeActions {
           parseFloat(String(data.amount));
 
         // 3. Actualizar caja pasando la transacción
-        await CashActions.update(data.cash_id, { actual_amount: newAmount }, t);
+        await cashService.update(data.cash_id, { actual_amount: newAmount }, t);
       }
 
       return newOutcome.get({ plain: true });
@@ -237,7 +221,7 @@ export class OutcomeActions {
       });
 
       if (deletedCount > 0) {
-        const currentCash = await CashActions.getOne(
+        const currentCash = await cashService.getOne(
           { id: outcomeToDelete.cash_id },
           t,
         );
@@ -247,7 +231,7 @@ export class OutcomeActions {
           const newAmount =
             parseFloat(String(currentCash.actual_amount)) +
             parseFloat(String(outcomeToDelete.amount));
-          await CashActions.update(
+          await cashService.update(
             outcomeToDelete.cash_id,
             {
               actual_amount: newAmount,
@@ -281,7 +265,7 @@ export class OutcomeActions {
       const isAmountChanged =
         data.amount !== undefined &&
         parseFloat(String(data.amount)) !==
-          parseFloat(String(originalOutcome.amount));
+        parseFloat(String(originalOutcome.amount));
       const isCashIdChanged =
         data.cash_id !== undefined && data.cash_id !== originalOutcome.cash_id;
 
@@ -295,11 +279,11 @@ export class OutcomeActions {
         const newCashId = data.cash_id !== undefined ? data.cash_id : oldCashId;
 
         // A. Revertir en caja vieja (Sumar lo que se había restado)
-        const oldCash = await CashActions.getOne({ id: oldCashId }, t);
+        const oldCash = await cashService.getOne({ id: oldCashId }, t);
         if (oldCash) {
           const oldCashNewAmount =
             parseFloat(String(oldCash.actual_amount)) + oldAmount;
-          await CashActions.update(
+          await cashService.update(
             oldCashId,
             { actual_amount: oldCashNewAmount },
             t,
@@ -310,12 +294,12 @@ export class OutcomeActions {
         const targetCashId = newCashId;
         // Si es la misma caja, necesitamos refrescar el dato recién actualizado
         // getOne con transacción nos dará el dato fresco dentro de la tx
-        const targetCash = await CashActions.getOne({ id: targetCashId }, t);
+        const targetCash = await cashService.getOne({ id: targetCashId }, t);
 
         if (targetCash) {
           const newCashNewAmount =
             parseFloat(String(targetCash.actual_amount)) - newAmount;
-          await CashActions.update(
+          await cashService.update(
             targetCashId,
             { actual_amount: newCashNewAmount },
             t,

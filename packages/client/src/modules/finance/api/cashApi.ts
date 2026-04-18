@@ -4,6 +4,8 @@ import type { Cash } from "@modules/finance/types/cash.type";
 import type { ApiResponse } from "@shared/types/apiResponse";
 import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
+export type CashUpdateData = { id: number } & Partial<Cash>;
+
 /**
  * Función que realiza la petición GET al backend para obtener todos las cajas.
  * Ruta: GET /ec/api/v1/cashes
@@ -28,18 +30,32 @@ export const getAllCashes = async (): Promise<Cash[]> => {
   }
 };
 
-export type CashUpdateData = { id: number } & Partial<Cash>;
+/**
+ * Obtiene una caja por término (ID o nombre).
+ * Ruta: GET /ec/api/v1/cashes/:term
+ */
+export const getOneCash = async (term: string | number): Promise<Cash> => {
+  try {
+    const response = await apiClient.get<ApiResponse<Cash>>(
+      `${API_ROUTES_PATH.FINANCE}/cashes/${term}`,
+    );
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 
 /**
  * Función que realiza la petición POST al backend para crear una nueva caja.
- * Ruta: POST /ec/api/v1/cashes/new-cash
+ * Ruta: POST /ec/api/v1/cashes
  * @param data Los datos de la caja.
  * @returns Promesa que resuelve en el objeto Cash creado.
  */
 export const createCash = async (data: any): Promise<Cash> => {
   try {
     const response = await apiClient.post<ApiResponse<Cash>>(
-      `${API_ROUTES_PATH.FINANCE}/cashes/new-cash`,
+      `${API_ROUTES_PATH.FINANCE}/cashes`,
       data,
     );
     return response.data.data;

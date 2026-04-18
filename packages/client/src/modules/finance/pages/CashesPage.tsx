@@ -34,7 +34,7 @@ import CashForm from "@modules/finance/components/forms/CashForm";
 import CashDenominationTable from "@modules/finance/components/tables/CashDenominationTable"; // Asegúrate de que la ruta sea correcta
 
 // Tipos
-import type { Cash } from "@modules/finance/types/cash.type";
+import type { CashType } from "@economic-control/shared";
 import type { CashUpdateData } from "@modules/finance/api/cashApi";
 import * as SharedCashSchemas from "@economic-control/shared";
 
@@ -42,7 +42,7 @@ const CashesPage: React.FC = () => {
   // --- 1. Estado para la Caja Seleccionada ---
   // Por defecto empezamos con la caja 1 (General)
   const [selectedCashId, setSelectedCashId] = useState<number>(1);
-  const [editingCash, setEditingCash] = useState<Cash | null>(null);
+  const [editingCash, setEditingCash] = useState<CashType | null>(null);
 
   // --- 2. Lógica de CASHES (Listado) ---
   const {
@@ -110,7 +110,7 @@ const CashesPage: React.FC = () => {
 
   // --- Handlers de CASHES ---
   const handleCreateCash = (
-    cashData: SharedCashSchemas.CashCreationRequest,
+    cashData: SharedCashSchemas.CashCreationDTO,
   ) => {
     createCashMutation.mutate(cashData);
   };
@@ -121,15 +121,15 @@ const CashesPage: React.FC = () => {
     });
   };
 
-  const handleFormSubmit = (data: SharedCashSchemas.CashCreationRequest) => {
+  const handleFormSubmit = (data: SharedCashSchemas.CashCreationDTO) => {
     if (editingCash) {
-      handleUpdateCash({ ...data, id: editingCash.id });
+      handleUpdateCash({ ...data, id: editingCash?.id ?? 0 });
     } else {
       handleCreateCash(data);
     }
   };
 
-  const handleStartEdit = (cash: Cash) => {
+  const handleStartEdit = (cash: CashType) => {
     setEditingCash(cash);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -171,17 +171,17 @@ const CashesPage: React.FC = () => {
         {(createCashMutation.isPending ||
           updateCashMutation.isPending ||
           deleteCashMutation.isPending) && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Procesando cambios en Cajas...
-          </Alert>
-        )}
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Procesando cambios en Cajas...
+            </Alert>
+          )}
         {(createCashMutation.isError ||
           updateCashMutation.isError ||
           deleteCashMutation.isError) && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            Error en Cajas: Operación fallida
-          </Alert>
-        )}
+            <Alert severity="error" sx={{ mb: 2 }}>
+              Error en Cajas: Operación fallida
+            </Alert>
+          )}
 
         <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 4 }, borderRadius: 2 }}>
           <CashForm

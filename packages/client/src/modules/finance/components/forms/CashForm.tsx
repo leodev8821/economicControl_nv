@@ -13,12 +13,9 @@ import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import * as SharedCashSchemas from "@economic-control/shared";
 
-/**Types */
-import type { Cash } from "@modules/finance/types/cash.type";
-
 interface CashFormProps {
-  initialValues?: Cash | null;
-  onSubmit: (data: SharedCashSchemas.CashCreationRequest) => void;
+  initialValues?: SharedCashSchemas.CashType | null;
+  onSubmit: (data: SharedCashSchemas.CashCreationDTO) => void;
   onCancel?: () => void;
   isLoading?: boolean;
   isUpdateMode?: boolean;
@@ -41,9 +38,9 @@ export default function CashForm({
     shouldRevalidate: "onInput",
     defaultValue: initialValues
       ? ({
-          ...initialValues,
-          actual_amount: initialValues.actual_amount.toString(),
-        } as any)
+        ...initialValues,
+        actual_amount: initialValues.actual_amount.toString(),
+      } as any)
       : undefined,
   });
 

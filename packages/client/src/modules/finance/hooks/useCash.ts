@@ -8,7 +8,7 @@ import {
   type CashUpdateData,
 } from "@modules/finance/api/cashApi";
 import type { Cash } from "@modules/finance/types/cash.type";
-import type { CashCreationRequest } from "@economic-control/shared";
+import type { CashCreationDTO } from "@economic-control/shared";
 
 // Clave única para esta consulta.
 const CASH_QUERY_KEY = "cashes";
@@ -25,11 +25,11 @@ export const useCashes = (): UseQueryResult<Cash[], Error> => {
 export const useCreateCash = (): UseMutationResult<
   Cash,
   Error,
-  CashCreationRequest
+  CashCreationDTO
 > => {
   const queryClient = useQueryClient();
 
-  return useMutation<Cash, Error, CashCreationRequest>({
+  return useMutation<Cash, Error, CashCreationDTO>({
     mutationFn: createCash,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CASH_QUERY_KEY] });

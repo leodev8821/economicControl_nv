@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
-import { IncomeActions } from "../../models/finance-app/income.model.js";
-import { OutcomeActions } from "../../models/finance-app/outcome.model.js";
-import { CashActions } from "../../models/finance-app/cash.model.js";
-import { DashboardFilter } from "../../shared/dashboard.types.js";
+import ControllerErrorHandler from "@utils/ControllerErrorHandler.js";
+import { IncomeActions } from "@models/finance-app/income.model.js";
+import { OutcomeActions } from "@models/finance-app/outcome.model.js";
+import { cashService } from "@services/finance-app/cash.service.js";
+import { DashboardFilter } from "@shared/dashboard.types.js";
 
 export const dashboardController = {
   getBalance: async (req: Request, res: Response) => {
@@ -19,7 +19,7 @@ export const dashboardController = {
 
       // 1. Obtener cajas
       const [cashes, incomeSummaries, outcomeSummaries] = await Promise.all([
-        CashActions.getAll(),
+        cashService.getAll(),
         IncomeActions.getSummaryByCash(filters), // Usando el método optimizado con SUM/GROUP BY
         OutcomeActions.getSummaryByCash(filters), // Usando el método optimizado con SUM/GROUP BY
       ]);

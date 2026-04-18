@@ -1,5 +1,5 @@
 import { DataTypes, Model, type Optional } from "sequelize";
-import { getSequelizeConfig } from "../../config/sequelize.config.js";
+import { getSequelizeConfig } from "@config/sequelize.config.js";
 
 const connection = getSequelizeConfig();
 
@@ -22,13 +22,12 @@ export type CashDenominationSearchData = {
 export interface CashDenominationCreationAttributes extends Optional<
   CashDenominationAttributes,
   "id"
-> {}
+> { }
 
 // Definición del modelo con tipado
 export class CashDenominationModel
   extends Model<CashDenominationAttributes, CashDenominationCreationAttributes>
-  implements CashDenominationAttributes
-{
+  implements CashDenominationAttributes {
   declare id: number;
   declare cash_id: number;
   declare denomination_value: number;
