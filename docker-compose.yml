@@ -43,11 +43,8 @@ services:
       POSTGRES_USER: leodev
       POSTGRES_PASSWORD: leodev-root
       POSTGRES_DB: developmentDB_postgres
-    #PARA LOCAL DEV
-    ports:
-      - "5432:5432"
     volumes:
-      - mi_postgres_data:/var/lib/postgresql/data
+      - /mnt/ssd-docker/postgres/data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U leodev -d developmentDB_postgres"]
       interval: 5s
@@ -61,6 +58,3 @@ networks:
     external: true
   backend_internal:
     driver: bridge
-#PARA LOCAL DEV
-volumes:
-  mi_postgres_data:
