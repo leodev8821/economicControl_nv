@@ -17,7 +17,7 @@ import type { Person } from "@modules/finance/types/person.type";
 
 interface PersonFormProps {
   initialValues?: Person | null;
-  onSubmit: (data: SharedPersonSchemas.PersonCreationRequest) => void;
+  onSubmit: (data: SharedPersonSchemas.PersonCreationDTO) => void;
   onCancel?: () => void;
   isLoading?: boolean;
   isUpdateMode?: boolean;
@@ -36,8 +36,8 @@ export default function PersonForm({
         schema: SharedPersonSchemas.PersonCreationSchema,
       });
     },
-    shouldValidate: "onBlur",
-    shouldRevalidate: "onInput",
+    shouldValidate: "onSubmit",
+    shouldRevalidate: "onSubmit",
     defaultValue: initialValues
       ? ({
           ...initialValues,
@@ -47,10 +47,9 @@ export default function PersonForm({
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    event.stopPropagation(); // Evita que el evento burbujee
 
-    const formEl = event.currentTarget;
-    const formData = new FormData(formEl);
-
+    const formData = new FormData(event.currentTarget);
     const submission = parseWithZod(formData, {
       schema: SharedPersonSchemas.PersonCreationSchema,
     });
@@ -61,17 +60,26 @@ export default function PersonForm({
 
     onSubmit(submission.value);
 
+    // Añadimos esto para asegurarnos de que solo el botón de submit dispare la lógica
+    const submitter = (event.nativeEvent as any).submitter;
+    
+    // Si no hay un submitter, es probable que haya sido un evento nativo no deseado
+    if (!submitter) {
+      return;
+    }
+    
+    // Solo reseteamos si no estamos en modo edición
     if (!isUpdateMode) {
-      formEl.reset();
+      event.currentTarget.reset();
     }
   };
 
   return (
     <form
-      method="post"
       id={form.id}
       onSubmit={handleSubmit}
       className="person-form"
+      noValidate // Muy importante: evita la validación nativa del navegador
     >
       <Typography
         variant="h5"

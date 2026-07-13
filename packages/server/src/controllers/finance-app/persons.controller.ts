@@ -1,43 +1,40 @@
 import { Request, Response } from "express";
-import ControllerErrorHandler from "../../utils/ControllerErrorHandler.js";
-import type { PersonSearchData } from "../../models/finance-app/person.model.js";
+import ControllerErrorHandler from "@utils/ControllerErrorHandler.js";
+import type { PersonSearchData, PersonAttributes } from "@models/finance-app/person.model.js";
 import {
-  PersonActions,
-  PersonCreationAttributes,
-  PersonAttributes,
-} from "../../models/finance-app/person.model.js";
-import {
-  PersonCreationSchema,
-  PersonCreationRequest,
-  PersonUpdateSchema,
-  PersonUpdateRequest,
+  PersonCreationDTO,
+  PersonUpdateDTO,
 } from "@economic-control/shared";
+import { personService } from "@services/finance-app/person.service.js";
 import { UniqueConstraintError } from "sequelize";
+
+// Asumo que estas importaciones existen en tu archivo original
+// import { PersonCreationSchema, PersonUpdateSchema } from "ruta-a-tus-schemas";
 
 export const personsController = {
   // Obtiene todas las personas
   allPersons: async (_req: Request, res: Response) => {
     try {
-      const persons: PersonAttributes[] = await PersonActions.getAll();
+      const persons: PersonAttributes[] = await personService.getAll();
 
       return res.status(200).json({
         ok: true,
         message:
-          persons.length === 0
-            ? "No hay personas registradas."
-            : "Personas obtenidas correctamente.",
+          persons.length > 0
+            ? "Personas obtenidas correctamente."
+            : "No hay personas registradas.",
         data: persons,
       });
     } catch (error) {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al obtener las personas.",
+        "Error al obtener las personas."
       );
     }
   },
 
-  // Obtiene una persona por ID o nombre
+  // Obtiene una persona por ID, nombre o DNI
   onePerson: async (req: Request, res: Response) => {
     try {
       const { id, first_name, last_name, dni } = req.params;
@@ -56,14 +53,9 @@ export const personsController = {
         searchCriteria.dni = dni as string;
       }
 
-      const person = await PersonActions.getOne(searchCriteria);
-
-      if (!person) {
-        return res.status(404).json({
-          message:
-            "No se encontró la persona con los parámetros proporcionados.",
-        });
-      }
+      // El servicio lanzará un error automáticamente si no lo encuentra, 
+      // por lo que el catch lo atrapará.
+      const person = await personService.getOne(searchCriteria);
 
       return res.status(200).json({
         ok: true,
@@ -78,31 +70,11 @@ export const personsController = {
   // Crea una nueva persona
   createPerson: async (req: Request, res: Response) => {
     try {
-      const validationResult = PersonCreationSchema.safeParse(req.body);
 
-      if (!validationResult.success) {
-        return res.status(400).json({
-          ok: false,
-          message: "Datos de nueva persona inválidos.",
-          errors: validationResult.error.issues,
-        });
-      }
+      const personData: PersonCreationDTO = req.body;
 
-      const personData: PersonCreationRequest = validationResult.data;
-
-      const existingPerson = await PersonActions.getOne({
-        dni: personData.dni,
-      });
-      if (existingPerson) {
-        return res.status(409).json({
-          ok: false,
-          message: "Ya existe una persona con el mismo DNI.",
-        });
-      }
-
-      const newPerson = await PersonActions.create(
-        personData as PersonCreationAttributes,
-      );
+      // Creamos directamente; si el DNI está duplicado, Sequelize lanzará un UniqueConstraintError
+      const newPerson = await personService.create(personData);
 
       return res.status(201).json({
         ok: true,
@@ -113,13 +85,14 @@ export const personsController = {
       if (error instanceof UniqueConstraintError) {
         return res.status(409).json({
           ok: false,
-          message: "El DNI ya está en la base de datos.",
+          message: "Ya existe una persona con el mismo DNI.",
         });
       }
       return ControllerErrorHandler(res, error, "Error al crear la persona.");
     }
   },
 
+  // Actualiza una persona existente
   updatePerson: async (req: Request, res: Response) => {
     try {
       const personId = parseInt((req.params.id as string) || "0", 10);
@@ -130,28 +103,7 @@ export const personsController = {
           .json({ ok: false, message: "ID de persona inválido" });
       }
 
-      const validationResult = PersonUpdateSchema.safeParse(req.body);
-
-      if (!validationResult.success) {
-        return res.status(400).json({
-          ok: false,
-          message: "Datos de actualización de persona inválidos.",
-          errors: validationResult.error.issues,
-        });
-      }
-
-      const updateData: PersonUpdateRequest = validationResult.data;
-
-      const existingPerson = await PersonActions.getOne({
-        dni: updateData.dni,
-      });
-
-      if (existingPerson) {
-        return res.status(409).json({
-          ok: false,
-          message: "Ya existe una persona con el mismo DNI.",
-        });
-      }
+      const updateData: PersonUpdateDTO = req.body;
 
       if (Object.keys(updateData).length === 0) {
         return res.status(400).json({
@@ -160,10 +112,8 @@ export const personsController = {
         });
       }
 
-      const updatedPerson = await PersonActions.update(
-        personId,
-        updateData as Partial<PersonCreationAttributes>,
-      );
+      // Actualizamos directamente. Igual que en create, los DNI duplicados caen en el catch.
+      const updatedPerson = await personService.update(personId, updateData);
 
       if (!updatedPerson) {
         return res.status(404).json({
@@ -187,11 +137,12 @@ export const personsController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al actualizar la persona.",
+        "Error al actualizar la persona."
       );
     }
   },
 
+  // Elimina una persona
   deletePerson: async (req: Request, res: Response) => {
     try {
       const personId = parseInt((req.params.id as string) || "0", 10);
@@ -202,7 +153,7 @@ export const personsController = {
           .json({ ok: false, message: "ID de persona inválido" });
       }
 
-      const deleted = await PersonActions.delete({ id: personId });
+      const deleted = await personService.remove(personId);
 
       if (!deleted) {
         return res.status(404).json({
@@ -219,7 +170,7 @@ export const personsController = {
       return ControllerErrorHandler(
         res,
         error,
-        "Error al eliminar la persona.",
+        "Error al eliminar la persona."
       );
     }
   },

@@ -30,8 +30,8 @@ export const PersonUpdateSchema = BasePersonSchema.partial();
 // ----------------------------------------------------------------------
 // 4. EXPORTACIÓN DE TIPOS E INTERFACES
 // ----------------------------------------------------------------------
-export type PersonCreationRequest = z.infer<typeof PersonCreationSchema>;
-export type PersonUpdateRequest = z.infer<typeof PersonUpdateSchema>;
+export type PersonCreationDTO = z.infer<typeof PersonCreationSchema>;
+export type PersonUpdateDTO = z.infer<typeof PersonUpdateSchema>;
 
 // Para UI
 export type PersonType = z.infer<typeof BasePersonSchema>;

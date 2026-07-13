@@ -10,7 +10,7 @@ import type {
   Person,
   PersonAttributes,
 } from "@modules/finance/types/person.type";
-import type { PersonCreationRequest } from "@economic-control/shared";
+import type { PersonCreationDTO } from "@economic-control/shared";
 
 // Clave única para esta consulta.
 const PERSONS_QUERY_KEY = "persons";
@@ -28,11 +28,11 @@ export const usePersons = (): UseQueryResult<Person[], Error> => {
 export const useCreatePerson = (): UseMutationResult<
   Person,
   Error,
-  PersonCreationRequest
+  PersonCreationDTO
 > => {
   const queryClient = useQueryClient();
 
-  return useMutation<Person, Error, PersonCreationRequest>({
+  return useMutation<Person, Error, PersonCreationDTO>({
     mutationFn: createPerson,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PERSONS_QUERY_KEY] });
@@ -57,10 +57,10 @@ export const useUpdatePerson = (): UseMutationResult<
 };
 
 // Hook para eliminar una persona.
-export const useDeletePerson = (): UseMutationResult<Person, Error, number> => {
+export const useDeletePerson = (): UseMutationResult<boolean, Error, number> => {
   const queryClient = useQueryClient();
 
-  return useMutation<Person, Error, number>({
+  return useMutation<boolean, Error, number>({
     mutationFn: deletePerson,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PERSONS_QUERY_KEY] });

@@ -4,6 +4,8 @@ import {
   CashUpdateSchema,
   CashDenominationBodySchema,
   CashDenominationUpdateSchema,
+  PersonCreationSchema,
+  PersonUpdateSchema
 } from "@economic-control/shared";
 import { validate } from "@middlewares/validate.middleware.js";
 
@@ -71,14 +73,20 @@ router.get("/outcomes/cash/:cash_id", outcomesController.outcomesByCash);
 // =================================================================
 // 🧑 PERSONAS (PERSONS)
 // =================================================================
-router.get("/persons", personsController.allPersons);
+/* router.get("/persons", personsController.allPersons);
 router.get("/persons/:id", personsController.onePerson);
 router.get("/persons/dni/:dni", personsController.onePerson);
 router.post("/persons/new-person", personsController.createPerson);
 router.put("/persons/:id", personsController.updatePerson);
 router.put("/persons/dni/:dni", personsController.updatePerson);
 router.delete("/persons/:id", personsController.deletePerson);
-router.delete("/persons/dni/:dni", personsController.deletePerson);
+router.delete("/persons/dni/:dni", personsController.deletePerson); */
+
+router.get("/persons", personsController.allPersons);
+router.get("/persons/:term", personsController.onePerson);
+router.post("/persons", validate(PersonCreationSchema), personsController.createPerson);
+router.put("/persons/:id", validate(PersonUpdateSchema), personsController.updatePerson);
+router.delete("/persons/:id", personsController.deletePerson);
 
 // =================================================================
 // 📄 REPORTES (REPORTS)

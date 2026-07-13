@@ -1,108 +1,44 @@
-import React, { useState } from "react";
-import type { GridRowId } from "@mui/x-data-grid";
+import React from "react";
 import { Box, Typography, CircularProgress, Paper } from "@mui/material";
-import {
-  usePersons,
-  useCreatePerson,
-  useUpdatePerson,
-  useDeletePerson,
-} from "@modules/finance/hooks/usePerson";
 import PersonTable from "@modules/finance/components/tables/PersonTable";
 import PersonForm from "@modules/finance/components/forms/PersonForm";
-import type { Person } from "@modules/finance/types/person.type";
-import type { PersonAttributes } from "@modules/finance/types/person.type";
-import * as SharedPersonSchemas from "@economic-control/shared";
+import usePersonController from "../hooks/usePersonController"; // Ajusta la ruta según tu proyecto
 
 const PersonsPage: React.FC = () => {
-  const { data: persons = [], isLoading, isError, error } = usePersons();
-  const createMutation = useCreatePerson();
-  const updateMutation = useUpdatePerson();
-  const deleteMutation = useDeletePerson();
-
-  const [editingPerson, setEditingPerson] = useState<Person | null>(null);
-
-  const handleCreatePerson = (
-    person: SharedPersonSchemas.PersonCreationRequest,
-  ) => {
-    createMutation.mutate(person, {
-      onSuccess: () => {
-        // Form reset handled in form component or we can add extra logic here
-      },
-    });
-  };
-
-  const handleUpdatePerson = (person: PersonAttributes) => {
-    updateMutation.mutate(person, {
-      onSuccess: () => {
-        setEditingPerson(null);
-      },
-    });
-  };
-
-  const handleFormSubmit = (
-    data: SharedPersonSchemas.PersonCreationRequest,
-  ) => {
-    if (editingPerson) {
-      handleUpdatePerson({ ...data, id: editingPerson.id } as PersonAttributes);
-    } else {
-      handleCreatePerson(data);
-    }
-  };
-
-  const handleStartEdit = (person: Person) => {
-    setEditingPerson(person);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingPerson(null);
-  };
-
-  const handleDeletePerson = (id: GridRowId) => {
-    const personId = parseInt(id.toString());
-
-    if (
-      window.confirm(
-        `¿Está seguro de eliminar la Persona con ID ${personId}? Esta acción es irreversible.`,
-      )
-    ) {
-      deleteMutation.mutate(personId);
-    }
-  };
+  const controller = usePersonController();
 
   return (
     <Box p={{ xs: 1, sm: 2, md: 3 }}>
-      {(deleteMutation.isPending ||
-        updateMutation.isPending ||
-        createMutation.isPending) && (
-        <Typography color="primary">
+      {/* Estado de Mutaciones pendientes en servidor */}
+      {controller.isActionPending && (
+        <Typography color="primary" sx={{ mb: 2 }}>
           Realizando acción en el servidor...
         </Typography>
       )}
 
-      {(deleteMutation.isError ||
-        updateMutation.isError ||
-        createMutation.isError) && (
-        <Typography color="error.main">
-          Error:{" "}
-          {deleteMutation.error?.message ||
-            updateMutation.error?.message ||
-            createMutation.error?.message}
+      {/* Mensajes de error de operaciones */}
+      {controller.actionError && (
+        <Typography color="error.main" sx={{ mb: 2 }}>
+          Error: {controller.actionError}
         </Typography>
       )}
 
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 4 }, bgcolor: "background.paper" }}>
+      {/* Formulario de creación/edición */}
+      <Paper 
+        elevation={3} 
+        sx={{ p: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 4 }, bgcolor: "background.paper" }}
+      >
         <PersonForm
-          initialValues={editingPerson}
-          onSubmit={handleFormSubmit}
-          isLoading={createMutation.isPending || updateMutation.isPending}
-          isUpdateMode={!!editingPerson}
-          onCancel={handleCancelEdit}
+          initialValues={controller.editingPerson}
+          onSubmit={controller.handleFormSubmit}
+          isLoading={controller.isActionPending}
+          isUpdateMode={!!controller.editingPerson}
+          onCancel={controller.cancelEdit}
         />
       </Paper>
 
-      {/* Loading State */}
-      {isLoading && (
+      {/* Loading de la query principal */}
+      {controller.isLoading && (
         <Box display="flex" justifyContent="center" alignItems="center" py={5}>
           <CircularProgress />
           <Typography variant="h6" ml={2}>
@@ -111,24 +47,18 @@ const PersonsPage: React.FC = () => {
         </Box>
       )}
 
-      {/* Error State */}
-      {isError && !isLoading && (
+      {/* Error de la query principal */}
+      {controller.isError && !controller.isLoading && (
         <Box p={3} color="error.main">
           <Typography variant="h6" gutterBottom>
             Error al cargar personas
           </Typography>
-          <Typography variant="body2">Mensaje: {error?.message}</Typography>
+          <Typography variant="body2">Mensaje: {controller.error?.message}</Typography>
         </Box>
       )}
 
-      {/* Empty State */}
-      {!isLoading && !isError && persons.length === 0 && (
-        <Typography variant="body1">
-          No hay personas creadas en este momento.
-        </Typography>
-      )}
-
-      {!isLoading && !isError && persons.length > 0 && (
+      {/* Listado principal (Data y Empty State autogestionado por PersonTable) */}
+      {!controller.isLoading && !controller.isError && (
         <Paper
           elevation={3}
           sx={{
@@ -148,13 +78,14 @@ const PersonsPage: React.FC = () => {
             gap={1}
           >
             <Typography variant="h4" sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}>
-              Listado de Personas ({persons.length})
+              Listado de Personas ({controller.persons.length})
             </Typography>
           </Box>
+          
           <PersonTable
-            persons={persons}
-            onEdit={handleStartEdit}
-            onDelete={handleDeletePerson}
+            persons={controller.persons}
+            onEdit={controller.startEdit}
+            onDelete={controller.deletePerson}
           />
         </Paper>
       )}
