@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useForm, getFormProps } from "@conform-to/react";
+import { useForm } from "@conform-to/react";
 import Grid from "@mui/material/Grid";
 import {
   FormControl,
@@ -37,7 +37,8 @@ import { useWeeks } from "@modules/finance/hooks/useWeek";
 import { useCashes } from "@modules/finance/hooks/useCash";
 
 interface BulkIncomeFormProps {
-  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  // Cambiamos la firma para devolver los datos ya validados y tipados
+  onSubmit: (data: SharedIncomeSchemas.BulkIncomeDTO) => void;
   onCancel?: () => void;
   isLoading: boolean;
   initialValues?: {
@@ -66,7 +67,6 @@ export default function BulkIncomeForm({
   );
   const LOCAL_STORAGE_KEY = "bulk_income_draft";
 
-  // Helper para guardar
   const saveToLocalStorage = (data: any) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
   };
@@ -79,16 +79,21 @@ export default function BulkIncomeForm({
         schema: SharedIncomeSchemas.BulkIncomeSchema,
       });
     },
-    onSubmit(event) {
-      onSubmit(event);
-      if (!form.valid) return;
+    onSubmit(event, { submission }) {
+      event.preventDefault();
+      
+      if (submission?.status !== "success") return;
+
+      // Pasamos los datos limpios al padre
+      onSubmit(submission.value);
 
       if (!isEditMode) {
         resetForm();
       }
     },
-    shouldValidate: "onBlur",
-    shouldRevalidate: "onBlur",
+    // Cambiamos onBlur por onSubmit para evitar validaciones/envíos agresivos
+    shouldValidate: "onSubmit",
+    shouldRevalidate: "onInput",
     defaultValue: initialValues ?? {
       incomes: [
         {
@@ -105,47 +110,26 @@ export default function BulkIncomeForm({
   const incomeList = fields.incomes.getFieldList();
 
   const handleSaveDraft = () => {
-    // Para obtener los valores actuales sin que falle el tipo:
     const draftData = {
       common_week_id: globalWeekId,
       incomes: incomeList.map((income) => {
-        // Accedemos al valor actual de cada campo dentro del objeto del array
         const nestedFields = (income as any).getFieldset();
         return {
-          // Usamos value (lo que escribió el usuario) o initialValue (lo que venía de props)
-          date:
-            nestedFields.date.value ??
-            nestedFields.date.initialValue ??
-            dayjs().format("YYYY-MM-DD"),
-          amount:
-            nestedFields.amount.value ??
-            nestedFields.amount.initialValue ??
-            "0",
-          source:
-            nestedFields.source.value ??
-            nestedFields.source.initialValue ??
-            "Ofrenda",
-          cash_id:
-            nestedFields.cash_id.value ??
-            nestedFields.cash_id.initialValue ??
-            "",
-          person_id:
-            nestedFields.person_id.value ??
-            nestedFields.person_id.initialValue ??
-            "",
+          date: nestedFields.date.value ?? nestedFields.date.initialValue ?? dayjs().format("YYYY-MM-DD"),
+          amount: nestedFields.amount.value ?? nestedFields.amount.initialValue ?? "0",
+          source: nestedFields.source.value ?? nestedFields.source.initialValue ?? "Ofrenda",
+          cash_id: nestedFields.cash_id.value ?? nestedFields.cash_id.initialValue ?? "",
+          person_id: nestedFields.person_id.value ?? nestedFields.person_id.initialValue ?? "",
         };
       }),
     };
-
     saveToLocalStorage(draftData);
     alert("Borrador guardado localmente");
   };
 
   const resetForm = React.useCallback(() => {
     form.reset();
-
     setGlobalWeekId("");
-
     form.update({
       name: fields.incomes.name,
       value: [
@@ -166,9 +150,26 @@ export default function BulkIncomeForm({
     }
   }, [initialValues]);
 
+  // Manejador estricto para prevenir envíos por eventos nativos del DOM
+  const handleStrictSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Validamos que el envío venga realmente de un botón submit
+    const submitter = (e.nativeEvent as SubmitEvent).submitter;
+    if (!submitter) return;
+
+    // Cedemos el control a Conform
+    form.onSubmit(e);
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <form {...getFormProps(form)}>
+      <form 
+        id={form.id} 
+        onSubmit={handleStrictSubmit} 
+        noValidate // Desactiva validación nativa del navegador
+      >
         <Box
           sx={{
             mb: 3,
@@ -343,7 +344,15 @@ function IncomeRow({
     rowFields.source.value,
   );
   const { data: availableCashes = [] } = useCashes();
-  const { data: availablePersons = [] } = usePersons();
+  const { data: rawPersons = [] } = usePersons();
+
+  // Ordenar personas alfabéticamente por first_name (y luego last_name)
+  const availablePersons = React.useMemo(() => {
+    return [...rawPersons].sort((a, b) =>
+      a.first_name.localeCompare(b.first_name) || 
+      a.last_name.localeCompare(b.last_name)
+    );
+  }, [rawPersons]);
 
   const [selectedDate, setSelectedDate] = React.useState<Dayjs | null>(
     rowFields.date.initialValue ? dayjs(rowFields.date.initialValue) : dayjs(),
@@ -367,7 +376,6 @@ function IncomeRow({
         boxShadow: { xs: 1, sm: 0 },
       }}
     >
-      {/* Etiqueta visible solo en móviles para identificar la fila */}
       <Typography
         variant="subtitle2"
         color="primary"
@@ -425,11 +433,7 @@ function IncomeRow({
         </Grid>
 
         <Grid size={{ xs: 12, sm: 2.5 }}>
-          <FormControl
-            fullWidth
-            size="small"
-            error={!!rowFields.cash_id.errors}
-          >
+          <FormControl fullWidth size="small" error={!!rowFields.cash_id.errors}>
             <InputLabel>Caja</InputLabel>
             <Select
               key={rowFields.cash_id.key}
@@ -470,11 +474,7 @@ function IncomeRow({
         </Grid>
 
         <Grid size={{ xs: 4, sm: 2.2 }}>
-          <FormControl
-            fullWidth
-            size="small"
-            error={!!rowFields.person_id.errors}
-          >
+          <FormControl fullWidth size="small" error={!!rowFields.person_id.errors}>
             <InputLabel>Persona {isPersonRequired ? "*" : ""}</InputLabel>
             <Select
               key={rowFields.person_id.key}
@@ -498,10 +498,7 @@ function IncomeRow({
           </FormControl>
         </Grid>
 
-        <Grid
-          size={{ xs: 2, sm: 0.8 }}
-          sx={{ textAlign: "center", mt: { xs: 0.5, sm: 0.5 } }}
-        >
+        <Grid size={{ xs: 2, sm: 0.8 }} sx={{ textAlign: "center", mt: { xs: 0.5, sm: 0.5 } }}>
           <IconButton
             {...removeProps}
             type="button"

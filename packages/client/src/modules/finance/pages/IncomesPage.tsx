@@ -9,9 +9,8 @@ import {
   Snackbar,
   Alert as MuiAlert,
 } from "@mui/material";
-import { parseWithZod } from "@conform-to/zod/v4";
 import {
-  useReadIncomes,
+  useIncomes,
   useUpdateIncome,
   useDeleteIncome,
   useCreateBulkIncome,
@@ -26,7 +25,7 @@ const IncomesPage: React.FC = () => {
   const [draft, setDraft] = useState<any>(null);
   const [editingIncome, setEditingIncome] = useState<Income | null>(null);
 
-  const { data: incomes = [], isLoading, isError, error } = useReadIncomes();
+  const { data: incomes = [], isLoading, isError, error } = useIncomes();
   const deleteMutation = useDeleteIncome();
   const updateMutation = useUpdateIncome();
   const createBulkMutation = useCreateBulkIncome();
@@ -61,53 +60,48 @@ const IncomesPage: React.FC = () => {
     setSnackbar({ open: true, message, severity });
   };
 
-  // --- Lógica de Bulk ---
-  const handleBulkSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-
-    const submission = parseWithZod(formData, {
-      schema: SharedIncomeSchemas.BulkIncomeSchema,
-    });
-
-    if (submission.status !== "success") {
-      console.log("Errores de validación:", submission.reply());
-      return;
-    }
-
-    const payload = submission.value.incomes.map((item) => ({
+  const handleBulkSubmit = (data: SharedIncomeSchemas.BulkIncomeDTO) => {
+  
+  // 1. Preparación del payload (inyectando el ID global de la semana)
+  const payload: SharedIncomeSchemas.BulkIncomeDTO = {
+    common_week_id: data.common_week_id,
+    incomes: data.incomes.map((item) => ({
       ...item,
-      week_id: submission.value.common_week_id,
-      person_id: item.person_id || null,
-    }));
-
-    // modo edición → update
-    if (editingIncome) {
-      updateMutation.mutate(
-        { ...payload[0], id: editingIncome.id },
-        {
-          onSuccess: () => {
-            setEditingIncome(null);
-            setFormKey((prev) => prev + 1);
-            showSnackbar("Ingreso actualizado correctamente");
-          },
-          onError: () => showSnackbar("Error al actualizar", "error"),
-        },
-      );
-      return;
-    }
-
-    createBulkMutation.mutate(payload, {
-      onSuccess: () => {
-        localStorage.removeItem("bulk_income_draft");
-        setDraft(null);
-        setEditingIncome(null);
-        setFormKey((prev) => prev + 1);
-        showSnackbar("Ingresos creados correctamente");
-      },
-      onError: () => showSnackbar("Error al guardar", "error"),
-    });
+      // Nota: Si tu backend necesita que los objetos dentro de 'incomes' 
+      // no tengan week_id (porque lo inyectas en el controlador), 
+      // puedes omitirlo aquí, pero si el tipo lo pide, mantenlo.
+      person_id: item.person_id ?? null,
+    })),
   };
+
+  // 2. Modo Edición
+  if (editingIncome) {
+    updateMutation.mutate(
+      { ...payload.incomes[0], id: editingIncome.id },
+      {
+        onSuccess: () => {
+          setEditingIncome(null);
+          setFormKey((prev) => prev + 1);
+          showSnackbar("Ingreso actualizado correctamente");
+        },
+        onError: () => showSnackbar("Error al actualizar", "error"),
+      },
+    );
+    return;
+  }
+
+  // 3. Creación Masiva
+  createBulkMutation.mutate(payload, {
+    onSuccess: () => {
+      localStorage.removeItem("bulk_income_draft");
+      setDraft(null);
+      setEditingIncome(null);
+      setFormKey((prev) => prev + 1);
+      showSnackbar("Ingresos creados correctamente");
+    },
+    onError: () => showSnackbar("Error al guardar", "error"),
+  });
+};
 
   const handleStartEdit = (income: Income) => {
     setEditingIncome(income);

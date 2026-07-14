@@ -1,6 +1,6 @@
-import type { WeekCreationRequest } from "@economic-control/shared";
+import type { WeekCreationDTO } from "@economic-control/shared";
 
-export interface Week extends WeekCreationRequest {
+export interface Week extends WeekCreationDTO {
   id: number;
 }
 

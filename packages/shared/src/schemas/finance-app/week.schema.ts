@@ -28,8 +28,8 @@ export const WeekUpdateSchema = BaseWeekSchema.partial();
 // ----------------------------------------------------------------------
 // 5. EXPORTACIÓN DE TIPOS E INTERFACES
 // ----------------------------------------------------------------------
-export type WeekCreationRequest = z.infer<typeof WeekCreationSchema>;
-export type WeekUpdateRequest = z.infer<typeof WeekUpdateSchema>;
+export type WeekCreationDTO = z.infer<typeof WeekCreationSchema>;
+export type WeekUpdateDTO = z.infer<typeof WeekUpdateSchema>;
 
 // Para UI
 export type WeekType = z.infer<typeof BaseWeekSchema>;

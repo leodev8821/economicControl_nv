@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import ControllerErrorHandler from "@utils/ControllerErrorHandler.js";
-import { IncomeActions } from "@models/finance-app/income.model.js";
+import { incomeService } from "@services/finance-app/income.service.js";
 import { OutcomeActions } from "@models/finance-app/outcome.model.js";
 import { cashService } from "@services/finance-app/cash.service.js";
 import { DashboardFilter } from "@shared/dashboard.types.js";
@@ -20,7 +20,7 @@ export const dashboardController = {
       // 1. Obtener cajas
       const [cashes, incomeSummaries, outcomeSummaries] = await Promise.all([
         cashService.getAll(),
-        IncomeActions.getSummaryByCash(filters), // Usando el método optimizado con SUM/GROUP BY
+        incomeService.getSummaryByCash(filters), // Usando el método optimizado con SUM/GROUP BY
         OutcomeActions.getSummaryByCash(filters), // Usando el método optimizado con SUM/GROUP BY
       ]);
 

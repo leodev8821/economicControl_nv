@@ -93,8 +93,8 @@ export const IncomeUpdateSchema = BaseIncomeSchema.partial();
 // ----------------------------------------------------------------------
 // 5. EXPORTACIÓN DE TIPOS E INTERFACES
 // ----------------------------------------------------------------------
-export type IncomeCreationRequest = z.infer<typeof IncomeCreationSchema>;
-export type IncomeUpdateRequest = z.infer<typeof IncomeUpdateSchema>;
+export type IncomeCreationDTO = z.infer<typeof IncomeCreationSchema>;
+export type IncomeUpdateDTO = z.infer<typeof IncomeUpdateSchema>;
 
 // ----------------------------------------------------------------------
 // 6. ESQUEMA para Carga Masiva (Formulario)
@@ -130,8 +130,8 @@ export const BulkIncomeSchema = z.object({
     .min(1, "Debe agregar al menos un ingreso"),
 });
 
-export type BulkIncomeItemRequest = z.infer<typeof BulkIncomeItemSchema>;
-export type BulkIncomeRequest = z.infer<typeof BulkIncomeSchema>;
+export type BulkIncomeItemDTO = z.infer<typeof BulkIncomeItemSchema>;
+export type BulkIncomeDTO = z.infer<typeof BulkIncomeSchema>;
 
 // Para la UI
 export type IncomeType = z.infer<typeof BaseIncomeSchema>;

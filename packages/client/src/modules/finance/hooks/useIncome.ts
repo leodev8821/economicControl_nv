@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 import {
   getAllIncomes,
+  getOneIncome,
   createIncome,
   createBulkIncome,
   updateIncome,
@@ -12,13 +13,11 @@ import type {
   BulkIncomeCreatePayload,
   Income,
 } from "@modules/finance/types/income.type";
-import type { IncomeCreationRequest } from "@economic-control/shared";
+import type { IncomeCreationDTO } from "@economic-control/shared";
 
-// Clave única para esta consulta.
 const INCOMES_QUERY_KEY = "incomes";
 
-// Hook para obtener la lista de ingresos.
-export const useReadIncomes = (): UseQueryResult<Income[], Error> => {
+export const useIncomes = (): UseQueryResult<Income[], Error> => {
   return useQuery<Income[], Error>({
     queryKey: [INCOMES_QUERY_KEY],
     queryFn: getAllIncomes,
@@ -26,18 +25,27 @@ export const useReadIncomes = (): UseQueryResult<Income[], Error> => {
   });
 };
 
-// Hook personalizado para crear un nuevo ingreso.
+export const useOneIncome = (term: string | number): UseQueryResult<Income, Error> => {
+  return useQuery<Income, Error>({
+    queryKey: [INCOMES_QUERY_KEY, term],
+    queryFn: () => getOneIncome(term),
+    enabled: !!term,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
 export const useCreateIncome = (): UseMutationResult<
   Income,
   Error,
-  IncomeCreationRequest
+  IncomeCreationDTO
 > => {
   const queryClient = useQueryClient();
 
-  return useMutation<Income, Error, IncomeCreationRequest>({
+  return useMutation<Income, Error, IncomeCreationDTO>({
     mutationFn: createIncome,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [INCOMES_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: ["cashes"] }); // Refresca las cajas
     },
     onError: (error: Error) => {
       console.error("Fallo la creación del ingreso:", error);
@@ -45,7 +53,6 @@ export const useCreateIncome = (): UseMutationResult<
   });
 };
 
-// Hook personalizado para crear varios ingresos a la vez.
 export const useCreateBulkIncome = (): UseMutationResult<
   Income[],
   Error,
@@ -57,7 +64,7 @@ export const useCreateBulkIncome = (): UseMutationResult<
     mutationFn: createBulkIncome,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [INCOMES_QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: ["cashes"] });
+      queryClient.invalidateQueries({ queryKey: ["cashes"] }); // Refresca las cajas
     },
     onError: (error: Error) => {
       console.error("Fallo la creación masiva de ingresos:", error);
@@ -65,7 +72,6 @@ export const useCreateBulkIncome = (): UseMutationResult<
   });
 };
 
-// Hook personalizado para actualizar un ingreso existente.
 export const useUpdateIncome = (): UseMutationResult<
   Income,
   Error,
@@ -77,6 +83,7 @@ export const useUpdateIncome = (): UseMutationResult<
     mutationFn: updateIncome,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [INCOMES_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: ["cashes"] }); // Refresca las cajas
     },
     onError: (error: Error) => {
       console.error("Fallo la actualización del ingreso:", error);
@@ -84,14 +91,14 @@ export const useUpdateIncome = (): UseMutationResult<
   });
 };
 
-// Hook personalizado para eliminar un ingreso existente.
-export const useDeleteIncome = (): UseMutationResult<Income, Error, number> => {
+export const useDeleteIncome = (): UseMutationResult<boolean, Error, number> => {
   const queryClient = useQueryClient();
 
-  return useMutation<Income, Error, number>({
+  return useMutation<boolean, Error, number>({
     mutationFn: deleteIncome,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [INCOMES_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: ["cashes"] }); // Refresca las cajas
     },
     onError: (error: Error) => {
       console.error("Fallo la eliminación del ingreso:", error);

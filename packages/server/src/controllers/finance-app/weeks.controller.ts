@@ -8,9 +8,9 @@ import {
 } from "../../models/finance-app/week.model.js";
 import {
   WeekCreationSchema,
-  WeekCreationRequest,
+  WeekCreationDTO,
   WeekUpdateSchema,
-  WeekUpdateRequest,
+  WeekUpdateDTO,
 } from "@economic-control/shared";
 
 export const weeksController = {
@@ -84,7 +84,7 @@ export const weeksController = {
         });
       }
 
-      const weekData: WeekCreationRequest = validationResult.data;
+      const weekData: WeekCreationDTO = validationResult.data;
 
       const newWeek = await WeekActions.create(
         weekData as WeekCreationAttributes,
@@ -170,7 +170,7 @@ export const weeksController = {
         });
       }
 
-      const updateData: WeekUpdateRequest = validationResult.data;
+      const updateData: WeekUpdateDTO = validationResult.data;
 
       if (Object.keys(updateData).length === 0) {
         return res.status(400).json({

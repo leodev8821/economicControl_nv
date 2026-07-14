@@ -5,7 +5,10 @@ import {
   CashDenominationBodySchema,
   CashDenominationUpdateSchema,
   PersonCreationSchema,
-  PersonUpdateSchema
+  PersonUpdateSchema,
+  IncomeCreationSchema,
+  IncomeUpdateSchema,
+  BulkIncomeSchema
 } from "@economic-control/shared";
 import { validate } from "@middlewares/validate.middleware.js";
 
@@ -34,13 +37,6 @@ router.get(
 // =================================================================
 // 💰 CAJAS (CASHES)
 // =================================================================
-/* router.get("/cashes", cashesController.allCashes);
-router.get("/cashes/:id", cashesController.oneCash);
-router.get("/cashes/name/:name", cashesController.oneCash);
-router.post("/cashes/new-cash", cashesController.createCash);
-router.put("/cashes/:id", cashesController.updateCash);
-router.delete("/cashes/:id", cashesController.deleteCash); */
-
 router.get("/cashes", cashesController.allCashes);
 router.get("/cashes/:term", cashesController.oneCash);
 router.post("/cashes", validate(CashCreationSchema), cashesController.createCash);
@@ -52,10 +48,31 @@ router.delete("/cashes/:id", cashesController.deleteCash);
 // =================================================================
 router.get("/incomes", incomesController.allIncomes);
 router.get("/incomes/:id", incomesController.oneIncome);
-router.post("/incomes/new-income", incomesController.createIncome);
-router.post("/incomes/bulk-incomes", incomesController.createBulkIncomes);
-router.put("/incomes/:id", incomesController.updateIncome);
+
+// POST /incomes
+router.post(
+  "/incomes", 
+  validate(IncomeCreationSchema), 
+  incomesController.createIncome
+);
+
+// POST /incomes/bulk
+router.post(
+  "/incomes/bulk", 
+  validate(BulkIncomeSchema),
+  incomesController.createBulkIncomes
+);
+
+// PUT /incomes/:id 
+router.put(
+  "/incomes/:id", 
+  validate(IncomeUpdateSchema), 
+  incomesController.updateIncome
+);
+
 router.delete("/incomes/:id", incomesController.deleteIncome);
+
+// Búsquedas específicas (se mantienen como sub-rutas o queries)
 router.get("/incomes/tithe/:dni", incomesController.titheByPerson);
 router.get("/incomes/date/:date", incomesController.getIncomesByDate);
 
@@ -73,15 +90,6 @@ router.get("/outcomes/cash/:cash_id", outcomesController.outcomesByCash);
 // =================================================================
 // 🧑 PERSONAS (PERSONS)
 // =================================================================
-/* router.get("/persons", personsController.allPersons);
-router.get("/persons/:id", personsController.onePerson);
-router.get("/persons/dni/:dni", personsController.onePerson);
-router.post("/persons/new-person", personsController.createPerson);
-router.put("/persons/:id", personsController.updatePerson);
-router.put("/persons/dni/:dni", personsController.updatePerson);
-router.delete("/persons/:id", personsController.deletePerson);
-router.delete("/persons/dni/:dni", personsController.deletePerson); */
-
 router.get("/persons", personsController.allPersons);
 router.get("/persons/:term", personsController.onePerson);
 router.post("/persons", validate(PersonCreationSchema), personsController.createPerson);

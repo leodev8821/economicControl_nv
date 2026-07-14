@@ -12,7 +12,7 @@ import {
   ReportUpdateSchema,
   ReportUpdateRequest,
 } from "@economic-control/shared";
-import { IncomeActions } from "../../models/finance-app/income.model.js";
+import { incomeService } from "@services/finance-app/income.service.js";
 import { OutcomeActions } from "../../models/finance-app/outcome.model.js";
 
 export const reportsController = {
@@ -84,7 +84,7 @@ export const reportsController = {
       const targetWeekId = parseInt(week_id, 10);
 
       const incomesResult = (
-        await IncomeActions.getIncomesByWeekId(targetWeekId)
+        await incomeService.getIncomesByWeekId(targetWeekId)
       ).map((i) => ({
         ...i,
         amount: parseFloat(String(i.amount)),

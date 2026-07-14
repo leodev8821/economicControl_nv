@@ -6,12 +6,12 @@ import type {
 } from "@modules/finance/types/income.type";
 import type { ApiResponse } from "@shared/types/apiResponse";
 import type {
-  IncomeCreationRequest,
-  IncomeUpdateRequest,
+  IncomeCreationDTO,
+  IncomeUpdateDTO,
 } from "@economic-control/shared";
 import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 
-export type IncomeUpdateData = IncomeUpdateRequest & { id: number };
+export type IncomeUpdateData = IncomeUpdateDTO & { id: number };
 
 /**
  * Helper interno para normalizar el monto de los ingresos.
@@ -27,14 +27,12 @@ const normalizeIncome = (income: any): Income => ({
 /**
  * Función que realiza la petición GET al backend para obtener todos los ingresos.
  * Ruta: GET /ec/api/v1/incomes
- * @returns Promesa que resuelve en un array de objetos Income.
  */
 export const getAllIncomes = async (): Promise<Income[]> => {
   try {
     const response = await apiClient.get<ApiResponse<Income[]>>(
       `${API_ROUTES_PATH.FINANCE}/incomes`,
     );
-
     return response.data.data.map(normalizeIncome);
   } catch (error) {
     throw error;
@@ -42,20 +40,32 @@ export const getAllIncomes = async (): Promise<Income[]> => {
 };
 
 /**
+ * Obtiene un ingreso por término (ID, persona, etc.).
+ * Ruta: GET /ec/api/v1/incomes/:term
+ */
+export const getOneIncome = async (term: string | number): Promise<Income> => {
+  try {
+    const response = await apiClient.get<ApiResponse<Income>>(
+      `${API_ROUTES_PATH.FINANCE}/incomes/${term}`,
+    );
+    return normalizeIncome(response.data.data);
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
  * Función que realiza la petición POST al backend para crear un nuevo ingreso.
- * Ruta: POST /ec/api/v1/incomes/new-income
- * @param data Los datos del ingreso validados por Zod.
- * @returns Promesa que resuelve en el objeto Income creado.
+ * Ruta: POST /ec/api/v1/incomes
  */
 export const createIncome = async (
-  data: IncomeCreationRequest,
+  data: IncomeCreationDTO,
 ): Promise<Income> => {
   try {
     const response = await apiClient.post<ApiResponse<Income>>(
-      `${API_ROUTES_PATH.FINANCE}/incomes/new-income`,
+      `${API_ROUTES_PATH.FINANCE}/incomes`,
       data,
     );
-
     return normalizeIncome(response.data.data);
   } catch (error) {
     throw error;
@@ -64,21 +74,18 @@ export const createIncome = async (
 
 /**
  * Función que realiza la petición POST al backend para crear varios ingresos.
- * Ruta: POST /ec/api/v1/incomes/bulk-incomes
- * @param data Los datos del ingreso validados por Zod.
- * @returns Promesa que resuelve en el objeto Income creado.
+ * Ruta: POST /ec/api/v1/incomes/bulk
  */
 export const createBulkIncome = async (
   data: BulkIncomeCreatePayload,
 ): Promise<Income[]> => {
   try {
+    // Asegúrate de que esta ruta coincida con tu router en Express
     const response = await apiClient.post<ApiResponse<Income[]>>(
-      `${API_ROUTES_PATH.FINANCE}/incomes/bulk-incomes`,
+      `${API_ROUTES_PATH.FINANCE}/incomes/bulk`,
       data,
     );
-
-    const incomes = response.data.data;
-    return incomes.map(normalizeIncome);
+    return response.data.data.map(normalizeIncome);
   } catch (error) {
     throw error;
   }
@@ -87,8 +94,6 @@ export const createBulkIncome = async (
 /**
  * Función que realiza la petición PUT al backend para actualizar un ingreso.
  * Ruta: PUT /ec/api/v1/incomes/:id
- * @param data El objeto con el ID y los datos del ingreso a actualizar.
- * @returns Promesa que resuelve en el objeto Income actualizado.
  */
 export const updateIncome = async (data: IncomeUpdateData): Promise<Income> => {
   try {
@@ -97,7 +102,6 @@ export const updateIncome = async (data: IncomeUpdateData): Promise<Income> => {
       `${API_ROUTES_PATH.FINANCE}/incomes/${id}`,
       updatePayload,
     );
-
     return normalizeIncome(response.data.data);
   } catch (error) {
     throw error;
@@ -107,12 +111,10 @@ export const updateIncome = async (data: IncomeUpdateData): Promise<Income> => {
 /**
  * Función que realiza la petición DELETE al backend para eliminar un ingreso.
  * Ruta: DELETE /ec/api/v1/incomes/:id
- * @param id El ID del ingreso a eliminar.
- * @returns Promesa que resuelve en el objeto Income eliminado (o un mensaje de éxito).
  */
-export const deleteIncome = async (id: number): Promise<Income> => {
+export const deleteIncome = async (id: number): Promise<boolean> => {
   try {
-    const response = await apiClient.delete<ApiResponse<Income>>(
+    const response = await apiClient.delete<ApiResponse<boolean>>(
       `${API_ROUTES_PATH.FINANCE}/incomes/${id}`,
     );
     return response.data.data;

@@ -1,0 +1,67 @@
+#Para Desarrollo local#
+services:
+  # --- SERVICIO 1: FRONTEND (WEB) ---
+  web-client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+      args:
+        - VITE_API_URL=https://leodev-services.ddns.net
+        - VITE_API_PREFIX=/ec/api/v1
+    container_name: economic-client
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      - web_network
+    depends_on:
+      - api
+
+  # --- SERVICIO 2: BACKEND (API) ---
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: economic-server
+    expose:
+      - "3000"
+    env_file:
+      - ./.env
+    restart: always
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+    networks:
+      - web_network
+      - backend_internal
+
+  # --- SERVICIO 3: BASE DE DATOS ---
+  postgres-dev:
+    image: postgres:16
+    container_name: postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: leodev
+      POSTGRES_PASSWORD: leodev-root
+      POSTGRES_DB: developmentDB_postgres
+    #PARA LOCAL DEV
+    ports:
+      - "5432:5432"
+    volumes:
+      - mi_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U leodev -d developmentDB_postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend_internal
+
+networks:
+  web_network:
+    external: true
+  backend_internal:
+    driver: bridge
+#PARA LOCAL DEV
+volumes:
+  mi_postgres_data:
