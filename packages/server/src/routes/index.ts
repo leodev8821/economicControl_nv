@@ -1,5 +1,6 @@
 import { Router } from "express";
 import authRouter from "./auth.routes.js";
+import cafeteriaRouter from "./cafeteria.routes.js"
 import financeRouter from "./finance.routes.js";
 import consolidationRouter from "./consolidation.routes.js";
 import {
@@ -20,6 +21,11 @@ const appRouters = [
     appId: APP_IDS.CONSOLIDATION,
     router: consolidationRouter,
   },
+  {
+    path: "/cafeteria",
+    appId: APP_IDS.CAFETERIA,
+    router: cafeteriaRouter
+  }
 ];
 
 appRouters.forEach(({ path, appId, router }) => {

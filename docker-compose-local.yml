@@ -6,25 +6,25 @@ services:
       context: .
       dockerfile: Dockerfile.client
       args:
-        - VITE_API_URL=https://leodev-services.ddns.net
+        - VITE_API_URL=http://localhost:3000
         - VITE_API_PREFIX=/ec/api/v1
-    container_name: economic-client
+    container_name: economic-client-dev
     restart: unless-stopped
-    expose:
-      - "80"
     networks:
-      - web_network
+      - app_local_net
     depends_on:
       - api
+    ports:
+      - target: 80
+        published: 5173
+        protocol: tcp
 
   # --- SERVICIO 2: BACKEND (API) ---
   api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: economic-server
-    expose:
-      - "3000"
+    container_name: economic-server-dev
     env_file:
       - ./.env
     restart: always
@@ -32,8 +32,11 @@ services:
       postgres-dev:
         condition: service_healthy
     networks:
-      - web_network
-      - backend_internal
+      - app_local_net
+    ports:
+      - target: 3000
+        published: 3000
+        protocol: tcp
 
   # --- SERVICIO 3: BASE DE DATOS ---
   postgres-dev:
@@ -46,7 +49,9 @@ services:
       POSTGRES_DB: developmentDB_postgres
     #PARA LOCAL DEV
     ports:
-      - "5432:5432"
+      - target: 5432
+        published: 5432
+        protocol: tcp
     volumes:
       - mi_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -55,12 +60,10 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - backend_internal
+      - app_local_net
 
 networks:
-  web_network:
-    external: true
-  backend_internal:
+  app_local_net:
     driver: bridge
 #PARA LOCAL DEV
 volumes:

@@ -13,6 +13,9 @@ import { PersonModel as Person } from "./finance-app/person.model.js";
 import { ReportModel as Report } from "./finance-app/report.model.js";
 import { WeekModel as Week } from "./finance-app/week.model.js";
 import { CashDenominationModel as CashDenomination } from "./finance-app/cash-denomination.model.js";
+import { BillDetailModel } from "./cafeteria/bill_details.model.js";
+import { BillModel } from "./cafeteria/bill.model.js";
+import { ProductModel } from "./cafeteria/product.model.js";
 
 // =================================================================
 // 🔗 DEFINICIÓN DE ASOCIACIONES
@@ -203,6 +206,38 @@ Week.hasOne(Report, {
   as: "Report",
 });
 
+// =================================================================
+// Cafeteria App
+// =================================================================
+
+// --- Bill <-> BillDetail ---
+BillModel.hasMany(BillDetailModel, {
+  foreignKey: { name: "bill_id", allowNull: false },
+  sourceKey: "id",
+  as: "Details",
+  onDelete: "CASCADE",
+});
+
+BillDetailModel.belongsTo(BillModel, {
+  foreignKey: { name: "bill_id", allowNull: false },
+  targetKey: "id",
+  as: "Bill",
+});
+
+// --- Product <-> BillDetail ---
+ProductModel.hasMany(BillDetailModel, {
+  foreignKey: { name: "product_id", allowNull: false },
+  sourceKey: "id",
+  as: "BillDetails",
+  onDelete: "RESTRICT",
+});
+
+BillDetailModel.belongsTo(ProductModel, {
+  foreignKey: { name: "product_id", allowNull: false },
+  targetKey: "id",
+  as: "Product",
+});
+
 export {
   Cash,
   Income,
@@ -218,4 +253,7 @@ export {
   Member,
   Application,
   UserPermission,
+  BillModel as Bill,
+  BillDetailModel as BillDetail,
+  ProductModel as Product,
 };

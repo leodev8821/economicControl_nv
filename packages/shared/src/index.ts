@@ -15,3 +15,7 @@ export * from "./schemas/finance-app/cash-denomination.schema.js";
 export * from "./schemas/consolidation-app/consolidation.schema.js";
 export * from "./schemas/consolidation-app/member.schema.js";
 export * from "./schemas/consolidation-app/network.schema.js";
+export * from "./schemas/cafeteria/bill-detail.schema.js"
+export * from "./schemas/cafeteria/bill.schema.js"
+export * from "./schemas/cafeteria/product.schema.js"
+export * from "./schemas/cafeteria/print-config.js"
