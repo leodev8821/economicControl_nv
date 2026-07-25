@@ -17,6 +17,7 @@ import {
 import { env } from "../config/env.js";
 import { fileURLToPath } from "url";
 import { WeekActions } from "../models/finance-app/week.model.js";
+import { PrintConfigModel } from "../models/index.js";
 
 interface DatabaseSeeder {
   run: () => Promise<void>;
@@ -142,6 +143,28 @@ const databaseSeeder: DatabaseSeeder = {
         console.log(
           `✅ Denominaciones verificadas/creadas para ${cashIds.length} cajas`,
         );
+
+        /* ===========================
+         * Seed Configuración de Impresión
+         * =========================== */
+        // Asumiendo que has importado PrintConfig desde "../models/index.js"
+        const [, created] = await PrintConfigModel.findOrCreate({
+          where: { id: 1 }, // Forzamos el ID 1 al ser un registro único
+          defaults: {
+            nombre_negocio: "Nueva Vida Logroño",
+            ancho_papel: 80,
+            font_size: 1,
+            factura_imprime_servidor: false,
+            factura_auto_print: false,
+          },
+          transaction,
+        });
+        
+        if (created) {
+          console.log("✅ Configuración de impresión inicializada");
+        } else {
+          console.log("✅ Configuración de impresión verificada");
+        }
 
         /* ===========================
          * Seed super user

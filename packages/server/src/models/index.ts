@@ -16,6 +16,7 @@ import { CashDenominationModel as CashDenomination } from "./finance-app/cash-de
 import { BillDetailModel } from "./cafeteria/bill_details.model.js";
 import { BillModel } from "./cafeteria/bill.model.js";
 import { ProductModel } from "./cafeteria/product.model.js";
+import { PrintConfigModel } from "./cafeteria/print-config.model.js";
 
 // =================================================================
 // 🔗 DEFINICIÓN DE ASOCIACIONES
@@ -256,4 +257,5 @@ export {
   BillModel as Bill,
   BillDetailModel as BillDetail,
   ProductModel as Product,
+  PrintConfigModel
 };

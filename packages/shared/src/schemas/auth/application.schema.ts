@@ -7,6 +7,7 @@ export const APPLICATION_TYPES = {
   ALL: "Todas",
   FINANCE: "Finanzas",
   CONSOLIDATION: "Consolidación",
+  CAFETERIA: "Cafetería"
 } as const;
 
 export const APPLICATION_VALUES = Object.values(APPLICATION_TYPES) as [
@@ -18,6 +19,7 @@ export const APPLICATION_DESCRIPTIONS = {
   ALL: "Todas las aplicaciones",
   FINANCE: "Sistema de control financiero",
   CONSOLIDATION: "Sistema de consolidación de miembros",
+  CAFETERIA: "Sistema de Cafetería NV Logroño"
 } as const;
 
 export const APPLICATION_DESCRIPTIONS_VALUES = Object.values(
@@ -27,6 +29,7 @@ export const APPLICATION_DESCRIPTIONS_VALUES = Object.values(
 export const APPLICATION_ROUTES = {
   FINANCE: "/finance",
   CONSOLIDATION: "/consolidation",
+  CAFETERIA: "/cafeteria"
 } as const;
 
 export const APPLICATION_ROUTES_VALUES = Object.values(APPLICATION_ROUTES) as [

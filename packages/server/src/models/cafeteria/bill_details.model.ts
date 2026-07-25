@@ -89,7 +89,7 @@ BillDetailModel.init(
   },
   {
     sequelize: connection,
-    tableName: "BillDetails",
+    tableName: "bill_details",
     timestamps: false,
     modelName: "BillDetail",
   },
