@@ -5,7 +5,7 @@ import NetworkForm from "../components/forms/NetworkForm";
 import NetworkTable from "../components/tables/NetworkTable";
 import ConsolidationTable from "../components/tables/ConsolidationTable";
 
-import useNetworkController from "../hooks/useNetworkController";
+import useNetworkController from "../controllers/useNetworkController";
 
 export default function ConsolidationPage() {
   const controller = useNetworkController();

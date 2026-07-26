@@ -68,6 +68,15 @@ const AdminPage: React.FC = () => {
           >
             Consolidation
           </Button>
+
+          <Button
+            variant="contained"
+            size="large"
+            color="primary"
+            onClick={() => navigate("/cafeteria/pos")}
+          >
+            Cafetería
+          </Button>
         </Stack>
       </Paper>
     </Box>

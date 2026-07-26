@@ -2,8 +2,7 @@ import React from "react";
 import { Box, Typography, CircularProgress, Paper } from "@mui/material";
 import PersonTable from "@modules/finance/components/tables/PersonTable";
 import PersonForm from "@modules/finance/components/forms/PersonForm";
-import usePersonController from "../hooks/usePersonController"; // Ajusta la ruta según tu proyecto
-
+import usePersonController from "../controllers/usePersonController";
 const PersonsPage: React.FC = () => {
   const controller = usePersonController();
 

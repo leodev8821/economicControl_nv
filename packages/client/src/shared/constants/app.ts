@@ -3,6 +3,7 @@ export const APPS = {
   ALL: 1,
   FINANCE: 2,
   CONSOLIDATION: 3,
+  CAFETERIA: 4
 } as const;
 
 // 1. Definimos los pesos de los roles para filtrar

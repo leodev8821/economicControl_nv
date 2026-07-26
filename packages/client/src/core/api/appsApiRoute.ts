@@ -6,6 +6,7 @@ export const API_ROUTES_PATH: Record<string, string> = {
   AUTH: "/auth",
   CONSOLIDATION: "/consolidation",
   FINANCE: "/finance",
+  CAFETERIA: "/cafeteria"
 };
 
 /**
@@ -18,6 +19,7 @@ export const PERMISSION_REDIRECTS: Record<string, string> = {
   ALL: API_ROUTES_PATH.ADMIN + "/home",
   FINANCE: API_ROUTES_PATH.FINANCE + "/dashboard",
   CONSOLIDATION: API_ROUTES_PATH.CONSOLIDATION + "/home",
+  CAFETERIA: API_ROUTES_PATH.CAFETERIA + "/pos"
 };
 
 export const UNAUTHORIZED = "/unauthorized";

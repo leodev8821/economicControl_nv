@@ -9,6 +9,8 @@ import { RoleGuard } from "@/modules/auth/components/RoleGuard";
 import { APPS } from "@shared/constants/app";
 import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 import EntryRoute from "./EntryRoute";
+import BillsPage from "@/modules/cafeteria/pages/BillsPage";
+import ProductsPage from "@/modules/cafeteria/pages/ProductsPage";
 
 // 2. Componentes de Carga (Lazy Loading)
 
@@ -41,6 +43,9 @@ const CashDenominationPage = lazy(
 const MembersPage = lazy(
   () => import("@modules/consolidation/pages/MemberPage"),
 );
+
+// --- CAFETERIA / POS MODULE ---
+const POSPage = lazy(() => import("@modules/cafeteria/pages/POSPage"));
 
 // --- NOT FOUND MODULE ---
 const ModulePlaceholder = lazy(
@@ -151,6 +156,19 @@ export const AppRouter = () => {
               <Route path={API_ROUTES_PATH.CONSOLIDATION}>
                 <Route path="home" element={<ConsolidationPage />} />
                 <Route path="members" element={<MembersPage />} />
+              </Route>
+            </Route>
+
+            {/* SECCIÓN CAFETERIA / POS */}
+            <Route
+              element={
+                <AppGuard requiredAppIds={[APPS.CAFETERIA, APPS.ALL]} />
+              }
+            >
+              <Route path={API_ROUTES_PATH.CAFETERIA}>
+                <Route path="pos" element={<POSPage />} />
+                <Route path="products" element={<ProductsPage /> } />
+                <Route path="bills" element={<BillsPage />} />
               </Route>
             </Route>
 

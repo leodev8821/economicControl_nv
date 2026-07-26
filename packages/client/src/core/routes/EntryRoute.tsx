@@ -29,6 +29,10 @@ const EntryRoute = () => {
     (p) => p.application_id === APPS.CONSOLIDATION,
   );
 
+  const hasCafeteria = user.permissions.some(
+    (p) => p.application_id === APPS.CAFETERIA,
+  );
+
   // 📊 Prioridad Finance
   if (hasFinance || hasAllAccess) {
     return <Navigate to={`${PERMISSION_REDIRECTS.FINANCE}`} replace />;
@@ -37,6 +41,11 @@ const EntryRoute = () => {
   // 📦 Consolidation
   if (hasConsolidation || hasAllAccess) {
     return <Navigate to={`${PERMISSION_REDIRECTS.CONSOLIDATION}`} replace />;
+  }
+
+  // ☕ Cafetería / POS
+  if (hasCafeteria) {
+    return <Navigate to={`${PERMISSION_REDIRECTS.CAFETERIA}`} replace />;
   }
 
   // ❌ Usuario sin apps asignadas

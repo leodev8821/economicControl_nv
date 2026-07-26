@@ -8,7 +8,7 @@ import {
   useCreateNetwork,
   useUpdateNetwork,
   useDeleteNetwork,
-} from "./useNetwork";
+} from "../hooks/useNetwork";
 
 import type { NetworkType } from "@economic-control/shared";
 

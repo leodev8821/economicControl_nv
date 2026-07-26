@@ -9,6 +9,28 @@ export const AuthQueryKeys = {
 };
 
 /**
+ * Definición de claves de consulta para React Query en Cafetería.
+ */
+export const CafeteriaQueryKeys = {
+  bill_details: {
+    all: () => ["bill_details"] as const,
+    one: (id: number) => ["bill_details", id] as const,
+  },
+  bills: {
+    all: () => ["bills"] as const,
+    one: (id: number) => ["bills", id] as const,
+  },
+  print_config: {
+    all: () => ["print_config"] as const,
+    one: (id: number) => ["print_config", id] as const,
+  },
+  products: {
+    all: () => ["products"] as const,
+    one: (id: number) => ["products", id] as const,
+  }
+};
+
+/**
  * Definición de claves de consulta para React Query en Consolidation.
  */
 export const ConsolidationQueryKeys = {

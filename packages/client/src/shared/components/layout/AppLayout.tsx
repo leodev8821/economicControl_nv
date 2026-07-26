@@ -31,8 +31,10 @@ import {
   Home,
   Menu as MenuIcon,
   PeopleAlt,
+  FoodBank, //Para cafetería
   //DateRange, // Para Semanas
-  Handshake, // Para Consolidación
+  Handshake,
+  Receipt, // Para Consolidación
 } from "@mui/icons-material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@modules/auth/hooks/useAuth";
@@ -391,6 +393,16 @@ const AppLayout: React.FC = () => {
     [user],
   );
 
+  const hasCafeteriaAccess = useMemo(
+    () =>
+      user?.permissions?.some(
+        (p) =>
+          p.application_id === APPS.CAFETERIA ||
+          p.application_id === APPS.ALL,
+      ),
+    [user],
+  );
+
   const isAdmin =
     user?.role_name === "Administrador" || user?.role_name === "SuperUser";
 
@@ -435,6 +447,29 @@ const AppLayout: React.FC = () => {
       );
     }
 
+    // --- SECCIÓN CAFETERÍA ---
+    if (hasCafeteriaAccess) {
+      if (menu.length > 0) menu.push({ kind: "divider" });
+      menu.push(
+        { kind: "header", title: "Módulos" },
+        {
+          title: "Cafetería / POS",
+          segment: "/cafeteria/pos",
+          icon: <FoodBank />,
+        },
+        {
+          title: "Productos",
+          segment: "/cafeteria/products",
+          icon: <HowToReg />,
+        },
+        {
+          title: "Facturas",
+          segment: "/cafeteria/bills",
+          icon: <Receipt />,
+        }
+      );
+    }
+
     // --- SECCIÓN ADMIN (Usuarios) ---
     if (isAdmin) {
       menu.push(
@@ -445,7 +480,7 @@ const AppLayout: React.FC = () => {
     }
 
     return menu;
-  }, [hasFinanceAccess, hasConsolidationAccess, isAdmin]);
+  }, [hasFinanceAccess, hasConsolidationAccess, hasCafeteriaAccess, isAdmin]);
 
   return (
     <AppTheme>
