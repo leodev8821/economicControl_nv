@@ -466,6 +466,11 @@ const AppLayout: React.FC = () => {
           title: "Facturas",
           segment: "/cafeteria/bills",
           icon: <Receipt />,
+        },
+        {
+          title: "Configuración de Impresión",
+          segment: "/cafeteria/print-config",
+          icon: <Receipt />,
         }
       );
     }

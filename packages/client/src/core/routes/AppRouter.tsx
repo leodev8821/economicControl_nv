@@ -11,6 +11,7 @@ import { API_ROUTES_PATH } from "@core/api/appsApiRoute";
 import EntryRoute from "./EntryRoute";
 import BillsPage from "@/modules/cafeteria/pages/BillsPage";
 import ProductsPage from "@/modules/cafeteria/pages/ProductsPage";
+import PrintConfigPage from "@/modules/cafeteria/pages/PrintConfigPage";
 
 // 2. Componentes de Carga (Lazy Loading)
 
@@ -169,6 +170,7 @@ export const AppRouter = () => {
                 <Route path="pos" element={<POSPage />} />
                 <Route path="products" element={<ProductsPage /> } />
                 <Route path="bills" element={<BillsPage />} />
+                <Route path="print-config" element={<PrintConfigPage />} />
               </Route>
             </Route>
 
