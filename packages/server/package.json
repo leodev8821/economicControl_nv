@@ -11,7 +11,7 @@
     "build": "tsc -b && tsc-alias && copyfiles -u 1 \"src/migrations/**/*.cjs\" dist/",
     "migration:create": "sequelize-cli migration:generate --options-path .sequelizerc.cjs --name",
     "db:migrate": "sequelize-cli db:migrate --options-path .sequelizerc.cjs",
-    "db:seed:dev": "tsx --env-file=../../.env src/seeders/initDatabases.ts",
+    "db:seed:dev": "npx tsx --env-file=../../.env src/seeders/initDatabases.ts",
     "db:seed:prod": "node dist/seeders/initDatabases.js",
     "db:setup": "pnpm db:migrate && pnpm db:seed:dev",
     "db:setup:prod": "pnpm db:migrate && pnpm db:seed:prod",
