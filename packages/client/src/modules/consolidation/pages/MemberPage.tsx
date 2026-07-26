@@ -9,7 +9,7 @@ import {
   Alert as MuiAlert,
 } from "@mui/material";
 
-import useMemberController from "@modules/consolidation/hooks/useMemberController";
+import useMemberController from "@modules/consolidation/controllers/useMemberController";
 import MemberTable from "@modules/consolidation/components/tables/MemberTable";
 import MemberForm from "@modules/consolidation/components/forms/MemberForm";
 
