@@ -24,12 +24,7 @@ interface TicketModalProps {
 export const TicketModal: React.FC<TicketModalProps> = ({ isOpen, bill, onClose }) => {
   const ticketRef = useRef<HTMLDivElement>(null);
 
-  // Obtener la configuración
-  const { printConfigs } = usePrintConfigController();
-  const rawConfig = printConfigs as any;
-  const config = Array.isArray(rawConfig) 
-    ? rawConfig[0] 
-    : (rawConfig?.data || rawConfig);
+  const { currentConfig: config } = usePrintConfigController();
 
   if (!isOpen || !bill) return null;
 
@@ -55,10 +50,12 @@ export const TicketModal: React.FC<TicketModalProps> = ({ isOpen, bill, onClose 
       onClose={onClose}
       maxWidth="xs"
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: 3,
-          overflow: "hidden",
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: 3,
+            overflow: "hidden",
+          },
         },
       }}
     >
@@ -117,10 +114,10 @@ export const TicketModal: React.FC<TicketModalProps> = ({ isOpen, bill, onClose 
           }}
         >
           {/* LOGO (Si existe en la configuración) */}
-          {(config?.logo_src || config?.logo_data) && (
+          {(config?.logo_data) && (
             <Box textAlign="center" mb={1}>
               <img 
-                src={config.logo_src || config.logo_data} 
+                src={config.logo_data} 
                 alt="Logo" 
                 style={{ maxWidth: "100px", margin: "0 auto", display: "block" }} 
               />
@@ -150,9 +147,9 @@ export const TicketModal: React.FC<TicketModalProps> = ({ isOpen, bill, onClose 
                 Tel: {config.telefono}
               </Typography>
             )}
-            {(config?.cif || config?.nit) && (
+            {(config?.cif) && (
               <Typography variant="caption" display="block" sx={{ fontFamily: "inherit", fontSize: "0.85em" }}>
-                CIF/NIT: {config.cif || config.nit}
+                CIF: {config.cif}
               </Typography>
             )}
           </Box>
@@ -186,7 +183,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({ isOpen, bill, onClose 
           </Box>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {(bill?.Details || bill?.detalles || []).map((d: any, idx: number) => {
+            {(bill?.Details || bill?.details || bill?.detalles || []).map((d: any, idx: number) => {
               const nombreProd = d?.Product?.name || d?.producto_nombre || `Producto #${d?.product_id}`;
               const cantidad = Number(d?.quantity || d?.cantidad || 0);
               const precioU = Number(d?.unit_price || d?.precio_unitario || 0);
@@ -228,10 +225,10 @@ export const TicketModal: React.FC<TicketModalProps> = ({ isOpen, bill, onClose 
           </Box>
 
           {/* CÓDIGO QR (Si existe en la configuración) */}
-          {(config?.qr_src || config?.qr_data) && (
+          {(config?.qr_data) && (
             <Box textAlign="center" my={2}>
               <img 
-                src={config.qr_src || config.qr_data} 
+                src={config.qr_data} 
                 alt="Código QR" 
                 style={{ maxWidth: "120px", margin: "0 auto", display: "block" }} 
               />

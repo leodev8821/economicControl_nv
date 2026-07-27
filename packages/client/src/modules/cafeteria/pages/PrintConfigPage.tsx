@@ -5,7 +5,7 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
+  Grid, // Ojo si usas Grid v2, sería import Grid from "@mui/material/Grid2"
   FormControlLabel,
   Switch,
   Alert,
@@ -26,17 +26,14 @@ import type { PrintConfigUpdateDTO } from "@economic-control/shared";
 
 export default function PrintConfigPage() {
   const {
-    printConfigs,
+    currentConfig, // Recibimos el objeto único directamente del controlador
     isLoading,
     isError,
     error,
     isActionPending,
     actionError,
-    handleFormSubmit,
+    handleUpdatePrintConfig,
   } = usePrintConfigController();
-
-  // Tomamos la primera configuración disponible (Singleton)
-  const currentConfig = printConfigs[0] || null;
 
   // Estado local del formulario
   const [formData, setFormData] = useState<PrintConfigUpdateDTO>({
@@ -76,10 +73,11 @@ export default function PrintConfigPage() {
     e.preventDefault();
     setSuccessMessage(null);
 
-    // Si existe la configuración, la actualizamos mediante el controller
+    // Si existe la configuración, la actualizamos pasando su ID
     if (currentConfig?.id) {
-      handleFormSubmit(formData);
-      setSuccessMessage("Configuración de impresión guardada correctamente.");
+      handleUpdatePrintConfig(currentConfig.id, formData, () => {
+        setSuccessMessage("Configuración de impresión guardada correctamente.");
+      });
     }
   };
 
@@ -119,6 +117,13 @@ export default function PrintConfigPage() {
         </Alert>
       )}
 
+      {/* Si no hay configuración inicializada, mostramos aviso */}
+      {!currentConfig && !isLoading && !isError && (
+        <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
+          No hay ninguna configuración inicializada en la base de datos.
+        </Alert>
+      )}
+
       <form onSubmit={handleSubmit}>
         <Paper elevation={0} sx={{ p: 3, border: "1px solid #e2e8f0", borderRadius: 3, mb: 3 }}>
           {/* SECCIÓN 1: DATOS DEL NEGOCIO */}
@@ -133,6 +138,10 @@ export default function PrintConfigPage() {
           </Typography>
 
           <Grid container spacing={2}>
+            {/* 
+              NOTA: Si usas la versión más reciente de MUI (v6+ o Grid v2), la prop es 'size'.
+              Si usas MUI v5 con el Grid normal, usa 'item xs={12} sm={6}'.
+            */}
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 label="Nombre del Negocio *"
@@ -141,6 +150,7 @@ export default function PrintConfigPage() {
                 required
                 fullWidth
                 size="small"
+                disabled={!currentConfig}
               />
             </Grid>
 
@@ -151,6 +161,7 @@ export default function PrintConfigPage() {
                 onChange={(e) => setFormData({ ...formData, cif: e.target.value })}
                 fullWidth
                 size="small"
+                disabled={!currentConfig}
               />
             </Grid>
 
@@ -161,6 +172,7 @@ export default function PrintConfigPage() {
                 onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
                 fullWidth
                 size="small"
+                disabled={!currentConfig}
               />
             </Grid>
 
@@ -171,6 +183,7 @@ export default function PrintConfigPage() {
                 onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
                 fullWidth
                 size="small"
+                disabled={!currentConfig}
               />
             </Grid>
 
@@ -184,6 +197,7 @@ export default function PrintConfigPage() {
                 rows={2}
                 fullWidth
                 size="small"
+                disabled={!currentConfig}
               />
             </Grid>
           </Grid>
@@ -207,6 +221,7 @@ export default function PrintConfigPage() {
                 onChange={(e) => setFormData({ ...formData, ancho_papel: Number(e.target.value) })}
                 fullWidth
                 size="small"
+                disabled={!currentConfig}
               >
                 <MenuItem value={80}>80 mm (Térmica Estándar)</MenuItem>
                 <MenuItem value={58}>58 mm (Térmica Pequeña)</MenuItem>
@@ -222,6 +237,7 @@ export default function PrintConfigPage() {
                 slotProps={{ htmlInput: { min: 1, max: 3 } }}
                 fullWidth
                 size="small"
+                disabled={!currentConfig}
               />
             </Grid>
 
@@ -233,6 +249,7 @@ export default function PrintConfigPage() {
                 onChange={(e) => setFormData({ ...formData, impresora_facturas: e.target.value })}
                 fullWidth
                 size="small"
+                disabled={!currentConfig}
               />
             </Grid>
           </Grid>
@@ -254,6 +271,7 @@ export default function PrintConfigPage() {
                   checked={Boolean(formData.factura_auto_print)}
                   onChange={(e) => setFormData({ ...formData, factura_auto_print: e.target.checked })}
                   color="primary"
+                  disabled={!currentConfig}
                 />
               }
               label="Impresión Automática (Imprimir inmediatamente al cerrar una venta)"
@@ -265,6 +283,7 @@ export default function PrintConfigPage() {
                   checked={Boolean(formData.factura_imprime_servidor)}
                   onChange={(e) => setFormData({ ...formData, factura_imprime_servidor: e.target.checked })}
                   color="primary"
+                  disabled={!currentConfig}
                 />
               }
               label="Imprimir directamente desde el servidor (vía drivers del sistema)"
@@ -278,7 +297,7 @@ export default function PrintConfigPage() {
             type="submit"
             variant="contained"
             size="large"
-            disabled={isActionPending}
+            disabled={isActionPending || !currentConfig}
             startIcon={isActionPending ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
             sx={{ borderRadius: 2, px: 4, fontWeight: "bold" }}
           >

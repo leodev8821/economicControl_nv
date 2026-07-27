@@ -104,6 +104,19 @@ async function create(dto: BillCreationDTO): Promise<BillAttributes> {
 async function getAll(): Promise<BillAttributes[]> {
     const bills = await BillModel.findAll({
         order: [["date", "DESC"]],
+        include: [
+            {
+                model: BillDetailModel,
+                as: "Details",
+                include: [
+                    {
+                        model: ProductModel,
+                        as: "Product",
+                        attributes: ["code", "name"],
+                    },
+                ],
+            },
+        ],
     });
 
     return bills.map((bill) => bill.get({ plain: true }));

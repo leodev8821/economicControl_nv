@@ -119,7 +119,7 @@ export default function CartTable({
                             },
                             }}
                             sx={{ 
-                            width: "50px", // 👈 Ancho suficiente para ver '1', '10', '100'
+                            width: "70px", // 👈 Ancho suficiente para ver '1', '10', '100'
                             "& .MuiOutlinedInput-root": {
                                 borderRadius: 1.5,
                             } 
