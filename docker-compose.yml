@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile.client
       args:
-        - VITE_API_URL=https://leodev-services.ddns.net
+        - VITE_API_URL=https://nuevavidalogrono.sytes.net
         - VITE_API_PREFIX=/ec/api/v1
     container_name: economic-client
     restart: unless-stopped
