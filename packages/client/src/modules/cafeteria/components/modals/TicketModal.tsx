@@ -104,7 +104,7 @@ export const TicketModal: React.FC<TicketModalProps> = ({ isOpen, bill, onClose 
             bgcolor: "white",
             p: 2.5,
             boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-            fontFamily: '"Courier New", Courier, monospace',
+            fontFamily: '"Arial", sans-serif',
             fontSize: fontSizeFactor,
             lineHeight: 1.3,
             color: "#000",
