@@ -1,6 +1,5 @@
 # --- ETAPA 1: Base ---
-# Ejecuta `docker inspect --format='{{index .RepoDigests 0}}' node:22-slim` para actualizar este hash
-FROM node:22-slim@sha256:7bc0f8252277d33eb4fdf569c735d46ec8787c8052cf7c1f80219c6934c9c2dd AS base
+FROM node:22-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="/pnpm:/pnpm/bin:$PATH"
 RUN corepack enable
