@@ -87,7 +87,8 @@ async function create(
 ): Promise<MemberAttributes> {
   const isAdmin =
     currentUser.role_name === ROLE_TYPES.ADMINISTRADOR ||
-    currentUser.role_name === ROLE_TYPES.SUPER_USER;
+    currentUser.role_name === ROLE_TYPES.SUPER_USER
+    currentUser.role_name === ROLE_TYPES.LIDER;
 
   const finalUserId = isAdmin && data.user_id ? data.user_id : currentUser.id;
 
@@ -131,7 +132,8 @@ async function createMultipleMembers(
 ): Promise<MemberAttributes[]> {
   const isAdmin =
     currentUser.role_name === ROLE_TYPES.ADMINISTRADOR ||
-    currentUser.role_name === ROLE_TYPES.SUPER_USER;
+    currentUser.role_name === ROLE_TYPES.SUPER_USER ||
+    currentUser.role_name === ROLE_TYPES.LIDER;
 
   return await connection.transaction(async (t) => {
     const normalizedData = dataList.map((item) => {
