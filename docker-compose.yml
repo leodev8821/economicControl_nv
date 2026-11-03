@@ -10,11 +10,13 @@ services:
     container_name: economic-client
     restart: unless-stopped
     expose:
-      - "80"
+      - "8080"
     networks:
       - web_network
     depends_on:
       - api
+    profiles:
+      - prod
 
   # --- SERVICIO 2: BACKEND (API) ---
   api:
@@ -33,6 +35,8 @@ services:
     networks:
       - web_network
       - backend_internal
+    profiles:
+      - prod
 
   # --- SERVICIO 3: BASE DE DATOS ---
   postgres-dev:
