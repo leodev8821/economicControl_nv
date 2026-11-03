@@ -7,7 +7,7 @@ RUN corepack enable
 # --- ETAPA 2: Pruning (Podado) ---
 FROM base AS pruner
 WORKDIR /app
-RUN pnpm add -g turbo@2.7.5
+RUN pnpm add -g turbo@2.10.5
 COPY . .
 RUN turbo prune @economic-control/server --docker
 
