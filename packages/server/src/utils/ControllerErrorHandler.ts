@@ -8,6 +8,7 @@ const ControllerErrorHandler = (
   error: unknown,
   message: string
 ) => {
+  console.error(`[Controller Error] ${message}:`, error);
   if (error instanceof Error) {
     return res.status(500).json({
       ok: false,
