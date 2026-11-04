@@ -67,9 +67,6 @@ const IncomesPage: React.FC = () => {
     common_week_id: data.common_week_id,
     incomes: data.incomes.map((item) => ({
       ...item,
-      // Nota: Si tu backend necesita que los objetos dentro de 'incomes' 
-      // no tengan week_id (porque lo inyectas en el controlador), 
-      // puedes omitirlo aquí, pero si el tipo lo pide, mantenlo.
       person_id: item.person_id ?? null,
     })),
   };

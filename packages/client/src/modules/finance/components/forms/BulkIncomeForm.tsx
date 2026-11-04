@@ -102,6 +102,7 @@ export default function BulkIncomeForm({
           source: "Ofrenda",
           cash_id: "",
           person_id: "",
+          description: "",
         },
       ],
     },
@@ -120,6 +121,7 @@ export default function BulkIncomeForm({
           source: nestedFields.source.value ?? nestedFields.source.initialValue ?? "Ofrenda",
           cash_id: nestedFields.cash_id.value ?? nestedFields.cash_id.initialValue ?? "",
           person_id: nestedFields.person_id.value ?? nestedFields.person_id.initialValue ?? "",
+          description: nestedFields.description.value ?? nestedFields.description.initialValue ?? "",
         };
       }),
     };
@@ -139,6 +141,7 @@ export default function BulkIncomeForm({
           source: "Ofrenda",
           cash_id: "",
           person_id: "",
+          description: "",
         },
       ],
     });
@@ -275,6 +278,7 @@ export default function BulkIncomeForm({
                     source: "Ofrenda",
                     cash_id: "",
                     person_id: "",
+                    description: "",
                   },
                 })
               }
@@ -496,6 +500,21 @@ function IncomeRow({
               {rowFields.person_id.errors?.join(", ")}
             </FormHelperText>
           </FormControl>
+        </Grid>
+
+        <Grid size={{ xs: 10, sm: 3.2 }}>
+          <TextField
+            key={rowFields.description.key}
+            label="Descripción"
+            name={rowFields.description.name}
+            defaultValue={rowFields.description.initialValue}
+            fullWidth
+            size="small"
+            disabled={isLoading}
+            error={!!rowFields.description.errors}
+            helperText={rowFields.description.errors?.join(", ")}
+            placeholder="Ej: Venta de entradas"
+          />
         </Grid>
 
         <Grid size={{ xs: 2, sm: 0.8 }} sx={{ textAlign: "center", mt: { xs: 0.5, sm: 0.5 } }}>

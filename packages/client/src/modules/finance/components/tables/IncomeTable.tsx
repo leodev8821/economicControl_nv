@@ -134,7 +134,10 @@ export default function IncomeTable({
         const matchSource = income.source?.toLowerCase().includes(lowerSearch);
         const matchDni = income.Person?.dni?.toLowerCase().includes(lowerSearch);
         const matchId = income.id.toString().includes(lowerSearch);
-        if (!matchSource && !matchDni && !matchId) return false;
+        const matchDesc = income.description
+          ?.toLowerCase()
+          .includes(lowerSearch);
+        if (!matchSource && !matchDni && !matchId && !matchDesc) return false;
       }
 
       if (filters.source !== "all" && income.source !== filters.source) return false;
@@ -238,7 +241,7 @@ export default function IncomeTable({
   );
 
   const exportToCSV = () => {
-    const headers = ["ID", "Caja", "Semana", "Fecha", "Monto", "Fuente", "Nombre", "Apellido", "NIF"];
+    const headers = ["ID", "Caja", "Semana", "Fecha", "Monto", "Fuente", "Nombre", "Apellido", "NIF", "Descripción"];
     const rows = sortedIncomes.map((income) => [
       income.id,
       income.Cash?.name || "-",
@@ -249,6 +252,7 @@ export default function IncomeTable({
       income.Person?.first_name || "",
       income.Person?.last_name || "",
       income.Person?.dni || "",
+      income.description || "",
     ]);
 
     const csvContent = [headers, ...rows].map((e) => e.join(";")).join("\n");
@@ -393,6 +397,10 @@ export default function IncomeTable({
                         <Typography variant="caption" color="text.secondary">Semana</Typography>
                         <Typography variant="body2">{row.Week ? `S${row.Week.id}` : "-"}</Typography>
                       </Grid>
+                      <Grid size={12}>
+                        <Typography variant="caption" color="text.secondary">Descripción</Typography>
+                        <Typography variant="body2">{row.description || "-"}</Typography>
+                      </Grid>
                     </Grid>
                   </CardContent>
                   <CardActions sx={{ justifyContent: "flex-end", pt: 0 }}>
@@ -420,6 +428,7 @@ export default function IncomeTable({
                   <SortableHeader id="personName" label="Nombre" />
                   <SortableHeader id="personLastName" label="Apellido" />
                   <SortableHeader id="personDni" label="NIF" />
+                  <SortableHeader id="description" label="Descripción" />
                   <TableCell sx={{ fontWeight: "bold" }} align="center">Acciones</TableCell>
                 </TableRow>
               </TableHead>
@@ -436,6 +445,7 @@ export default function IncomeTable({
                       <TableCell sx={{ whiteSpace: "nowrap" }}>{row.Person?.first_name || "-"}</TableCell>
                       <TableCell sx={{ whiteSpace: "nowrap" }}>{row.Person?.last_name || "-"}</TableCell>
                       <TableCell sx={{ whiteSpace: "nowrap" }}>{row.Person?.dni || "-"}</TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>{row.description || "-"}</TableCell>
                       <TableCell align="center">
                         <Tooltip title="Editar"><IconButton color="primary" onClick={() => onEdit(row)} size="small"><EditIcon /></IconButton></Tooltip>
                         <Tooltip title="Eliminar"><IconButton color="error" onClick={() => onDelete(row.id)} size="small" disabled={highlightedRowId === row.id}><DeleteIcon /></IconButton></Tooltip>
@@ -443,7 +453,7 @@ export default function IncomeTable({
                     </TableRow>
                   ))
                 ) : (
-                  <TableRow><TableCell colSpan={10} align="center" sx={{ py: 3 }}><Typography variant="body1" color="text.secondary">No se encontraron resultados</Typography></TableCell></TableRow>
+                  <TableRow><TableCell colSpan={11} align="center" sx={{ py: 3 }}><Typography variant="body1" color="text.secondary">No se encontraron resultados</Typography></TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
