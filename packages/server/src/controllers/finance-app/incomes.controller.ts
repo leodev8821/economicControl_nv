@@ -139,6 +139,7 @@ export const incomesController = {
         amount: parseFloat(String(incomeData.amount)),
         source: incomeData.source,
         date: new Date(incomeData.date),
+        description: incomeData.description ?? null,
       };
 
       if (incomeData.person_id !== undefined && incomeData.person_id !== null) {
@@ -172,6 +173,7 @@ export const incomesController = {
       person_id: item.person_id ?? null,
       amount: parseFloat(String(item.amount)),
       date: new Date(item.date),
+      description: item.description ?? null,
     }));
 
     // 3. Persistencia
@@ -221,7 +223,8 @@ export const incomesController = {
       if (updateData.week_id !== undefined) updatePayload.week_id = updateData.week_id;
       if (updateData.amount !== undefined) updatePayload.amount = parseFloat(String(updateData.amount));
       if (updateData.source !== undefined) updatePayload.source = updateData.source;
-      if (updateData.person_id !== undefined && updateData.person_id !== null) {
+      if (updateData.description !== undefined) updatePayload.description = updateData.description;
+      if (updateData.person_id !== undefined) {
         updatePayload.person_id = updateData.person_id;
       }
       if (updateData.date !== undefined) {

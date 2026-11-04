@@ -13,6 +13,7 @@ export interface IncomeAttributes {
   date: Date;
   amount: number;
   source: IncomeSource;
+  description: string | null;
 }
 
 export type IncomeSearchData = {
@@ -41,6 +42,7 @@ export class IncomeModel
   declare date: Date;
   declare amount: number;
   declare source: IncomeSource;
+  declare description: string | null;
 }
 
 // Inicialización del modelo
@@ -76,7 +78,7 @@ IncomeModel.init(
       },
     },
     date: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
@@ -90,6 +92,10 @@ IncomeModel.init(
     source: {
       type: DataTypes.ENUM(...INCOME_SOURCES),
       allowNull: false,
+    },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {

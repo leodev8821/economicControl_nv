@@ -23,7 +23,10 @@ const BaseIncomeSchema = z.object({
   id: z.number().int().positive().optional(),
 
   // PERSON_ID:
-  person_id: z.coerce.number().int().positive().nullable().optional(),
+  person_id: z.preprocess(
+    (val) => (val === "" || val === null ? null : Number(val)),
+    z.number().int().positive().nullable().optional()
+  ),
 
   // CASH_ID:
   cash_id: z.coerce
@@ -65,6 +68,8 @@ const BaseIncomeSchema = z.object({
   source: z.enum(INCOME_SOURCES, {
     message: "La fuente de ingreso es obligatoria",
   }),
+
+  description: z.string().nullable().optional(),
 });
 
 // ----------------------------------------------------------------------
