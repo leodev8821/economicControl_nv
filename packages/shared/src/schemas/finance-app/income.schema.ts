@@ -69,7 +69,10 @@ const BaseIncomeSchema = z.object({
     message: "La fuente de ingreso es obligatoria",
   }),
 
-  description: z.string().nullable().optional(),
+  description: z.preprocess(
+    (val) => (val === "" || val === undefined ? null : val),
+    z.string().nullable().optional()
+  ),
 });
 
 // ----------------------------------------------------------------------
