@@ -8,6 +8,7 @@ import {
   decodeAccessToken,
   decodeRefreshToken,
   requireRole,
+  loginRateLimiter
 } from "@middlewares/auth.middleware.js";
 
 const authRouter: Router = Router();
@@ -15,7 +16,7 @@ const authRouter: Router = Router();
 // =================================================================
 // 🔑 LOGIN / LOGOUT / REFRESH
 // =================================================================
-authRouter.post("/login", authController.loginUser);
+authRouter.post("/login", loginRateLimiter, authController.loginUser);
 authRouter.post(
   "/refresh-token",
   decodeRefreshToken,

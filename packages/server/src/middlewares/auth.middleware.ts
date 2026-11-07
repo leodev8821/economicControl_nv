@@ -6,6 +6,7 @@ import { UserRole } from "../models/auth/user.model.js";
 import { UserPermissionActions } from "../models/auth/user-permission.model.js";
 import { ROLE_TYPES } from "@economic-control/shared";
 import { APP_IDS } from "../shared/app.constants.js";
+import rateLimit from 'express-rate-limit';
 
 const REFRESH_SECRET = process.env.REFRESH_SECRET as string;
 
@@ -119,3 +120,18 @@ export const requireRole =
     }
     next();
   };
+
+  /**
+   * Middleware para limitar intentos de inicio de sesión
+   * Establece un limite de 5 intentos por IP por cada ventana de 15min
+   */
+  export const loginRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // Límite de 5 intentos por IP por cada ventana (15 min)
+  message: {
+    success: false,
+    message: 'Demasiados intentos de inicio de sesión desde esta IP. Por favor, inténtalo de nuevo en 15 minutos.'
+  },
+  standardHeaders: true, // Devuelve la información del límite en las cabeceras `RateLimit-*`
+  legacyHeaders: false, // Deshabilita las cabeceras antiguas `X-RateLimit-*`
+});
