@@ -20,6 +20,7 @@
     "skipLibCheck": true,
     "isolatedModules": true,
 
+    "baseUrl": ".",
     "paths": {
       "@economic-control/shared": ["../shared/src/index.ts"],
       "@config/*": ["./src/config/*"],
@@ -30,6 +31,7 @@
       "@services/*": ["./src/services/*"],
       "@shared/*": ["./src/shared/*"],
       "@utils/*": ["./src/utils/*"],
+      "@auth/*": ["./src/auth/*"]
     }
   },
   "include": [

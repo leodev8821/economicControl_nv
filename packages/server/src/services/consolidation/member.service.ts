@@ -15,7 +15,7 @@ import {
 import { getSequelizeConfig } from "@config/sequelize.config.js";
 import { consolidationService } from "./consolidation.service.js";
 import { Transaction } from "sequelize";
-import { JwtPayload } from "src/auth/auth.types.js";
+import { JwtPayload } from "@auth/auth.types.js";
 import { ROLE_TYPES } from "@economic-control/shared";
 
 const connection = getSequelizeConfig();
